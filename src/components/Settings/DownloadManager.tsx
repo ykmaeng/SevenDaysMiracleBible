@@ -60,6 +60,9 @@ export function DownloadManager() {
       <div key={tr.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
         <div>
           <p className="text-sm font-medium text-gray-800">{tr.name}</p>
+          {tr.description && (
+            <p className="text-xs text-gray-500">{tr.description}</p>
+          )}
           <p className="text-xs text-gray-400">
             {tr.language.toUpperCase()}
             {tr.is_ai_generated ? " \u00b7 AI" : ""}
