@@ -1,5 +1,5 @@
 export const DOWNLOAD_CONFIG = {
-  baseUrl: "https://github.com/young/SevenDaysMiracleBible/releases/download",
+  baseUrl: "https://github.com/ykmaeng/SevenDaysMiracleBible/releases/download",
   tag: "translations-v1",
 };
 
