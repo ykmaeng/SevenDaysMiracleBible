@@ -124,6 +124,7 @@ export function TabPanel() {
           bookId={activeTab.bookId}
           chapter={activeTab.chapter}
           verse={selectedVerse}
+          currentTranslationId={activeTab.translationId}
           onClose={() => setSelectedVerse(null)}
         />
       )}

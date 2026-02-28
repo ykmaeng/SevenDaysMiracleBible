@@ -129,14 +129,14 @@ const translationData: [string, string, string, string, number, number, number, 
   ['cuv','和合本','zh','Chinese Union Version (1919)',0,0,0,2.0],
   ['rv1909','Reina-Valera','es','Reina-Valera - Dominio Público',0,0,0,1.5],
   ['ai-ko','AI 한국어 번역','ko','원문 기반 AI 번역',0,1,1,2.0],
-  ['hebrew','Westminster Leningrad Codex','he','Hebrew Old Testament (WLC)',1,0,1,2.0],
-  ['greek','Open Greek New Testament','el','Greek New Testament (OpenGNT)',1,0,1,1.0],
+  ['hebrew','Westminster Leningrad Codex','he','Hebrew Old Testament (WLC)',1,0,0,2.0],
+  ['greek','Open Greek New Testament','el','Greek New Testament (OpenGNT)',1,0,0,1.0],
 ];
 const insertTranslation = db.prepare(
   "INSERT OR IGNORE INTO translations (id,name,language,description,is_original,is_ai_generated,downloaded,download_size_mb) VALUES (?,?,?,?,?,?,?,?)"
 );
 for (const t of translationData) {
-  if (buildCore && !CORE_TRANSLATIONS.has(t[0]) && !['hebrew', 'greek'].includes(t[0])) {
+  if (buildCore && !CORE_TRANSLATIONS.has(t[0])) {
     // In core mode, non-core translations get downloaded=0
     insertTranslation.run(t[0], t[1], t[2], t[3], t[4], t[5], 0, t[7]);
   } else {

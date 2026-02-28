@@ -1,27 +1,44 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getParallelVerses } from "../../lib/bible";
+import { getDownloadedTranslations, getParallelVerses } from "../../lib/bible";
 import { useSettingsStore } from "../../stores/settingsStore";
-import { VotingButtons } from "../Feedback/VotingButtons";
-import type { ParallelVerse } from "../../types/bible";
+import type { ParallelVerse, Translation } from "../../types/bible";
 
 interface ParallelViewProps {
   bookId: number;
   chapter: number;
   verse: number;
+  currentTranslationId: string;
   onClose: () => void;
 }
 
-export function ParallelView({ bookId, chapter, verse, onClose }: ParallelViewProps) {
+export function ParallelView({ bookId, chapter, verse, currentTranslationId, onClose }: ParallelViewProps) {
   const { t } = useTranslation();
   const parallelTranslations = useSettingsStore((s) => s.parallelTranslations);
+  const toggleParallelTranslation = useSettingsStore((s) => s.toggleParallelTranslation);
   const [data, setData] = useState<ParallelVerse | null>(null);
+  const [availableTranslations, setAvailableTranslations] = useState<Translation[]>([]);
+
+  // Load available (downloaded) translations, excluding the current one
+  useEffect(() => {
+    getDownloadedTranslations().then((all) => {
+      setAvailableTranslations(all.filter((tr) => tr.id !== currentTranslationId));
+    });
+  }, [currentTranslationId]);
+
+  // Active translations = only those that are both selected AND available (downloaded, non-original)
+  const availableIds = availableTranslations.map((tr) => tr.id);
+  const activeIds = parallelTranslations.filter(
+    (id) => id !== currentTranslationId && availableIds.includes(id)
+  );
 
   useEffect(() => {
-    getParallelVerses(bookId, chapter, verse, parallelTranslations).then(setData);
-  }, [bookId, chapter, verse, parallelTranslations]);
-
-  if (!data) return null;
+    if (activeIds.length === 0 || availableTranslations.length === 0) {
+      setData({ original: null, translations: [] });
+      return;
+    }
+    getParallelVerses(bookId, chapter, verse, activeIds).then(setData);
+  }, [bookId, chapter, verse, activeIds.join(","), availableTranslations.length]);
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50">
@@ -37,9 +54,31 @@ export function ParallelView({ bookId, chapter, verse, onClose }: ParallelViewPr
           </button>
         </div>
 
+        {/* Translation chips */}
+        {availableTranslations.length > 0 && (
+          <div className="px-4 py-2 border-b border-gray-100 flex flex-wrap gap-1.5">
+            {availableTranslations.map((tr) => {
+              const isActive = parallelTranslations.includes(tr.id);
+              return (
+                <button
+                  key={tr.id}
+                  onClick={() => toggleParallelTranslation(tr.id)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                    isActive
+                      ? "bg-blue-100 text-blue-700 border border-blue-200"
+                      : "bg-gray-100 text-gray-500 border border-gray-200 hover:bg-gray-200"
+                  }`}
+                >
+                  {tr.name}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <div className="p-4 space-y-4">
           {/* Original text */}
-          {data.original && (
+          {data?.original && (
             <div className="space-y-1">
               {data.original.hebrew_text && (
                 <div>
@@ -63,22 +102,21 @@ export function ParallelView({ bookId, chapter, verse, onClose }: ParallelViewPr
           )}
 
           {/* Translations */}
-          {data.translations.map((tr) => (
+          {data?.translations.map((tr) => (
             <div key={tr.translationId} className="border-t border-gray-100 pt-3">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-blue-600 uppercase">
-                  {tr.translationName}
-                </span>
-                <VotingButtons
-                  bookId={bookId}
-                  chapter={chapter}
-                  verse={verse}
-                  translationId={tr.translationId}
-                />
-              </div>
+              <span className="text-xs font-medium text-blue-600 uppercase mb-1 block">
+                {tr.translationName}
+              </span>
               <p className="text-base leading-relaxed text-gray-800">{tr.text}</p>
             </div>
           ))}
+
+          {/* Empty state */}
+          {activeIds.length === 0 && (
+            <p className="text-sm text-gray-400 text-center py-4">
+              {t("reader.selectTranslation", "Select translations above to compare")}
+            </p>
+          )}
         </div>
       </div>
       <div className="fixed inset-0 bg-black/20 -z-10" onClick={onClose} />

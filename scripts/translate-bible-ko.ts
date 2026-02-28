@@ -105,7 +105,7 @@ interface Batch {
 
 function createBatches(): Batch[] {
   const batches: Batch[] = [];
-  const CHAPTERS_PER_BATCH = 3; // ~3 chapters per batch for reliable output
+  const CHAPTERS_PER_BATCH = 1; // 1 chapter per batch to stay within token limits
 
   for (const [bookId, chapters] of bookChapters) {
     const chapterNums = Array.from(chapters.keys()).sort((a, b) => a - b);
@@ -253,9 +253,10 @@ async function processInParallel(batches: Batch[]): Promise<void> {
       }
     }
 
-    // Pause between waves to avoid rate limiting
+    // Pause between waves to control token consumption
     if (i + CONCURRENCY < batches.length) {
-      await sleep(5000);
+      console.log(`  Waiting 60s before next wave...`);
+      await sleep(60000);
     }
 
     // Save after each wave
