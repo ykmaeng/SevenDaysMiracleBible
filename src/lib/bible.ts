@@ -16,7 +16,7 @@ export async function getTranslations(): Promise<Translation[]> {
 
 export async function getDownloadedTranslations(): Promise<Translation[]> {
   return query<Translation>(
-    "SELECT * FROM translations WHERE downloaded = 1 AND is_original = 0 ORDER BY language, name"
+    "SELECT * FROM translations WHERE downloaded = 1 ORDER BY language, name"
   );
 }
 

@@ -7,4 +7,4 @@ export function getTranslationDownloadUrl(translationId: string): string {
   return `${DOWNLOAD_CONFIG.baseUrl}/${DOWNLOAD_CONFIG.tag}/${translationId}.json`;
 }
 
-export const CORE_TRANSLATIONS = new Set(["kjv", "ai-ko", "hebrew", "greek"]);
+export const CORE_TRANSLATIONS = new Set(["kjv", "ai-ko"]);
