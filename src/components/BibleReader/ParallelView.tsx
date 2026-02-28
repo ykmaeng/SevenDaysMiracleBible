@@ -19,14 +19,24 @@ export function ParallelView({ bookId, chapter, verse, currentTranslationId, onC
   const [data, setData] = useState<ParallelVerse | null>(null);
   const [availableTranslations, setAvailableTranslations] = useState<Translation[]>([]);
 
+  const isOT = bookId <= 39;
+
   // Load available (downloaded) translations, excluding the current one
+  // and filtering original-language texts by testament (Hebrew=OT, Greek=NT)
   useEffect(() => {
     getDownloadedTranslations().then((all) => {
-      setAvailableTranslations(all.filter((tr) => tr.id !== currentTranslationId));
+      setAvailableTranslations(
+        all.filter((tr) => {
+          if (tr.id === currentTranslationId) return false;
+          if (tr.id === "hebrew" && !isOT) return false;
+          if (tr.id === "greek" && isOT) return false;
+          return true;
+        })
+      );
     });
-  }, [currentTranslationId]);
+  }, [currentTranslationId, isOT]);
 
-  // Active translations = only those that are both selected AND available (downloaded, non-original)
+  // Active translations = only those that are both selected AND available
   const availableIds = availableTranslations.map((tr) => tr.id);
   const activeIds = parallelTranslations.filter(
     (id) => id !== currentTranslationId && availableIds.includes(id)
