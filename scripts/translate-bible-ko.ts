@@ -182,7 +182,7 @@ async function translateBatch(batch: Batch): Promise<Verse[]> {
 
     try {
       const { stdout } = await execAsync(
-        `unset CLAUDECODE && cat "${promptFile}" | claude -p --output-format text`,
+        `unset CLAUDECODE && cat "${promptFile}" | claude -p --model claude-sonnet-4-6 --output-format text`,
         {
           timeout: 300000, // 5 min timeout
           maxBuffer: 10 * 1024 * 1024,
@@ -253,10 +253,9 @@ async function processInParallel(batches: Batch[]): Promise<void> {
       }
     }
 
-    // Pause between waves to control token consumption
+    // Pause between waves to avoid rate limiting
     if (i + CONCURRENCY < batches.length) {
-      console.log(`  Waiting 60s before next wave...`);
-      await sleep(60000);
+      await sleep(3000);
     }
 
     // Save after each wave
