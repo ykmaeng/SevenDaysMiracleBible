@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useTabStore, type Tab } from "../../stores/tabStore";
 import { useSettingsStore } from "../../stores/settingsStore";
@@ -17,6 +17,10 @@ export function TabPanel() {
   const [showChapterPicker, setShowChapterPicker] = useState(false);
   const [showCommentary, setShowCommentary] = useState(false);
   const commentaryPosition = useSettingsStore((s) => s.commentaryPosition);
+  const splitRatio = useSettingsStore((s) => s.commentarySplitRatio);
+  const setSplitRatio = useSettingsStore((s) => s.setCommentarySplitRatio);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [draggingSplit, setDraggingSplit] = useState(false);
 
   const handleScrollChange = useCallback(
     (position: number) => {
@@ -45,6 +49,26 @@ export function TabPanel() {
   const handleNextChapter = () => {
     navigateTo(activeTab.bookId, activeTab.chapter + 1);
   };
+
+  const handleDividerPointerDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    setDraggingSplit(true);
+  }, []);
+
+  const handleDividerPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!draggingSplit || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const isHorizontal = commentaryPosition === "bottom";
+    const ratio = isHorizontal
+      ? (e.clientY - rect.top) / rect.height
+      : (e.clientX - rect.left) / rect.width;
+    setSplitRatio(commentaryPosition === "left" ? 1 - ratio : ratio);
+  }, [draggingSplit, commentaryPosition, setSplitRatio]);
+
+  const handleDividerPointerUp = useCallback(() => {
+    setDraggingSplit(false);
+  }, []);
 
   return (
     <div className="flex flex-col h-full">
@@ -88,19 +112,28 @@ export function TabPanel() {
       </div>
 
       {/* Main content */}
-      <div className={`flex-1 flex overflow-hidden ${
-        showCommentary && commentaryPosition === "bottom" ? "flex-col" : "flex-row"
-      }`}>
+      <div
+        ref={containerRef}
+        className={`flex-1 flex overflow-hidden ${
+          showCommentary && commentaryPosition === "bottom" ? "flex-col" : "flex-row"
+        }`}
+      >
         {showCommentary && commentaryPosition === "left" && (
-          <div className="w-1/2 h-full border-r border-gray-200 dark:border-gray-700">
-            <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} />
-          </div>
+          <>
+            <div className="h-full overflow-hidden" style={{ width: `${(1 - splitRatio) * 100}%` }}>
+              <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} />
+            </div>
+            <Divider direction="vertical" dragging={draggingSplit} onPointerDown={handleDividerPointerDown} onPointerMove={handleDividerPointerMove} onPointerUp={handleDividerPointerUp} />
+          </>
         )}
-        <div className={`${
-          showCommentary
-            ? commentaryPosition === "bottom" ? "w-full h-1/2" : "w-1/2"
-            : "w-full"
-        } h-full`}>
+        <div
+          className="overflow-hidden"
+          style={showCommentary ? (
+            commentaryPosition === "bottom"
+              ? { width: "100%", height: `${splitRatio * 100}%` }
+              : { width: `${splitRatio * 100}%`, height: "100%" }
+          ) : { width: "100%", height: "100%" }}
+        >
           <ChapterView
             translationId={activeTab.translationId}
             bookId={activeTab.bookId}
@@ -110,14 +143,20 @@ export function TabPanel() {
           />
         </div>
         {showCommentary && commentaryPosition === "right" && (
-          <div className="w-1/2 h-full border-l border-gray-200 dark:border-gray-700">
-            <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} />
-          </div>
+          <>
+            <Divider direction="vertical" dragging={draggingSplit} onPointerDown={handleDividerPointerDown} onPointerMove={handleDividerPointerMove} onPointerUp={handleDividerPointerUp} />
+            <div className="h-full overflow-hidden" style={{ width: `${(1 - splitRatio) * 100}%` }}>
+              <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} />
+            </div>
+          </>
         )}
         {showCommentary && commentaryPosition === "bottom" && (
-          <div className="w-full h-1/2 border-t border-gray-200 dark:border-gray-700">
-            <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} />
-          </div>
+          <>
+            <Divider direction="horizontal" dragging={draggingSplit} onPointerDown={handleDividerPointerDown} onPointerMove={handleDividerPointerMove} onPointerUp={handleDividerPointerUp} />
+            <div className="w-full overflow-hidden" style={{ height: `${(1 - splitRatio) * 100}%` }}>
+              <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} />
+            </div>
+          </>
         )}
       </div>
 
@@ -135,6 +174,38 @@ export function TabPanel() {
           onClose={() => setShowChapterPicker(false)}
         />
       )}
+    </div>
+  );
+}
+
+function Divider({
+  direction,
+  dragging,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+}: {
+  direction: "vertical" | "horizontal";
+  dragging: boolean;
+  onPointerDown: (e: React.PointerEvent) => void;
+  onPointerMove: (e: React.PointerEvent) => void;
+  onPointerUp: () => void;
+}) {
+  const isVertical = direction === "vertical";
+  return (
+    <div
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      className={`shrink-0 flex items-center justify-center group ${
+        isVertical ? "w-1.5 cursor-col-resize" : "h-1.5 cursor-row-resize"
+      } ${dragging ? "bg-blue-200 dark:bg-blue-800" : "bg-gray-200 dark:bg-gray-700 hover:bg-blue-200 dark:hover:bg-blue-800"} transition-colors`}
+    >
+      <div
+        className={`rounded-full bg-gray-400 dark:bg-gray-500 group-hover:bg-blue-500 ${
+          dragging ? "bg-blue-500" : ""
+        } ${isVertical ? "w-0.5 h-6" : "h-0.5 w-6"}`}
+      />
     </div>
   );
 }

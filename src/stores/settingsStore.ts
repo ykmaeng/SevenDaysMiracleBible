@@ -13,6 +13,7 @@ interface SettingsState {
   showParallelInline: boolean;
   parallelTranslations: string[];
   commentaryPosition: CommentaryPosition;
+  commentarySplitRatio: number;
 }
 
 interface SettingsActions {
@@ -23,6 +24,7 @@ interface SettingsActions {
   setShowVerseNumbers: (show: boolean) => void;
   setShowParallelInline: (show: boolean) => void;
   setCommentaryPosition: (pos: CommentaryPosition) => void;
+  setCommentarySplitRatio: (ratio: number) => void;
   toggleParallelTranslation: (id: string) => void;
   reorderParallelTranslation: (fromIndex: number, toIndex: number) => void;
 }
@@ -45,6 +47,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       showParallelInline: false,
       parallelTranslations: ["kjv"],
       commentaryPosition: "right" as CommentaryPosition,
+      commentarySplitRatio: 0.5,
 
       setLanguage: (lang) =>
         set((state) => {
@@ -80,6 +83,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setCommentaryPosition: (pos) =>
         set((state) => {
           state.commentaryPosition = pos;
+        }),
+
+      setCommentarySplitRatio: (ratio) =>
+        set((state) => {
+          state.commentarySplitRatio = Math.max(0.2, Math.min(0.8, ratio));
         }),
 
       toggleParallelTranslation: (id) =>
