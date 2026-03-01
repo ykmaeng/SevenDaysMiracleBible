@@ -35,6 +35,7 @@ export function LanguageSettings() {
     useSettingsStore();
   const [availableTranslations, setAvailableTranslations] = useState<Translation[]>([]);
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [dictOpen, setDictOpen] = useState(false);
   const [parallelOpen, setParallelOpen] = useState(false);
   const [downloadsOpen, setDownloadsOpen] = useState(false);
   const dragIdx = useRef<number | null>(null);
@@ -159,25 +160,47 @@ export function LanguageSettings() {
         </label>
       </section>
 
-      {/* Dictionary language */}
+      {/* Dictionary language (foldable) */}
       <section>
-        <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
-          {t("dictionary.settingsTitle")}
-        </h3>
-        <select
-          value={dictionaryLang}
-          onChange={(e) => setDictionaryLang(e.target.value)}
-          className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+        <button
+          onClick={() => setDictOpen(!dictOpen)}
+          className="flex items-center justify-between w-full mb-2"
         >
-          {DICT_LANGUAGES.map((lang) => (
-            <option key={lang.code} value={lang.code}>
-              {lang.name}
-            </option>
-          ))}
-        </select>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-          {t("dictionary.settingsDesc")}
-        </p>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase">
+            {t("dictionary.settingsTitle")}
+            <span className="ml-1.5 text-xs text-blue-500 normal-case font-normal">
+              ({DICT_LANGUAGES.find((l) => l.code === dictionaryLang)?.name ?? dictionaryLang})
+            </span>
+          </h3>
+          <svg
+            className={`w-4 h-4 text-gray-400 transition-transform ${dictOpen ? "rotate-180" : ""}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {dictOpen && (
+          <div>
+            <div className="grid grid-cols-2 gap-2">
+              {DICT_LANGUAGES.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => setDictionaryLang(lang.code)}
+                  className={`py-2 px-3 rounded-lg text-sm transition-colors ${
+                    dictionaryLang === lang.code
+                      ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-medium"
+                      : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  }`}
+                >
+                  {lang.name}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+              {t("dictionary.settingsDesc")}
+            </p>
+          </div>
+        )}
       </section>
 
       {/* Parallel translations (foldable) */}
