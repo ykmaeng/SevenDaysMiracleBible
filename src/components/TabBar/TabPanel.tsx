@@ -17,6 +17,7 @@ const TRANSLATION_LANG: Record<string, string> = {
   asv: "en",
   web: "en",
   bbe: "en",
+  ylt: "en",
   cuv: "zh",
   rv1909: "es",
   hebrew: "he",
