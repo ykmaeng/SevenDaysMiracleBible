@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore, type CommentaryPosition } from "../../stores/settingsStore";
 
@@ -23,6 +23,29 @@ export function ReaderSettingsDropdown({
   const setFontSize = useSettingsStore((s) => s.setFontSize);
   const commentaryPosition = useSettingsStore((s) => s.commentaryPosition);
   const setCommentaryPosition = useSettingsStore((s) => s.setCommentaryPosition);
+  const ttsVoiceName = useSettingsStore((s) => s.ttsVoiceName);
+  const setTtsVoiceName = useSettingsStore((s) => s.setTtsVoiceName);
+  const ttsSpeed = useSettingsStore((s) => s.ttsSpeed);
+  const setTtsSpeed = useSettingsStore((s) => s.setTtsSpeed);
+
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  useEffect(() => {
+    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
+    loadVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+    return () => window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
+  }, []);
+
+  const groupedVoices = useMemo(() => {
+    const map = new Map<string, SpeechSynthesisVoice[]>();
+    for (const v of voices) {
+      const lang = v.lang.split("-")[0];
+      if (!map.has(lang)) map.set(lang, []);
+      map.get(lang)!.push(v);
+    }
+    return map;
+  }, [voices]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -130,6 +153,52 @@ export function ReaderSettingsDropdown({
               >
                 A+
               </button>
+            </div>
+          </div>
+
+          {/* TTS section divider */}
+          <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+          <div className="px-3 py-1">
+            <span className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase">{t("tts.title")}</span>
+          </div>
+
+          {/* TTS Voice selector */}
+          <div className="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm text-gray-700 dark:text-gray-300">{t("tts.voice")}</span>
+            </div>
+            <select
+              value={ttsVoiceName}
+              onChange={(e) => setTtsVoiceName(e.target.value)}
+              className="w-full text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded px-2 py-1.5 border-none outline-none"
+            >
+              <option value="">System Default</option>
+              {[...groupedVoices.entries()].map(([lang, langVoices]) => (
+                <optgroup key={lang} label={lang.toUpperCase()}>
+                  {langVoices.map((v) => (
+                    <option key={v.name} value={v.name}>
+                      {v.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          {/* TTS Speed slider */}
+          <div className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <span className="text-sm text-gray-700 dark:text-gray-300">{t("tts.speed")}</span>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min="0.5"
+                max="2"
+                step="0.25"
+                value={ttsSpeed}
+                onChange={(e) => setTtsSpeed(parseFloat(e.target.value))}
+                className="w-20 h-1 accent-blue-500"
+              />
+              <span className="text-xs text-gray-500 dark:text-gray-400 w-8 text-right">{ttsSpeed}x</span>
             </div>
           </div>
         </div>

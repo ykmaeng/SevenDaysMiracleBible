@@ -14,6 +14,8 @@ interface SettingsState {
   parallelTranslations: string[];
   commentaryPosition: CommentaryPosition;
   commentarySplitRatio: number;
+  ttsVoiceName: string;
+  ttsSpeed: number;
 }
 
 interface SettingsActions {
@@ -27,6 +29,8 @@ interface SettingsActions {
   setCommentarySplitRatio: (ratio: number) => void;
   toggleParallelTranslation: (id: string) => void;
   reorderParallelTranslation: (fromIndex: number, toIndex: number) => void;
+  setTtsVoiceName: (name: string) => void;
+  setTtsSpeed: (speed: number) => void;
 }
 
 export const DEFAULT_TRANSLATION_BY_LANG: Record<string, string> = {
@@ -48,6 +52,8 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       parallelTranslations: ["kjv"],
       commentaryPosition: "right" as CommentaryPosition,
       commentarySplitRatio: 0.5,
+      ttsVoiceName: "",
+      ttsSpeed: 1.0,
 
       setLanguage: (lang) =>
         set((state) => {
@@ -104,6 +110,16 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
         set((state) => {
           const item = state.parallelTranslations.splice(fromIndex, 1)[0];
           state.parallelTranslations.splice(toIndex, 0, item);
+        }),
+
+      setTtsVoiceName: (name) =>
+        set((state) => {
+          state.ttsVoiceName = name;
+        }),
+
+      setTtsSpeed: (speed) =>
+        set((state) => {
+          state.ttsSpeed = Math.max(0.5, Math.min(2.0, speed));
         }),
     })),
     {

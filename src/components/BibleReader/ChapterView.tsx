@@ -12,6 +12,8 @@ interface ChapterViewProps {
   chapter: number;
   onScrollPositionChange?: (position: number) => void;
   initialScrollPosition?: number;
+  ttsVerseIndex?: number;
+  onVersesLoaded?: (verses: Verse[]) => void;
 }
 
 export function ChapterView({
@@ -20,6 +22,8 @@ export function ChapterView({
   chapter,
   onScrollPositionChange,
   initialScrollPosition,
+  ttsVerseIndex,
+  onVersesLoaded,
 }: ChapterViewProps) {
   const { t } = useTranslation();
   const [verses, setVerses] = useState<Verse[]>([]);
@@ -37,6 +41,9 @@ export function ChapterView({
     [parallelTranslations, translationId]
   );
 
+  const onVersesLoadedRef = useRef(onVersesLoaded);
+  onVersesLoadedRef.current = onVersesLoaded;
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -45,6 +52,7 @@ export function ChapterView({
       if (!cancelled) {
         setVerses(data);
         setLoading(false);
+        onVersesLoadedRef.current?.(data);
       }
     });
 
@@ -83,6 +91,12 @@ export function ChapterView({
       parentRef.current.scrollTop = initialScrollPosition;
     }
   }, [initialScrollPosition, verses]);
+
+  useEffect(() => {
+    if (ttsVerseIndex != null && ttsVerseIndex >= 0 && ttsVerseIndex < verses.length) {
+      virtualizer.scrollToIndex(ttsVerseIndex, { align: "center", behavior: "smooth" });
+    }
+  }, [ttsVerseIndex, verses.length, virtualizer]);
 
   useEffect(() => {
     const el = parentRef.current;
@@ -143,6 +157,7 @@ export function ChapterView({
               <VerseItem
                 verse={verse}
                 parallelVerses={pVerses}
+                isPlaying={ttsVerseIndex === virtualItem.index}
               />
             </div>
           );

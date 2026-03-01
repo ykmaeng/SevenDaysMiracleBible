@@ -67,6 +67,14 @@
     "confirmDelete": "\u00bfEst\u00e1 seguro de que desea eliminar esta traducci\u00f3n? Puede volver a descargarla m\u00e1s tarde.",
     "size": "{{size}} MB"
   },
+  "tts": {
+    "title": "Texto a voz",
+    "play": "Reproducir",
+    "pause": "Pausa",
+    "stop": "Detener",
+    "speed": "Velocidad",
+    "voice": "Voz"
+  },
   "search": {
     "placeholder": "Buscar en la Biblia...",
     "noResults": "No se encontraron resultados",

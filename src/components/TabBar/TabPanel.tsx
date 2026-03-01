@@ -1,12 +1,31 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useTabStore, type Tab } from "../../stores/tabStore";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { ChapterView } from "../BibleReader/ChapterView";
 import { ReaderSettingsDropdown } from "../BibleReader/ReaderSettingsDropdown";
+import { TTSControlBar } from "../BibleReader/TTSControlBar";
 import { BookPicker } from "../Navigation/BookPicker";
 import { ChapterPicker } from "../Navigation/ChapterPicker";
 import { CommentaryPanel } from "../Commentary/CommentaryPanel";
+import { useTTS } from "../../hooks/useTTS";
+import type { Verse } from "../../types/bible";
+
+const TRANSLATION_LANG: Record<string, string> = {
+  "ai-ko": "ko",
+  kjv: "en",
+  asv: "en",
+  web: "en",
+  ylt: "en",
+  cuv: "zh",
+  rv1909: "es",
+  hebrew: "he",
+  greek: "el",
+};
+
+function translationToLang(translationId: string): string {
+  return TRANSLATION_LANG[translationId] ?? "en";
+}
 
 export function TabPanel() {
   const { t } = useTranslation();
@@ -16,6 +35,12 @@ export function TabPanel() {
   const [showBookPicker, setShowBookPicker] = useState(false);
   const [showChapterPicker, setShowChapterPicker] = useState(false);
   const [showCommentary, setShowCommentary] = useState(false);
+  const tts = useTTS();
+  const versesRef = useRef<Verse[]>([]);
+  const ttsSpeed = useSettingsStore((s) => s.ttsSpeed);
+  const setTtsSpeed = useSettingsStore((s) => s.setTtsSpeed);
+  const ttsVoiceName = useSettingsStore((s) => s.ttsVoiceName);
+  const setTtsVoiceName = useSettingsStore((s) => s.setTtsVoiceName);
   const commentaryPosition = useSettingsStore((s) => s.commentaryPosition);
   const splitRatio = useSettingsStore((s) => s.commentarySplitRatio);
   const setSplitRatio = useSettingsStore((s) => s.setCommentarySplitRatio);
@@ -49,6 +74,31 @@ export function TabPanel() {
   const handleNextChapter = () => {
     navigateTo(activeTab.bookId, activeTab.chapter + 1);
   };
+
+  const handleTtsPlay = () => {
+    if (versesRef.current.length > 0) {
+      const lang = translationToLang(activeTab.translationId);
+      tts.play(versesRef.current, lang);
+    }
+  };
+
+  const handleVersesLoaded = useCallback((verses: Verse[]) => {
+    versesRef.current = verses;
+  }, []);
+
+  const handleVoiceChange = (name: string) => {
+    setTtsVoiceName(name);
+    // Restart current verse immediately with new voice
+    if (tts.isPlaying && versesRef.current.length > 0) {
+      const lang = translationToLang(activeTab.translationId);
+      tts.play(versesRef.current, lang, tts.currentVerseIndex);
+    }
+  };
+
+  // Stop TTS when chapter/book changes
+  useEffect(() => {
+    tts.stop();
+  }, [activeTab.bookId, activeTab.chapter, activeTab.translationId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDividerPointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
@@ -105,10 +155,31 @@ export function TabPanel() {
             </svg>
           </button>
         </div>
-        <ReaderSettingsDropdown
-          showCommentary={showCommentary}
-          onToggleCommentary={() => setShowCommentary(!showCommentary)}
-        />
+        <div className="flex items-center gap-1">
+          <button
+            onClick={tts.isPlaying ? tts.stop : handleTtsPlay}
+            className={`p-1.5 rounded ${
+              tts.isPlaying
+                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+            }`}
+            title={tts.isPlaying ? t("tts.stop") : t("tts.play")}
+          >
+            {tts.isPlaying ? (
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 6h12v12H6z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8H4a1 1 0 00-1 1v6a1 1 0 001 1h2.5l5 4V4l-5 4z" />
+              </svg>
+            )}
+          </button>
+          <ReaderSettingsDropdown
+            showCommentary={showCommentary}
+            onToggleCommentary={() => setShowCommentary(!showCommentary)}
+          />
+        </div>
       </div>
 
       {/* Main content */}
@@ -140,6 +211,8 @@ export function TabPanel() {
             chapter={activeTab.chapter}
             onScrollPositionChange={handleScrollChange}
             initialScrollPosition={activeTab.scrollPosition}
+            ttsVerseIndex={tts.isPlaying ? tts.currentVerseIndex : undefined}
+            onVersesLoaded={handleVersesLoaded}
           />
         </div>
         {showCommentary && commentaryPosition === "right" && (
@@ -159,6 +232,24 @@ export function TabPanel() {
           </>
         )}
       </div>
+
+      {/* TTS Control Bar */}
+      {tts.isPlaying && (
+        <TTSControlBar
+          isPaused={tts.isPaused}
+          currentVerseNumber={
+            versesRef.current[tts.currentVerseIndex]?.verse ?? tts.currentVerseIndex + 1
+          }
+          speed={ttsSpeed}
+          voiceName={ttsVoiceName}
+          lang={translationToLang(activeTab.translationId)}
+          onPause={tts.pause}
+          onResume={tts.resume}
+          onStop={tts.stop}
+          onSpeedChange={setTtsSpeed}
+          onVoiceChange={handleVoiceChange}
+        />
+      )}
 
       {/* Pickers */}
       {showBookPicker && (

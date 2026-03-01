@@ -67,6 +67,14 @@
     "confirmDelete": "确定要删除此译本吗？您可以稍后重新下载。",
     "size": "{{size}} MB"
   },
+  "tts": {
+    "title": "语音朗读",
+    "play": "播放",
+    "pause": "暂停",
+    "stop": "停止",
+    "speed": "速度",
+    "voice": "语音"
+  },
   "search": {
     "placeholder": "搜索圣经...",
     "noResults": "未找到结果",
