@@ -61,17 +61,23 @@ export function LanguageSettings() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setFontSize(fontSize - 1)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 shrink-0"
           >
             A-
           </button>
-          <span className="text-sm font-medium w-8 text-center">{fontSize}</span>
+          <span className="text-sm font-medium w-8 text-center shrink-0">{fontSize}</span>
           <button
             onClick={() => setFontSize(fontSize + 1)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 shrink-0"
           >
             A+
           </button>
+          <span
+            className="text-gray-400 dark:text-gray-500 truncate ml-1"
+            style={{ fontSize: `${fontSize}px` }}
+          >
+            {t("fontSizePreview")}
+          </span>
         </div>
       </section>
 

@@ -2,6 +2,7 @@
   "app": {
     "title": "Biblia"
   },
+  "fontSizePreview": "En el principio creó Dios los cielos y la tierra.",
   "nav": {
     "oldTestament": "Antiguo Testamento",
     "newTestament": "Nuevo Testamento",

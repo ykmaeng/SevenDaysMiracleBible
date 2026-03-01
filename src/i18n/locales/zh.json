@@ -2,6 +2,7 @@
   "app": {
     "title": "圣经"
   },
+  "fontSizePreview": "起初神创造天地。",
   "nav": {
     "oldTestament": "旧约",
     "newTestament": "新约",

@@ -2,6 +2,7 @@
   "app": {
     "title": "성경"
   },
+  "fontSizePreview": "태초에 하나님이 천지를 창조하시니라",
   "nav": {
     "oldTestament": "구약",
     "newTestament": "신약",
