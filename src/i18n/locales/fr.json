@@ -46,7 +46,10 @@
   "settings": {
     "title": "Param\u00e8tres",
     "language": "Langue",
+    "font": "Police",
     "fontSize": "Taille de police",
+    "fontFamily": "Type de police",
+    "fontDefault": "Par défaut",
     "theme": "Th\u00e8me",
     "themeLight": "Clair",
     "themeDark": "Sombre",

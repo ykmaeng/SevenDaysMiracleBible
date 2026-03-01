@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { getDownloadedTranslations } from "../../lib/bible";
+import { preloadFontsForLang } from "../../lib/googleFonts";
 import { DownloadManager } from "./DownloadManager";
 import type { Translation } from "../../types/bible";
 
@@ -17,6 +18,55 @@ const LANGUAGES = [
   { code: "pt", name: "Português" },
 ];
 
+interface FontOption {
+  id: string;
+  label: string;
+  googleFont?: string; // Google Fonts family name for dynamic loading
+}
+
+const FONT_OPTIONS: Record<string, FontOption[]> = {
+  ko: [
+    { id: "", label: "기본값" },
+    { id: "'Noto Sans KR', sans-serif", label: "본고딕", googleFont: "Noto Sans KR" },
+    { id: "'Noto Serif KR', serif", label: "본명조", googleFont: "Noto Serif KR" },
+    { id: "'Nanum Gothic', sans-serif", label: "나눔고딕", googleFont: "Nanum Gothic" },
+    { id: "'Nanum Myeongjo', serif", label: "나눔명조", googleFont: "Nanum Myeongjo" },
+    { id: "'Jua', sans-serif", label: "주아", googleFont: "Jua" },
+    { id: "'Gaegu', cursive", label: "개구", googleFont: "Gaegu" },
+    { id: "'Gamja Flower', cursive", label: "감자꽃", googleFont: "Gamja Flower" },
+  ],
+  en: [
+    { id: "", label: "Default" },
+    { id: "'Lora', serif", label: "Lora", googleFont: "Lora" },
+    { id: "'Merriweather', serif", label: "Merriweather", googleFont: "Merriweather" },
+    { id: "'Inter', sans-serif", label: "Inter", googleFont: "Inter" },
+    { id: "'Roboto', sans-serif", label: "Roboto", googleFont: "Roboto" },
+    { id: "'Playfair Display', serif", label: "Playfair", googleFont: "Playfair Display" },
+  ],
+  zh: [
+    { id: "", label: "默认" },
+    { id: "'Noto Sans SC', sans-serif", label: "思源黑体", googleFont: "Noto Sans SC" },
+    { id: "'Noto Serif SC', serif", label: "思源宋体", googleFont: "Noto Serif SC" },
+    { id: "'ZCOOL XiaoWei', serif", label: "站酷小薇", googleFont: "ZCOOL XiaoWei" },
+  ],
+  ja: [
+    { id: "", label: "デフォルト" },
+    { id: "'Noto Sans JP', sans-serif", label: "Noto Sans", googleFont: "Noto Sans JP" },
+    { id: "'Noto Serif JP', serif", label: "Noto Serif", googleFont: "Noto Serif JP" },
+    { id: "'Zen Maru Gothic', sans-serif", label: "丸ゴシック", googleFont: "Zen Maru Gothic" },
+  ],
+  _default: [
+    { id: "", label: "Default" },
+    { id: "'Noto Sans', sans-serif", label: "Noto Sans", googleFont: "Noto Sans" },
+    { id: "'Noto Serif', serif", label: "Noto Serif", googleFont: "Noto Serif" },
+    { id: "'Roboto', sans-serif", label: "Roboto", googleFont: "Roboto" },
+  ],
+};
+
+function getFontOptions(lang: string): FontOption[] {
+  return FONT_OPTIONS[lang] ?? FONT_OPTIONS._default;
+}
+
 const DICT_LANGUAGES = [
   { code: "ko", name: "한국어" },
   { code: "en", name: "English" },
@@ -31,10 +81,11 @@ const DICT_LANGUAGES = [
 
 export function LanguageSettings() {
   const { t, i18n } = useTranslation();
-  const { language, setLanguage, fontSize, setFontSize, theme, setTheme, showVerseNumbers, setShowVerseNumbers, parallelTranslations, toggleParallelTranslation, reorderParallelTranslation, dictionaryLang, setDictionaryLang } =
+  const { language, setLanguage, fontSize, setFontSize, fontFamily, setFontFamily, theme, setTheme, showVerseNumbers, setShowVerseNumbers, parallelTranslations, toggleParallelTranslation, reorderParallelTranslation, dictionaryLang, setDictionaryLang } =
     useSettingsStore();
   const [availableTranslations, setAvailableTranslations] = useState<Translation[]>([]);
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [fontOpen, setFontOpen] = useState(false);
   const [dictOpen, setDictOpen] = useState(false);
   const [parallelOpen, setParallelOpen] = useState(false);
   const [downloadsOpen, setDownloadsOpen] = useState(false);
@@ -46,9 +97,18 @@ export function LanguageSettings() {
     getDownloadedTranslations().then(setAvailableTranslations);
   }, []);
 
+  // Preload Google Fonts when font section opens
+  useEffect(() => {
+    if (fontOpen) {
+      preloadFontsForLang(getFontOptions(language));
+    }
+  }, [fontOpen, language]);
+
   const handleLanguageChange = (lang: string) => {
     setLanguage(lang);
     i18n.changeLanguage(lang);
+    // Reset font family when language changes (fonts differ per language)
+    setFontFamily("");
   };
 
   return (
@@ -91,32 +151,77 @@ export function LanguageSettings() {
         )}
       </section>
 
-      {/* Font size */}
+      {/* Font (foldable) */}
       <section>
-        <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
-          {t("settings.fontSize")}
-        </h3>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setFontSize(fontSize - 1)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 shrink-0"
+        <button
+          onClick={() => setFontOpen(!fontOpen)}
+          className="flex items-center justify-between w-full mb-2"
+        >
+          <h3 className="text-sm font-semibold text-gray-500 uppercase">
+            {t("settings.font")}
+            <span className="ml-1.5 text-xs text-blue-500 normal-case font-normal">
+              ({fontSize}px)
+            </span>
+          </h3>
+          <svg
+            className={`w-4 h-4 text-gray-400 transition-transform ${fontOpen ? "rotate-180" : ""}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
           >
-            A-
-          </button>
-          <span className="text-sm font-medium w-8 text-center shrink-0">{fontSize}</span>
-          <button
-            onClick={() => setFontSize(fontSize + 1)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 shrink-0"
-          >
-            A+
-          </button>
-          <span
-            className="text-gray-400 dark:text-gray-500 truncate ml-1"
-            style={{ fontSize: `${fontSize}px` }}
-          >
-            {t("fontSizePreview")}
-          </span>
-        </div>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {fontOpen && (
+          <div className="space-y-3">
+            {/* Font size */}
+            <div>
+              <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("settings.fontSize")}</label>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setFontSize(fontSize - 1)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 shrink-0"
+                >
+                  A-
+                </button>
+                <span className="text-sm font-medium w-8 text-center shrink-0">{fontSize}</span>
+                <button
+                  onClick={() => setFontSize(fontSize + 1)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 shrink-0"
+                >
+                  A+
+                </button>
+              </div>
+            </div>
+
+            {/* Font family */}
+            <div>
+              <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("settings.fontFamily")}</label>
+              <div className="grid grid-cols-2 gap-2">
+                {getFontOptions(language).map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setFontFamily(f.id)}
+                    className={`py-2 px-3 rounded-lg text-sm transition-colors ${
+                      fontFamily === f.id
+                        ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-medium"
+                        : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                    style={{ fontFamily: f.id || "inherit" }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Preview */}
+            <div
+              className="text-gray-600 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/30 border-l-2 border-blue-400 dark:border-blue-500 pl-3 pr-2 py-2 mt-1 rounded-r"
+              style={{ fontSize: `${fontSize}px`, fontFamily: fontFamily || "inherit", lineHeight: 1.8 }}
+            >
+              {t("fontSizePreview")}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Theme */}

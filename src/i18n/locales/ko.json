@@ -46,7 +46,10 @@
   "settings": {
     "title": "설정",
     "language": "언어",
+    "font": "글꼴",
     "fontSize": "글자 크기",
+    "fontFamily": "글씨체",
+    "fontDefault": "기본값",
     "theme": "테마",
     "themeLight": "밝게",
     "themeDark": "어둡게",

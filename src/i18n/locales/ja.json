@@ -46,7 +46,10 @@
   "settings": {
     "title": "設定",
     "language": "言語",
+    "font": "フォント",
     "fontSize": "文字サイズ",
+    "fontFamily": "書体",
+    "fontDefault": "デフォルト",
     "theme": "テーマ",
     "themeLight": "ライト",
     "themeDark": "ダーク",

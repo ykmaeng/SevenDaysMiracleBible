@@ -46,6 +46,7 @@ interface VerseItemProps {
 export function VerseItem({ verse, parallelVerses, isPlaying, onWordClick }: VerseItemProps) {
   const showVerseNumbers = useSettingsStore((s) => s.showVerseNumbers);
   const fontSize = useSettingsStore((s) => s.fontSize);
+  const fontFamily = useSettingsStore((s) => s.fontFamily);
 
   const handleWordClick = useCallback(
     (e: React.MouseEvent<HTMLSpanElement>, sourceLang: string) => {
@@ -99,7 +100,7 @@ export function VerseItem({ verse, parallelVerses, isPlaying, onWordClick }: Ver
           ? "bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-200 dark:ring-blue-700"
           : ""
       }`}
-      style={{ fontSize: `${fontSize}px`, lineHeight: 1.8 }}
+      style={{ fontSize: `${fontSize}px`, lineHeight: 1.8, fontFamily: fontFamily || undefined }}
     >
       <div className="flex">
         {showVerseNumbers && (

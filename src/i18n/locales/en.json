@@ -46,7 +46,10 @@
   "settings": {
     "title": "Settings",
     "language": "Language",
+    "font": "Font",
     "fontSize": "Font Size",
+    "fontFamily": "Font Family",
+    "fontDefault": "Default",
     "theme": "Theme",
     "themeLight": "Light",
     "themeDark": "Dark",

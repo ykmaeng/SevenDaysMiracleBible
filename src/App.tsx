@@ -4,6 +4,7 @@ import { TabBar } from "./components/TabBar/TabBar";
 import { TabPanel } from "./components/TabBar/TabPanel";
 import { LanguageSettings } from "./components/Settings/LanguageSettings";
 import { useSettingsStore } from "./stores/settingsStore";
+import { loadGoogleFont } from "./lib/googleFonts";
 
 type View = "reader" | "settings";
 
@@ -11,6 +12,16 @@ function App() {
   const { t } = useTranslation();
   const [view, setView] = useState<View>("reader");
   const theme = useSettingsStore((s) => s.theme);
+  const fontFamily = useSettingsStore((s) => s.fontFamily);
+
+  // Load selected Google Font on startup
+  useEffect(() => {
+    if (fontFamily) {
+      // Extract the font name from CSS value like "'Noto Sans KR', sans-serif"
+      const match = fontFamily.match(/^'([^']+)'/);
+      if (match) loadGoogleFont(match[1]);
+    }
+  }, [fontFamily]);
 
   useEffect(() => {
     const root = document.documentElement;

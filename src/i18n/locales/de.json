@@ -46,7 +46,10 @@
   "settings": {
     "title": "Einstellungen",
     "language": "Sprache",
+    "font": "Schrift",
     "fontSize": "Schriftgröße",
+    "fontFamily": "Schriftart",
+    "fontDefault": "Standard",
     "theme": "Design",
     "themeLight": "Hell",
     "themeDark": "Dunkel",

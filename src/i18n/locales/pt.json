@@ -46,7 +46,10 @@
   "settings": {
     "title": "Configurações",
     "language": "Idioma",
+    "font": "Fonte",
     "fontSize": "Tamanho da Fonte",
+    "fontFamily": "Tipo de Fonte",
+    "fontDefault": "Padrão",
     "theme": "Tema",
     "themeLight": "Claro",
     "themeDark": "Escuro",

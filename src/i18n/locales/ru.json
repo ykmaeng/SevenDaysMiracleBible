@@ -46,7 +46,10 @@
   "settings": {
     "title": "Настройки",
     "language": "Язык",
+    "font": "Шрифт",
     "fontSize": "Размер шрифта",
+    "fontFamily": "Гарнитура",
+    "fontDefault": "По умолчанию",
     "theme": "Тема",
     "themeLight": "Светлая",
     "themeDark": "Тёмная",

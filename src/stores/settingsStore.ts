@@ -7,6 +7,7 @@ export type CommentaryPosition = "right" | "bottom" | "left";
 interface SettingsState {
   language: string;
   fontSize: number;
+  fontFamily: string;
   theme: "light" | "dark" | "system";
   defaultTranslation: string;
   showVerseNumbers: boolean;
@@ -22,6 +23,7 @@ interface SettingsState {
 interface SettingsActions {
   setLanguage: (lang: string) => void;
   setFontSize: (size: number) => void;
+  setFontFamily: (family: string) => void;
   setTheme: (theme: "light" | "dark" | "system") => void;
   setDefaultTranslation: (id: string) => void;
   setShowVerseNumbers: (show: boolean) => void;
@@ -52,6 +54,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
     immer((set) => ({
       language: "ko",
       fontSize: 16,
+      fontFamily: "",
       theme: "system",
       defaultTranslation: "kjv",
       showVerseNumbers: true,
@@ -76,6 +79,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setFontSize: (size) =>
         set((state) => {
           state.fontSize = Math.max(12, Math.min(28, size));
+        }),
+
+      setFontFamily: (family) =>
+        set((state) => {
+          state.fontFamily = family;
         }),
 
       setTheme: (theme) =>

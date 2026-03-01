@@ -46,7 +46,10 @@
   "settings": {
     "title": "设置",
     "language": "语言",
+    "font": "字体",
     "fontSize": "字体大小",
+    "fontFamily": "字体样式",
+    "fontDefault": "默认",
     "theme": "主题",
     "themeLight": "浅色",
     "themeDark": "深色",
