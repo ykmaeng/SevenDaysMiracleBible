@@ -66,7 +66,9 @@
     "downloading": "T\u00e9l\u00e9chargement...",
     "importing": "Importation...",
     "delete": "Supprimer",
-    "retry": "R\u00e9essayer",
+    "confirmShort": "Confirmer",
+    "cancel": "Annuler",
+    "retry": "Réessayer",
     "confirmDelete": "\u00cates-vous s\u00fbr de vouloir supprimer cette traduction\u00a0? Vous pourrez la ret\u00e9l\u00e9charger plus tard.",
     "size": "{{size}} Mo"
   },

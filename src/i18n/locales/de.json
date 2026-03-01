@@ -66,6 +66,8 @@
     "downloading": "Wird heruntergeladen...",
     "importing": "Wird importiert...",
     "delete": "Löschen",
+    "confirmShort": "Bestätigen",
+    "cancel": "Abbrechen",
     "retry": "Erneut versuchen",
     "confirmDelete": "Möchten Sie diese Übersetzung wirklich löschen? Sie können sie später erneut herunterladen.",
     "size": "{{size}} MB"

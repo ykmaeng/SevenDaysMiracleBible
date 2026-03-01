@@ -66,6 +66,8 @@
     "downloading": "Baixando...",
     "importing": "Importando...",
     "delete": "Excluir",
+    "confirmShort": "Confirmar",
+    "cancel": "Cancelar",
     "retry": "Tentar Novamente",
     "confirmDelete": "Tem certeza de que deseja excluir esta tradução? Você pode baixá-la novamente depois.",
     "size": "{{size}} MB"

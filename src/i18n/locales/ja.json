@@ -66,6 +66,8 @@
     "downloading": "ダウンロード中...",
     "importing": "インポート中...",
     "delete": "削除",
+    "confirmShort": "確認",
+    "cancel": "キャンセル",
     "retry": "再試行",
     "confirmDelete": "この翻訳を削除しますか？後で再ダウンロードできます。",
     "size": "{{size}} MB"

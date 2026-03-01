@@ -66,6 +66,8 @@
     "downloading": "Downloading...",
     "importing": "Importing...",
     "delete": "Delete",
+    "confirmShort": "Confirm",
+    "cancel": "Cancel",
     "retry": "Retry",
     "confirmDelete": "Are you sure you want to delete this translation? You can re-download it later.",
     "size": "{{size}} MB"

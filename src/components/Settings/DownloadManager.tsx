@@ -11,6 +11,7 @@ export function DownloadManager() {
   const { t } = useTranslation();
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const [dictDownloaded, setDictDownloaded] = useState(false);
   const downloads = useDownloadStore((s) => s.downloads);
   const clearDownload = useDownloadStore((s) => s.clearDownload);
@@ -33,7 +34,11 @@ export function DownloadManager() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(t("download.confirmDelete"))) return;
+    if (confirmId !== id) {
+      setConfirmId(id);
+      return;
+    }
+    setConfirmId(null);
     setDeleting(id);
     try {
       await deleteTranslation(id);
@@ -83,13 +88,30 @@ export function DownloadManager() {
                 {t("download.downloaded")}
               </span>
               {!isCore && (
-                <button
-                  onClick={() => handleDelete(tr.id)}
-                  disabled={isDeletingThis}
-                  className="text-xs text-red-500 font-medium hover:text-red-700 disabled:opacity-50"
-                >
-                  {isDeletingThis ? "..." : t("download.delete")}
-                </button>
+                confirmId === tr.id ? (
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleDelete(tr.id)}
+                      className="text-xs text-red-600 font-medium hover:text-red-800"
+                    >
+                      {t("download.confirmShort")}
+                    </button>
+                    <button
+                      onClick={() => setConfirmId(null)}
+                      className="text-xs text-gray-400 font-medium hover:text-gray-600"
+                    >
+                      {t("download.cancel")}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleDelete(tr.id)}
+                    disabled={isDeletingThis}
+                    className="text-xs text-red-500 font-medium hover:text-red-700 disabled:opacity-50"
+                  >
+                    {isDeletingThis ? "..." : t("download.delete")}
+                  </button>
+                )
               )}
             </div>
           ) : isDownloading ? (
@@ -181,6 +203,7 @@ function DictionaryDownloadItem({
   t: (key: string) => string;
 }) {
   const [deletingDict, setDeletingDict] = useState(false);
+  const [confirmDict, setConfirmDict] = useState(false);
   const dl = downloads[DICTIONARY_DOWNLOAD_KEY];
   const isDownloading = dl && dl.status !== "done" && dl.status !== "error";
   const isError = dl?.status === "error";
@@ -195,7 +218,11 @@ function DictionaryDownloadItem({
   };
 
   const handleDelete = async () => {
-    if (!confirm(t("download.confirmDelete"))) return;
+    if (!confirmDict) {
+      setConfirmDict(true);
+      return;
+    }
+    setConfirmDict(false);
     setDeletingDict(true);
     try {
       await deleteDictionary();
@@ -229,13 +256,30 @@ function DictionaryDownloadItem({
             <span className="text-xs text-green-600 font-medium">
               {t("download.downloaded")}
             </span>
-            <button
-              onClick={handleDelete}
-              disabled={deletingDict}
-              className="text-xs text-red-500 font-medium hover:text-red-700 disabled:opacity-50"
-            >
-              {deletingDict ? "..." : t("download.delete")}
-            </button>
+            {confirmDict ? (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={handleDelete}
+                  className="text-xs text-red-600 font-medium hover:text-red-800"
+                >
+                  {t("download.confirmShort")}
+                </button>
+                <button
+                  onClick={() => setConfirmDict(false)}
+                  className="text-xs text-gray-400 font-medium hover:text-gray-600"
+                >
+                  {t("download.cancel")}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleDelete}
+                disabled={deletingDict}
+                className="text-xs text-red-500 font-medium hover:text-red-700 disabled:opacity-50"
+              >
+                {deletingDict ? "..." : t("download.delete")}
+              </button>
+            )}
           </div>
         ) : isDownloading ? (
           <div className="flex items-center gap-2">
