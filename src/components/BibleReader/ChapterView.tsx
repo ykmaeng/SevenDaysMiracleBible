@@ -156,7 +156,7 @@ export function ChapterView({
   }
 
   return (
-    <div ref={parentRef} className="h-full overflow-auto px-2 py-2 relative">
+    <div ref={parentRef} className="h-full overflow-auto pl-0 pr-1 py-2 relative">
       <div
         style={{
           height: `${virtualizer.getTotalSize()}px`,

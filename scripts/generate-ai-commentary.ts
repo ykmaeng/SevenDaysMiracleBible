@@ -47,26 +47,52 @@ function buildCommentaryPrompt(
   chapter: number,
   kjvText: string
 ): string {
-  return `You are a Bible commentary writer. Write a chapter commentary in ${languageName}.
+  return `You are a seasoned Bible scholar and pastor writing an in-depth chapter commentary (성경강해). Write in ${languageName}.
 
 CHAPTER: ${bookName} Chapter ${chapter}
 
 TEXT (KJV):
 ${kjvText}
 
-Write a concise but insightful commentary covering:
+Write a comprehensive, scholarly yet accessible commentary covering ALL of the following sections:
 
-1. **Background/Context** - Historical and literary context of this chapter
-2. **Key Message** - The central theme or message
-3. **Notable Verses** - Explanation of important or difficult verses
-4. **Application** - Practical applications for modern readers
+## 배경과 문맥 (Background & Context)
+- This chapter's position within the book and the broader biblical narrative
+- Historical setting: time period, author, audience, circumstances of writing
+- Literary genre and structure of this chapter (narrative, poetry, prophecy, epistle, etc.)
+- Connection to preceding and following chapters
+
+## 본문 해설 (Verse-by-Verse Exposition)
+- Walk through the chapter's key passages in order
+- Explain difficult or significant words/phrases with reference to original Hebrew/Greek meaning where relevant
+- Highlight literary devices, parallelism, chiasm, or rhetorical structures
+- Note textual or translation issues where they significantly affect meaning
+
+## 핵심 신학 주제 (Key Theological Themes)
+- Central theological message(s) of this chapter
+- How this chapter contributes to major biblical doctrines (God's character, salvation, covenant, kingdom, etc.)
+- Typology and foreshadowing — connections to Christ and the gospel (for OT passages)
+- How this passage fits into redemptive history (creation → fall → redemption → restoration)
+
+## 교차 참조 (Cross-References)
+- 3-5 most important cross-references with brief explanation of how they connect
+- Show how Scripture interprets Scripture on the themes found here
+
+## 적용 (Application)
+- What did this passage mean to the original audience?
+- What timeless principles emerge for believers today?
+- Specific, practical challenges or encouragements for modern life
+- Questions for personal reflection or group discussion (2-3 questions)
 
 RULES:
 - Write entirely in ${languageName}
-- Keep it concise (400-600 words)
-- Use markdown formatting
-- Be theologically balanced and accessible
-- Do not include the original Bible text in the commentary`;
+- Length: 1,500-2,000 words (심도있는 강해)
+- Use markdown formatting with ## headers for each section
+- Be theologically orthodox and balanced (evangelical perspective)
+- Avoid denominational bias
+- Do not reproduce the full Bible text — reference verses by number
+- Use respectful, pastoral tone — this is for spiritual edification, not academic papers
+- Where relevant, include insights from church history or notable commentators`;
 }
 
 async function generateCommentary(
@@ -91,7 +117,7 @@ async function generateCommentary(
     },
     body: JSON.stringify({
       model: "claude-sonnet-4-5-20250929",
-      max_tokens: 2048,
+      max_tokens: 4096,
       messages: [{ role: "user", content: prompt }],
     }),
   });

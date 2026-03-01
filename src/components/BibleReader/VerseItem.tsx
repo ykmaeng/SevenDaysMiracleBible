@@ -104,7 +104,7 @@ export function VerseItem({ verse, parallelVerses, isPlaying, onWordClick }: Ver
     >
       <div className="flex">
         {showVerseNumbers && (
-          <span className="text-gray-400 dark:text-gray-500 font-medium mr-2 shrink-0 select-none" style={{ fontSize: '0.8em', minWidth: '1.5em', textAlign: 'right' }}>{verse.verse}</span>
+          <span className="text-gray-400 dark:text-gray-500 font-medium mr-2 shrink-0 select-none" style={{ fontSize: '0.8em', minWidth: '1.5em', textAlign: 'right', paddingTop: '2px' }}>{verse.verse}</span>
         )}
         <span className="flex-1">{verse.text}</span>
       </div>

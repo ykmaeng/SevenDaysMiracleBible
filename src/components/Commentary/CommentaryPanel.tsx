@@ -1,8 +1,36 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
 import { useTranslation } from "react-i18next";
+import Markdown, { type Components } from "react-markdown";
 import { getChapterCommentary } from "../../lib/bible";
 import { useSettingsStore } from "../../stores/settingsStore";
 import type { Commentary } from "../../types/bible";
+
+const mdComponents: Components = {
+  h2: (props: ComponentPropsWithoutRef<"h2">) => (
+    <h2 className="text-[0.95em] font-bold text-blue-700 dark:text-blue-400 mt-5 mb-2 pb-1 border-b border-gray-200 dark:border-gray-700" {...props} />
+  ),
+  h3: (props: ComponentPropsWithoutRef<"h3">) => (
+    <h3 className="text-[0.9em] font-semibold text-gray-800 dark:text-gray-200 mt-3 mb-1.5" {...props} />
+  ),
+  p: (props: ComponentPropsWithoutRef<"p">) => (
+    <p className="mb-2.5 leading-[1.85]" {...props} />
+  ),
+  ul: (props: ComponentPropsWithoutRef<"ul">) => (
+    <ul className="mb-3 pl-4 space-y-1.5 list-disc" {...props} />
+  ),
+  ol: (props: ComponentPropsWithoutRef<"ol">) => (
+    <ol className="mb-3 pl-4 space-y-1.5 list-decimal" {...props} />
+  ),
+  li: (props: ComponentPropsWithoutRef<"li">) => (
+    <li className="leading-[1.75]" {...props} />
+  ),
+  strong: (props: ComponentPropsWithoutRef<"strong">) => (
+    <strong className="font-semibold text-gray-900 dark:text-gray-100" {...props} />
+  ),
+  hr: () => (
+    <hr className="my-4 border-gray-200 dark:border-gray-700" />
+  ),
+};
 
 interface CommentaryPanelProps {
   bookId: number;
@@ -52,14 +80,9 @@ export function CommentaryPanel({ bookId, chapter }: CommentaryPanelProps) {
 
   return (
     <div className="h-full overflow-auto px-4 py-3">
-      <div className="mb-3">
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-          {t("commentary.chapterCommentary")}
-        </h3>
-        <p className="text-xs text-gray-400 mt-0.5">{t("commentary.aiGenerated")}</p>
-      </div>
-      <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-        {commentary.content}
+      <p className="text-xs text-gray-400 mb-2">{t("commentary.aiGenerated")}</p>
+      <div className="text-sm text-gray-700 dark:text-gray-300">
+        <Markdown components={mdComponents}>{commentary.content}</Markdown>
       </div>
     </div>
   );
