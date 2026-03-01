@@ -3,6 +3,19 @@ import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useDictionary } from "../../hooks/useDictionary";
 
+function speakWord(word: string) {
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(word);
+  utterance.lang = "en";
+  // Try to find an English voice
+  const voices = window.speechSynthesis.getVoices();
+  const enVoice = voices.find((v) => v.lang.startsWith("en") && v.default)
+    ?? voices.find((v) => v.lang.startsWith("en"));
+  if (enVoice) utterance.voice = enVoice;
+  utterance.rate = 0.9;
+  window.speechSynthesis.speak(utterance);
+}
+
 interface DictionaryPopupProps {
   word: string;
   position: { x: number; y: number; bottom: number };
@@ -78,16 +91,27 @@ export function DictionaryPopup({ word, position, containerRect, onClose }: Dict
 
       {result && !loading && (
         <div className="max-h-60 overflow-y-auto">
-          {/* Header: word + phonetic */}
-          <div className="px-3 pt-3 pb-2 border-b border-gray-100 dark:border-gray-700">
-            <span className="font-semibold text-gray-900 dark:text-gray-100 text-base">
-              {result.word}
-            </span>
-            {result.phonetic && (
-              <span className="ml-2 text-sm text-gray-400 dark:text-gray-500">
-                {result.phonetic}
+          {/* Header: word + phonetic + speak button */}
+          <div className="flex items-center justify-between px-3 pt-3 pb-2 border-b border-gray-100 dark:border-gray-700">
+            <div>
+              <span className="font-semibold text-gray-900 dark:text-gray-100 text-base">
+                {result.word}
               </span>
-            )}
+              {result.phonetic && (
+                <span className="ml-2 text-sm text-gray-400 dark:text-gray-500">
+                  {result.phonetic}
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => speakWord(result.word)}
+              className="p-1 rounded-full text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/30 transition-colors shrink-0"
+              title="Pronounce"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M11 5L6 9H2v6h4l5 4V5z" />
+              </svg>
+            </button>
           </div>
 
           {/* Meanings */}
