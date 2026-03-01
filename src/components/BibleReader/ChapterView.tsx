@@ -1,9 +1,11 @@
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useTranslation } from "react-i18next";
 import { getChapter, getParallelChapter } from "../../lib/bible";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { VerseItem } from "./VerseItem";
+import { DictionaryPopup } from "./DictionaryPopup";
+import type { WordClickInfo } from "./VerseItem";
 import type { Verse } from "../../types/bible";
 
 interface ChapterViewProps {
@@ -32,6 +34,10 @@ export function ChapterView({
     Map<string, Map<number, { translationId: string; translationName: string; text: string }>>
   >(new Map());
   const parentRef = useRef<HTMLDivElement>(null);
+
+  // Dictionary popup state
+  const [dictWord, setDictWord] = useState<string | null>(null);
+  const [dictPosition, setDictPosition] = useState<{ x: number; y: number; bottom: number } | null>(null);
 
   const showParallelInline = useSettingsStore((s) => s.showParallelInline);
   const parallelTranslations = useSettingsStore((s) => s.parallelTranslations);
@@ -98,14 +104,38 @@ export function ChapterView({
     }
   }, [ttsVerseIndex, verses.length, virtualizer]);
 
+  // Scroll handler: track position + close popup
   useEffect(() => {
     const el = parentRef.current;
-    if (!el || !onScrollPositionChange) return;
+    if (!el) return;
 
-    const handler = () => onScrollPositionChange(el.scrollTop);
+    const handler = () => {
+      onScrollPositionChange?.(el.scrollTop);
+      // Close dictionary popup on scroll
+      if (dictWord) {
+        setDictWord(null);
+        setDictPosition(null);
+      }
+    };
     el.addEventListener("scroll", handler, { passive: true });
     return () => el.removeEventListener("scroll", handler);
-  }, [onScrollPositionChange]);
+  }, [onScrollPositionChange, dictWord]);
+
+  // Close popup when chapter changes
+  useEffect(() => {
+    setDictWord(null);
+    setDictPosition(null);
+  }, [bookId, chapter]);
+
+  const handleWordClick = useCallback((info: WordClickInfo) => {
+    setDictWord(info.word);
+    setDictPosition({ x: info.x, y: info.y, bottom: info.bottom });
+  }, []);
+
+  const closeDictPopup = useCallback(() => {
+    setDictWord(null);
+    setDictPosition(null);
+  }, []);
 
   if (loading) {
     return (
@@ -124,7 +154,7 @@ export function ChapterView({
   }
 
   return (
-    <div ref={parentRef} className="h-full overflow-auto px-2 py-2">
+    <div ref={parentRef} className="h-full overflow-auto px-2 py-2 relative">
       <div
         style={{
           height: `${virtualizer.getTotalSize()}px`,
@@ -158,11 +188,22 @@ export function ChapterView({
                 verse={verse}
                 parallelVerses={pVerses}
                 isPlaying={ttsVerseIndex === virtualItem.index}
+                onWordClick={handleWordClick}
               />
             </div>
           );
         })}
       </div>
+
+      {/* Dictionary Popup */}
+      {dictWord && dictPosition && parentRef.current && (
+        <DictionaryPopup
+          word={dictWord}
+          position={dictPosition}
+          containerRect={parentRef.current.getBoundingClientRect()}
+          onClose={closeDictPopup}
+        />
+      )}
     </div>
   );
 }

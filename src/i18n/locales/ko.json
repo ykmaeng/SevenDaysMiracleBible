@@ -80,6 +80,15 @@
     "noResults": "검색 결과가 없습니다",
     "results": "{{count}}개의 결과"
   },
+  "dictionary": {
+    "loading": "검색 중...",
+    "error": "사전 조회에 실패했습니다",
+    "noResult": "검색 결과가 없습니다",
+    "offline": "오프라인 사전",
+    "download": "영어 사전 (오프라인)",
+    "settingsTitle": "영어 사전",
+    "settingsDesc": "동시번역의 영어 단어 클릭 시 선택한 언어로 뜻을 표시합니다"
+  },
   "books": {
     "1": "창세기",
     "2": "출애굽기",

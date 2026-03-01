@@ -17,9 +17,21 @@ const LANGUAGES = [
   { code: "pt", name: "Português" },
 ];
 
+const DICT_LANGUAGES = [
+  { code: "ko", name: "한국어" },
+  { code: "zh", name: "中文" },
+  { code: "es", name: "Español" },
+  { code: "ja", name: "日本語" },
+  { code: "de", name: "Deutsch" },
+  { code: "fr", name: "Français" },
+  { code: "ru", name: "Русский" },
+  { code: "pt", name: "Português" },
+  { code: "en", name: "English (Off)" },
+];
+
 export function LanguageSettings() {
   const { t, i18n } = useTranslation();
-  const { language, setLanguage, fontSize, setFontSize, theme, setTheme, showVerseNumbers, setShowVerseNumbers, parallelTranslations, toggleParallelTranslation } =
+  const { language, setLanguage, fontSize, setFontSize, theme, setTheme, showVerseNumbers, setShowVerseNumbers, parallelTranslations, toggleParallelTranslation, dictionaryLang, setDictionaryLang } =
     useSettingsStore();
   const [availableTranslations, setAvailableTranslations] = useState<Translation[]>([]);
   const [parallelOpen, setParallelOpen] = useState(false);
@@ -125,6 +137,27 @@ export function LanguageSettings() {
             />
           </button>
         </label>
+      </section>
+
+      {/* Dictionary language */}
+      <section>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
+          {t("dictionary.settingsTitle")}
+        </h3>
+        <select
+          value={dictionaryLang}
+          onChange={(e) => setDictionaryLang(e.target.value)}
+          className="w-full text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {DICT_LANGUAGES.map((lang) => (
+            <option key={lang.code} value={lang.code}>
+              {lang.name}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+          {t("dictionary.settingsDesc")}
+        </p>
       </section>
 
       {/* Parallel translations (foldable) */}

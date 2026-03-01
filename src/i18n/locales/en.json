@@ -80,6 +80,15 @@
     "noResults": "No results found",
     "results": "{{count}} results"
   },
+  "dictionary": {
+    "loading": "Looking up...",
+    "error": "Dictionary lookup failed",
+    "noResult": "No definition found",
+    "offline": "Offline Dictionary",
+    "download": "English Dictionary (offline)",
+    "settingsTitle": "English Dictionary",
+    "settingsDesc": "Show definitions in the selected language when clicking English words in parallel view"
+  },
   "books": {
     "1": "Genesis",
     "2": "Exodus",

@@ -80,6 +80,15 @@
     "noResults": "検索結果がありません",
     "results": "{{count}}件の結果"
   },
+  "dictionary": {
+    "loading": "検索中...",
+    "error": "辞書の検索に失敗しました",
+    "noResult": "定義が見つかりません",
+    "offline": "オフライン辞書",
+    "download": "英語辞書（オフライン）",
+    "settingsTitle": "英語辞書",
+    "settingsDesc": "対訳表示で英語の単語をクリックすると、選択した言語で意味を表示します"
+  },
   "books": {
     "1": "創世記",
     "2": "出エジプト記",

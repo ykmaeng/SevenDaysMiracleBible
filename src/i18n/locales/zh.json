@@ -80,6 +80,15 @@
     "noResults": "未找到结果",
     "results": "{{count}}个结果"
   },
+  "dictionary": {
+    "loading": "查询中...",
+    "error": "词典查询失败",
+    "noResult": "未找到释义",
+    "offline": "离线词典",
+    "download": "英语词典（离线）",
+    "settingsTitle": "英语词典",
+    "settingsDesc": "点击对照翻译中的英语单词时，以所选语言显示释义"
+  },
   "books": {
     "1": "创世记",
     "2": "出埃及记",

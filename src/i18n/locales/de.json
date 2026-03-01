@@ -80,6 +80,15 @@
     "noResults": "Keine Ergebnisse gefunden",
     "results": "{{count}} Ergebnisse"
   },
+  "dictionary": {
+    "loading": "Suche...",
+    "error": "Wörterbuchabfrage fehlgeschlagen",
+    "noResult": "Keine Definition gefunden",
+    "offline": "Offline-Wörterbuch",
+    "download": "Englisches Wörterbuch (offline)",
+    "settingsTitle": "Englisches Wörterbuch",
+    "settingsDesc": "Zeigt Definitionen in der gewählten Sprache an, wenn Sie auf englische Wörter in der Parallelansicht klicken"
+  },
   "books": {
     "1": "1. Mose",
     "2": "2. Mose",

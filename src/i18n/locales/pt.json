@@ -80,6 +80,15 @@
     "noResults": "Nenhum resultado encontrado",
     "results": "{{count}} resultados"
   },
+  "dictionary": {
+    "loading": "Pesquisando...",
+    "error": "Falha na consulta do dicionário",
+    "noResult": "Nenhuma definição encontrada",
+    "offline": "Dicionário offline",
+    "download": "Dicionário inglês (offline)",
+    "settingsTitle": "Dicionário inglês",
+    "settingsDesc": "Exibe definições no idioma selecionado ao clicar em palavras em inglês na visualização paralela"
+  },
   "books": {
     "1": "Gênesis",
     "2": "Êxodo",

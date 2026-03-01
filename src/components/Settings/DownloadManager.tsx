@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getTranslations } from "../../lib/bible";
 import { downloadTranslation, deleteTranslation } from "../../lib/translationService";
+import { downloadDictionary, deleteDictionary, isDictionaryDownloaded, DICTIONARY_DOWNLOAD_KEY } from "../../lib/dictionaryService";
 import { CORE_TRANSLATIONS } from "../../lib/downloadConfig";
 import { useDownloadStore } from "../../stores/downloadStore";
 import type { Translation } from "../../types/bible";
@@ -10,13 +11,16 @@ export function DownloadManager() {
   const { t } = useTranslation();
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [dictDownloaded, setDictDownloaded] = useState(false);
   const downloads = useDownloadStore((s) => s.downloads);
   const clearDownload = useDownloadStore((s) => s.clearDownload);
 
   const refresh = () => getTranslations().then(setTranslations);
+  const refreshDict = () => isDictionaryDownloaded().then(setDictDownloaded);
 
   useEffect(() => {
     refresh();
+    refreshDict();
   }, []);
 
   const handleDownload = async (id: string) => {
@@ -143,6 +147,124 @@ export function DownloadManager() {
           <div>{available.map(renderItem)}</div>
         </section>
       )}
+
+      {/* Offline Dictionary */}
+      <section>
+        <div className="flex items-center gap-3 mb-2">
+          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+          <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">{t("dictionary.offline")}</span>
+          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+        </div>
+        <DictionaryDownloadItem
+          downloaded={dictDownloaded}
+          downloads={downloads}
+          clearDownload={clearDownload}
+          onRefresh={refreshDict}
+          t={t}
+        />
+      </section>
+    </div>
+  );
+}
+
+function DictionaryDownloadItem({
+  downloaded,
+  downloads,
+  clearDownload,
+  onRefresh,
+  t,
+}: {
+  downloaded: boolean;
+  downloads: Record<string, { progress: number; status: string; error?: string }>;
+  clearDownload: (id: string) => void;
+  onRefresh: () => void;
+  t: (key: string) => string;
+}) {
+  const [deletingDict, setDeletingDict] = useState(false);
+  const dl = downloads[DICTIONARY_DOWNLOAD_KEY];
+  const isDownloading = dl && dl.status !== "done" && dl.status !== "error";
+  const isError = dl?.status === "error";
+
+  const handleDownload = async () => {
+    try {
+      await downloadDictionary();
+      onRefresh();
+    } catch {
+      // error stored in downloadStore
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(t("download.confirmDelete"))) return;
+    setDeletingDict(true);
+    try {
+      await deleteDictionary();
+      onRefresh();
+    } catch {
+      // ignore
+    } finally {
+      setDeletingDict(false);
+    }
+  };
+
+  const handleRetry = () => {
+    clearDownload(DICTIONARY_DOWNLOAD_KEY);
+    handleDownload();
+  };
+
+  return (
+    <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0">
+      <div>
+        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+          {t("dictionary.download")}
+        </p>
+        <p className="text-xs text-gray-400">EN</p>
+        {isError && dl.error && (
+          <p className="text-xs text-red-500 mt-1">{dl.error}</p>
+        )}
+      </div>
+      <div>
+        {downloaded ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-green-600 font-medium">
+              {t("download.downloaded")}
+            </span>
+            <button
+              onClick={handleDelete}
+              disabled={deletingDict}
+              className="text-xs text-red-500 font-medium hover:text-red-700 disabled:opacity-50"
+            >
+              {deletingDict ? "..." : t("download.delete")}
+            </button>
+          </div>
+        ) : isDownloading ? (
+          <div className="flex items-center gap-2">
+            <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-600 rounded-full transition-all"
+                style={{ width: `${dl.progress}%` }}
+              />
+            </div>
+            <span className="text-xs text-blue-600">
+              {dl.status === "importing" ? t("download.importing") : `${dl.progress}%`}
+            </span>
+          </div>
+        ) : isError ? (
+          <button
+            onClick={handleRetry}
+            className="text-xs text-orange-600 font-medium hover:text-orange-800"
+          >
+            {t("download.retry")}
+          </button>
+        ) : (
+          <button
+            onClick={handleDownload}
+            className="text-xs text-blue-600 font-medium hover:text-blue-800"
+          >
+            {t("download.title")}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -16,6 +16,7 @@ interface SettingsState {
   commentarySplitRatio: number;
   ttsVoiceName: string;
   ttsSpeed: number;
+  dictionaryLang: string;
 }
 
 interface SettingsActions {
@@ -31,6 +32,7 @@ interface SettingsActions {
   reorderParallelTranslation: (fromIndex: number, toIndex: number) => void;
   setTtsVoiceName: (name: string) => void;
   setTtsSpeed: (speed: number) => void;
+  setDictionaryLang: (lang: string) => void;
 }
 
 export const DEFAULT_TRANSLATION_BY_LANG: Record<string, string> = {
@@ -59,9 +61,14 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       commentarySplitRatio: 0.5,
       ttsVoiceName: "",
       ttsSpeed: 1.0,
+      dictionaryLang: "ko",
 
       setLanguage: (lang) =>
         set((state) => {
+          // Sync dictionary lang if it was matching the old app language
+          if (state.dictionaryLang === state.language) {
+            state.dictionaryLang = lang;
+          }
           state.language = lang;
           state.defaultTranslation = DEFAULT_TRANSLATION_BY_LANG[lang] ?? "kjv";
         }),
@@ -125,6 +132,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setTtsSpeed: (speed) =>
         set((state) => {
           state.ttsSpeed = Math.max(0.5, Math.min(2.0, speed));
+        }),
+
+      setDictionaryLang: (lang) =>
+        set((state) => {
+          state.dictionaryLang = lang;
         }),
     })),
     {

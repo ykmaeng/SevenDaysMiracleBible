@@ -78,7 +78,16 @@
   "search": {
     "placeholder": "Rechercher dans la Bible...",
     "noResults": "Aucun r\u00e9sultat trouv\u00e9",
-    "results": "{{count}} r\u00e9sultats"
+    "results": "{{count}} résultats"
+  },
+  "dictionary": {
+    "loading": "Recherche...",
+    "error": "Échec de la recherche dans le dictionnaire",
+    "noResult": "Aucune définition trouvée",
+    "offline": "Dictionnaire hors ligne",
+    "download": "Dictionnaire anglais (hors ligne)",
+    "settingsTitle": "Dictionnaire anglais",
+    "settingsDesc": "Affiche les définitions dans la langue choisie lorsque vous cliquez sur un mot anglais dans la vue parallèle"
   },
   "books": {
     "1": "Gen\u00e8se",
