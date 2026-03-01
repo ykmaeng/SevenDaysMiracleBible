@@ -124,18 +124,22 @@ export function DownloadManager() {
     <div className="space-y-6">
       {downloaded.length > 0 && (
         <section>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
-            {t("download.downloaded")}
-          </h3>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+            <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">{t("download.downloaded")}</span>
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+          </div>
           <div>{downloaded.map(renderItem)}</div>
         </section>
       )}
 
       {available.length > 0 && (
         <section>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
-            {t("download.available")}
-          </h3>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+            <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">{t("download.available")}</span>
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+          </div>
           <div>{available.map(renderItem)}</div>
         </section>
       )}
