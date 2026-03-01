@@ -80,6 +80,16 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           state.parallelTranslations.splice(toIndex, 0, item);
         }),
     })),
-    { name: "bible-settings" }
+    {
+      name: "bible-settings",
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          const expected = DEFAULT_TRANSLATION_BY_LANG[state.language] ?? "kjv";
+          if (state.defaultTranslation !== expected) {
+            state.setDefaultTranslation(expected);
+          }
+        }
+      },
+    }
   )
 );
