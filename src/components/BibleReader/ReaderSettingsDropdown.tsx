@@ -164,14 +164,12 @@ export function ReaderSettingsDropdown({
           </div>
 
           {/* TTS Voice selector */}
-          <div className="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm text-gray-700 dark:text-gray-300">{t("tts.voice")}</span>
-            </div>
+          <div className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <span className="text-sm text-gray-700 dark:text-gray-300 shrink-0">{t("tts.voice")}</span>
             <select
               value={ttsVoiceName}
               onChange={(e) => setTtsVoiceName(e.target.value)}
-              className="w-full text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded px-2 py-1.5 border-none outline-none"
+              className="ml-2 max-w-[140px] text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded px-2 py-1.5 border-none outline-none"
             >
               <option value="">System Default</option>
               {[...groupedVoices.entries()].map(([lang, langVoices]) => (
