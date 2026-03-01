@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { getDownloadedTranslations } from "../../lib/bible";
+import { DownloadManager } from "./DownloadManager";
 import type { Translation } from "../../types/bible";
 
 const LANGUAGES = [
@@ -16,6 +17,8 @@ export function LanguageSettings() {
   const { language, setLanguage, fontSize, setFontSize, theme, setTheme, showVerseNumbers, setShowVerseNumbers, parallelTranslations, toggleParallelTranslation } =
     useSettingsStore();
   const [availableTranslations, setAvailableTranslations] = useState<Translation[]>([]);
+  const [parallelOpen, setParallelOpen] = useState(false);
+  const [downloadsOpen, setDownloadsOpen] = useState(false);
 
   useEffect(() => {
     getDownloadedTranslations().then(setAvailableTranslations);
@@ -113,40 +116,77 @@ export function LanguageSettings() {
         </label>
       </section>
 
-      {/* Parallel translations */}
+      {/* Parallel translations (foldable) */}
       {availableTranslations.length > 0 && (
         <section>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
-            {t("settings.parallelTranslations")}
-          </h3>
-          <div className="space-y-1">
-            {availableTranslations.map((tr) => {
-              const isSelected = parallelTranslations.includes(tr.id);
-              return (
-                <button
-                  key={tr.id}
-                  onClick={() => toggleParallelTranslation(tr.id)}
-                  className={`flex items-center justify-between w-full py-2 px-3 rounded-lg text-sm transition-colors ${
-                    isSelected
-                      ? "bg-blue-50 text-blue-700"
-                      : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  <div className="text-left">
-                    <span className="font-medium">{tr.name}</span>
-                    <span className="ml-2 text-xs opacity-60">{tr.language.toUpperCase()}</span>
-                  </div>
-                  {isSelected && (
-                    <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+          <button
+            onClick={() => setParallelOpen(!parallelOpen)}
+            className="flex items-center justify-between w-full mb-2"
+          >
+            <h3 className="text-sm font-semibold text-gray-500 uppercase">
+              {t("settings.parallelTranslations")}
+              {parallelTranslations.length > 0 && (
+                <span className="ml-1.5 text-xs text-blue-500 normal-case font-normal">
+                  ({parallelTranslations.length})
+                </span>
+              )}
+            </h3>
+            <svg
+              className={`w-4 h-4 text-gray-400 transition-transform ${parallelOpen ? "rotate-180" : ""}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {parallelOpen && (
+            <div className="space-y-1">
+              {availableTranslations.map((tr) => {
+                const isSelected = parallelTranslations.includes(tr.id);
+                return (
+                  <button
+                    key={tr.id}
+                    onClick={() => toggleParallelTranslation(tr.id)}
+                    className={`flex items-center justify-between w-full py-2 px-3 rounded-lg text-sm transition-colors ${
+                      isSelected
+                        ? "bg-blue-50 text-blue-700"
+                        : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <div className="text-left">
+                      <span className="font-medium">{tr.name}</span>
+                      <span className="ml-2 text-xs opacity-60">{tr.language.toUpperCase()}</span>
+                    </div>
+                    {isSelected && (
+                      <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
+
+      {/* Download manager (foldable) */}
+      <section>
+        <button
+          onClick={() => setDownloadsOpen(!downloadsOpen)}
+          className="flex items-center justify-between w-full mb-2"
+        >
+          <h3 className="text-sm font-semibold text-gray-500 uppercase">
+            {t("settings.downloads")}
+          </h3>
+          <svg
+            className={`w-4 h-4 text-gray-400 transition-transform ${downloadsOpen ? "rotate-180" : ""}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {downloadsOpen && <DownloadManager />}
+      </section>
     </div>
   );
 }
