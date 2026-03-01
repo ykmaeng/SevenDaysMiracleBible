@@ -19,7 +19,9 @@
     "parallel": "교차 번역",
     "original": "원문",
     "aiTranslation": "AI 번역",
-    "noContent": "콘텐츠가 없습니다"
+    "noContent": "콘텐츠가 없습니다",
+    "parallelView": "동시번역보기",
+    "readerSettings": "보기 설정"
   },
   "commentary": {
     "title": "AI 강해",
@@ -44,7 +46,8 @@
     "themeSystem": "시스템",
     "downloads": "다운로드 관리",
     "showVerseNumbers": "절 번호 표시",
-    "defaultTranslation": "기본 번역본"
+    "defaultTranslation": "기본 번역본",
+    "parallelTranslations": "동시번역 번역본"
   },
   "download": {
     "title": "다운로드",

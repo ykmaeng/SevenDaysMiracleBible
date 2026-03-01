@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useTabStore, type Tab } from "../../stores/tabStore";
 import { ChapterView } from "../BibleReader/ChapterView";
-import { ParallelView } from "../BibleReader/ParallelView";
+import { ReaderSettingsDropdown } from "../BibleReader/ReaderSettingsDropdown";
 import { BookPicker } from "../Navigation/BookPicker";
 import { ChapterPicker } from "../Navigation/ChapterPicker";
 import { CommentaryPanel } from "../Commentary/CommentaryPanel";
@@ -12,7 +12,6 @@ export function TabPanel() {
   const { tabs, activeTabId, updateTab, navigateTo } = useTabStore();
   const activeTab = tabs.find((tab) => tab.id === activeTabId) as Tab;
 
-  const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
   const [showBookPicker, setShowBookPicker] = useState(false);
   const [showChapterPicker, setShowChapterPicker] = useState(false);
   const [showCommentary, setShowCommentary] = useState(false);
@@ -33,19 +32,16 @@ export function TabPanel() {
   const handleChapterSelect = (chapter: number) => {
     setShowChapterPicker(false);
     navigateTo(activeTab.bookId, chapter);
-    setSelectedVerse(null);
   };
 
   const handlePrevChapter = () => {
     if (activeTab.chapter > 1) {
       navigateTo(activeTab.bookId, activeTab.chapter - 1);
-      setSelectedVerse(null);
     }
   };
 
   const handleNextChapter = () => {
     navigateTo(activeTab.bookId, activeTab.chapter + 1);
-    setSelectedVerse(null);
   };
 
   return (
@@ -83,16 +79,10 @@ export function TabPanel() {
             </svg>
           </button>
         </div>
-        <button
-          onClick={() => setShowCommentary(!showCommentary)}
-          className={`text-xs px-2 py-1 rounded ${
-            showCommentary
-              ? "bg-blue-100 text-blue-700"
-              : "text-gray-500 hover:bg-gray-100"
-          }`}
-        >
-          {t("commentary.title")}
-        </button>
+        <ReaderSettingsDropdown
+          showCommentary={showCommentary}
+          onToggleCommentary={() => setShowCommentary(!showCommentary)}
+        />
       </div>
 
       {/* Main content */}
@@ -102,8 +92,6 @@ export function TabPanel() {
             translationId={activeTab.translationId}
             bookId={activeTab.bookId}
             chapter={activeTab.chapter}
-            selectedVerse={selectedVerse ?? undefined}
-            onSelectVerse={setSelectedVerse}
             onScrollPositionChange={handleScrollChange}
             initialScrollPosition={activeTab.scrollPosition}
           />
@@ -117,17 +105,6 @@ export function TabPanel() {
           </div>
         )}
       </div>
-
-      {/* Parallel view bottom sheet */}
-      {selectedVerse !== null && (
-        <ParallelView
-          bookId={activeTab.bookId}
-          chapter={activeTab.chapter}
-          verse={selectedVerse}
-          currentTranslationId={activeTab.translationId}
-          onClose={() => setSelectedVerse(null)}
-        />
-      )}
 
       {/* Pickers */}
       {showBookPicker && (

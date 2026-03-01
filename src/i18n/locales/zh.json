@@ -19,7 +19,9 @@
     "parallel": "对照翻译",
     "original": "原文",
     "aiTranslation": "AI翻译",
-    "noContent": "暂无内容"
+    "noContent": "暂无内容",
+    "parallelView": "对照翻译视图",
+    "readerSettings": "阅读设置"
   },
   "commentary": {
     "title": "AI释经",
@@ -44,7 +46,8 @@
     "themeSystem": "跟随系统",
     "downloads": "下载管理",
     "showVerseNumbers": "显示节号",
-    "defaultTranslation": "默认译本"
+    "defaultTranslation": "默认译本",
+    "parallelTranslations": "对照翻译译本"
   },
   "download": {
     "title": "下载",

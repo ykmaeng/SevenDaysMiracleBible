@@ -8,6 +8,7 @@ interface SettingsState {
   theme: "light" | "dark" | "system";
   defaultTranslation: string;
   showVerseNumbers: boolean;
+  showParallelInline: boolean;
   parallelTranslations: string[];
 }
 
@@ -17,6 +18,7 @@ interface SettingsActions {
   setTheme: (theme: "light" | "dark" | "system") => void;
   setDefaultTranslation: (id: string) => void;
   setShowVerseNumbers: (show: boolean) => void;
+  setShowParallelInline: (show: boolean) => void;
   toggleParallelTranslation: (id: string) => void;
   reorderParallelTranslation: (fromIndex: number, toIndex: number) => void;
 }
@@ -36,6 +38,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       theme: "system",
       defaultTranslation: "kjv",
       showVerseNumbers: true,
+      showParallelInline: false,
       parallelTranslations: ["kjv"],
 
       setLanguage: (lang) =>
@@ -62,6 +65,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setShowVerseNumbers: (show) =>
         set((state) => {
           state.showVerseNumbers = show;
+        }),
+
+      setShowParallelInline: (show) =>
+        set((state) => {
+          state.showParallelInline = show;
         }),
 
       toggleParallelTranslation: (id) =>

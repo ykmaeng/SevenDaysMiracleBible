@@ -19,7 +19,9 @@
     "parallel": "Parallel Translation",
     "original": "Original Text",
     "aiTranslation": "AI Translation",
-    "noContent": "No content available"
+    "noContent": "No content available",
+    "parallelView": "Parallel View",
+    "readerSettings": "Reader Settings"
   },
   "commentary": {
     "title": "AI Commentary",
@@ -44,7 +46,8 @@
     "themeSystem": "System",
     "downloads": "Download Manager",
     "showVerseNumbers": "Show Verse Numbers",
-    "defaultTranslation": "Default Translation"
+    "defaultTranslation": "Default Translation",
+    "parallelTranslations": "Parallel Translations"
   },
   "download": {
     "title": "Downloads",

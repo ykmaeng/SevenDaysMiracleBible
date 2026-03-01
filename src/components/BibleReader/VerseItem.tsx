@@ -3,26 +3,34 @@ import type { Verse } from "../../types/bible";
 
 interface VerseItemProps {
   verse: Verse;
-  isSelected: boolean;
-  onSelect: (verse: number) => void;
+  parallelVerses?: { translationId: string; translationName: string; text: string }[];
 }
 
-export function VerseItem({ verse, isSelected, onSelect }: VerseItemProps) {
+export function VerseItem({ verse, parallelVerses }: VerseItemProps) {
   const showVerseNumbers = useSettingsStore((s) => s.showVerseNumbers);
   const fontSize = useSettingsStore((s) => s.fontSize);
 
   return (
     <div
-      className={`flex cursor-pointer transition-colors rounded px-0.5 ${
-        isSelected ? "bg-amber-100" : "hover:bg-gray-50"
-      }`}
+      className="rounded px-0.5 py-0.5"
       style={{ fontSize: `${fontSize}px`, lineHeight: 1.8 }}
-      onClick={() => onSelect(verse.verse)}
     >
-      {showVerseNumbers && (
-        <span className="text-gray-400 font-medium mr-2 shrink-0 select-none" style={{ fontSize: '0.8em', minWidth: '1.5em', textAlign: 'right' }}>{verse.verse}</span>
+      <div className="flex">
+        {showVerseNumbers && (
+          <span className="text-gray-400 font-medium mr-2 shrink-0 select-none" style={{ fontSize: '0.8em', minWidth: '1.5em', textAlign: 'right' }}>{verse.verse}</span>
+        )}
+        <span className="flex-1">{verse.text}</span>
+      </div>
+      {parallelVerses && parallelVerses.length > 0 && (
+        <div className="ml-6 mt-0.5 space-y-0.5">
+          {parallelVerses.map((pv) => (
+            <div key={pv.translationId} className="flex items-baseline gap-1.5" style={{ fontSize: `${Math.max(12, fontSize - 2)}px`, lineHeight: 1.6 }}>
+              <span className="text-blue-500 font-medium shrink-0 text-[0.7em] uppercase">{pv.translationId}</span>
+              <span className="text-gray-500">{pv.text}</span>
+            </div>
+          ))}
+        </div>
       )}
-      <span className="flex-1">{verse.text}</span>
     </div>
   );
 }

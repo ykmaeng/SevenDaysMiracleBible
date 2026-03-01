@@ -1,7 +1,8 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useTranslation } from "react-i18next";
-import { getChapter } from "../../lib/bible";
+import { getChapter, getParallelChapter } from "../../lib/bible";
+import { useSettingsStore } from "../../stores/settingsStore";
 import { VerseItem } from "./VerseItem";
 import type { Verse } from "../../types/bible";
 
@@ -9,8 +10,6 @@ interface ChapterViewProps {
   translationId: string;
   bookId: number;
   chapter: number;
-  selectedVerse?: number;
-  onSelectVerse: (verse: number) => void;
   onScrollPositionChange?: (position: number) => void;
   initialScrollPosition?: number;
 }
@@ -19,15 +18,24 @@ export function ChapterView({
   translationId,
   bookId,
   chapter,
-  selectedVerse,
-  onSelectVerse,
   onScrollPositionChange,
   initialScrollPosition,
 }: ChapterViewProps) {
   const { t } = useTranslation();
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [parallelData, setParallelData] = useState<
+    Map<string, Map<number, { translationId: string; translationName: string; text: string }>>
+  >(new Map());
   const parentRef = useRef<HTMLDivElement>(null);
+
+  const showParallelInline = useSettingsStore((s) => s.showParallelInline);
+  const parallelTranslations = useSettingsStore((s) => s.parallelTranslations);
+
+  const activeParallelIds = useMemo(
+    () => parallelTranslations.filter((id) => id !== translationId),
+    [parallelTranslations, translationId]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -45,10 +53,28 @@ export function ChapterView({
     };
   }, [translationId, bookId, chapter]);
 
+  useEffect(() => {
+    if (!showParallelInline || activeParallelIds.length === 0) {
+      setParallelData(new Map());
+      return;
+    }
+
+    let cancelled = false;
+    getParallelChapter(activeParallelIds, bookId, chapter).then((data) => {
+      if (!cancelled) {
+        setParallelData(data);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showParallelInline, activeParallelIds, bookId, chapter]);
+
   const virtualizer = useVirtualizer({
     count: verses.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 48,
+    estimateSize: () => (showParallelInline && activeParallelIds.length > 0 ? 80 : 48),
     overscan: 10,
   });
 
@@ -94,6 +120,13 @@ export function ChapterView({
       >
         {virtualizer.getVirtualItems().map((virtualItem) => {
           const verse = verses[virtualItem.index];
+          const pVerses =
+            showParallelInline && activeParallelIds.length > 0
+              ? activeParallelIds
+                  .map((tid) => parallelData.get(tid)?.get(verse.verse))
+                  .filter(Boolean) as { translationId: string; translationName: string; text: string }[]
+              : undefined;
+
           return (
             <div
               key={virtualItem.key}
@@ -109,8 +142,7 @@ export function ChapterView({
             >
               <VerseItem
                 verse={verse}
-                isSelected={selectedVerse === verse.verse}
-                onSelect={onSelectVerse}
+                parallelVerses={pVerses}
               />
             </div>
           );

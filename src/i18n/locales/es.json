@@ -19,7 +19,9 @@
     "parallel": "Traducción paralela",
     "original": "Texto original",
     "aiTranslation": "Traducción IA",
-    "noContent": "Sin contenido disponible"
+    "noContent": "Sin contenido disponible",
+    "parallelView": "Vista paralela",
+    "readerSettings": "Ajustes de lectura"
   },
   "commentary": {
     "title": "Comentario IA",
@@ -44,7 +46,8 @@
     "themeSystem": "Sistema",
     "downloads": "Administrar descargas",
     "showVerseNumbers": "Mostrar números de versículos",
-    "defaultTranslation": "Traducción predeterminada"
+    "defaultTranslation": "Traducción predeterminada",
+    "parallelTranslations": "Traducciones paralelas"
   },
   "download": {
     "title": "Descargas",

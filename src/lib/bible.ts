@@ -126,6 +126,31 @@ export async function getCrossReferences(
   );
 }
 
+export async function getParallelChapter(
+  translationIds: string[],
+  bookId: number,
+  chapter: number
+): Promise<Map<string, Map<number, { translationId: string; translationName: string; text: string }>>> {
+  const result = new Map<string, Map<number, { translationId: string; translationName: string; text: string }>>();
+
+  await Promise.all(
+    translationIds.map(async (tid) => {
+      const [verses, meta] = await Promise.all([
+        getChapter(tid, bookId, chapter),
+        query<Translation>("SELECT name FROM translations WHERE id = $1", [tid]),
+      ]);
+      const name = meta[0]?.name ?? tid;
+      const verseMap = new Map<number, { translationId: string; translationName: string; text: string }>();
+      for (const v of verses) {
+        verseMap.set(v.verse, { translationId: tid, translationName: name, text: v.text });
+      }
+      result.set(tid, verseMap);
+    })
+  );
+
+  return result;
+}
+
 export async function searchVerses(
   translationId: string,
   searchText: string,
