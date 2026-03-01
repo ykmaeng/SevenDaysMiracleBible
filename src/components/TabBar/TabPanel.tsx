@@ -88,10 +88,11 @@ export function TabPanel() {
 
   const handleVoiceChange = (name: string) => {
     setTtsVoiceName(name);
-    // Restart current verse immediately with new voice
+    // Capture index before play() resets state, then restart current verse
+    const idx = tts.currentVerseIndex;
     if (tts.isPlaying && versesRef.current.length > 0) {
       const lang = translationToLang(activeTab.translationId);
-      tts.play(versesRef.current, lang, tts.currentVerseIndex);
+      tts.play(versesRef.current, lang, idx);
     }
   };
 

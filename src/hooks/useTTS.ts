@@ -111,6 +111,8 @@ export function useTTS(): TTSState & TTSActions {
   };
 
   const play = useCallback((verses: Verse[], lang = "", startIndex = 0) => {
+    // Stop existing chain before cancel to prevent onend from advancing
+    stoppedRef.current = true;
     window.speechSynthesis.cancel();
     versesRef.current = verses;
     langRef.current = lang;
