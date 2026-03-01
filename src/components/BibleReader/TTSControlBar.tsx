@@ -50,9 +50,14 @@ export function TTSControlBar({
   }, [voices, lang]);
 
   const currentVoice = voices.find((v) => v.name === voiceName);
+  const autoVoice = !voiceName && lang
+    ? voices.find((v) => v.lang.startsWith(lang + "-")) ?? voices.find((v) => v.lang === lang)
+    : null;
   const displayName = currentVoice
     ? currentVoice.name.replace(/\s*\(.*\)$/, "")
-    : "Auto";
+    : autoVoice
+      ? `Auto (${autoVoice.name.replace(/\s*\(.*\)$/, "")})`
+      : "Auto";
 
   const cycleSpeed = () => {
     const currentIdx = SPEED_STEPS.indexOf(speed);
@@ -102,7 +107,7 @@ export function TTSControlBar({
         {/* Voice picker toggle */}
         <button
           onClick={() => setShowVoicePicker(!showVoicePicker)}
-          className={`text-xs font-medium px-2 py-1 rounded-full max-w-[100px] truncate transition-colors ${
+          className={`text-xs font-medium px-2 py-1 rounded-full max-w-[160px] truncate transition-colors ${
             showVoicePicker
               ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
               : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
