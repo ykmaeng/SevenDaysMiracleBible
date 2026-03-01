@@ -161,6 +161,9 @@ export function LanguageSettings() {
                     <div className="text-left">
                       <span className="font-medium">{tr.name}</span>
                       <span className="ml-2 text-xs opacity-60">{tr.language.toUpperCase()}</span>
+                      {tr.description && (
+                        <p className="text-xs opacity-50 mt-0.5">{tr.description}</p>
+                      )}
                     </div>
                     {isSelected && (
                       <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
