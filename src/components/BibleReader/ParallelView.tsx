@@ -36,7 +36,7 @@ export function ParallelView({ bookId, chapter, verse, currentTranslationId, onC
     });
   }, [currentTranslationId, isOT]);
 
-  // Active translations = only those that are both selected AND available
+  // Active translations = only those that are both selected AND available, in stored order
   const availableIds = availableTranslations.map((tr) => tr.id);
   const activeIds = parallelTranslations.filter(
     (id) => id !== currentTranslationId && availableIds.includes(id)
@@ -49,6 +49,15 @@ export function ParallelView({ bookId, chapter, verse, currentTranslationId, onC
     }
     getParallelVerses(bookId, chapter, verse, activeIds).then(setData);
   }, [bookId, chapter, verse, activeIds.join(","), availableTranslations.length]);
+
+  // Sort translations to match parallelTranslations order
+  const sortedTranslations = data?.translations
+    ? [...data.translations].sort((a, b) => {
+        const ai = parallelTranslations.indexOf(a.translationId);
+        const bi = parallelTranslations.indexOf(b.translationId);
+        return ai - bi;
+      })
+    : [];
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50">
@@ -86,34 +95,10 @@ export function ParallelView({ bookId, chapter, verse, currentTranslationId, onC
           </div>
         )}
 
-        <div className="p-4 space-y-4">
-          {/* Original text */}
-          {data?.original && (
-            <div className="space-y-1">
-              {data.original.hebrew_text && (
-                <div>
-                  <span className="text-xs font-medium text-purple-600 uppercase">
-                    {t("reader.original")} (Hebrew)
-                  </span>
-                  <p className="text-lg leading-relaxed" dir="rtl">
-                    {data.original.hebrew_text}
-                  </p>
-                </div>
-              )}
-              {data.original.greek_text && (
-                <div>
-                  <span className="text-xs font-medium text-purple-600 uppercase">
-                    {t("reader.original")} (Greek)
-                  </span>
-                  <p className="text-lg leading-relaxed">{data.original.greek_text}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Translations */}
-          {data?.translations.map((tr) => (
-            <div key={tr.translationId} className="border-t border-gray-100 pt-3">
+        <div className="p-4 space-y-3">
+          {/* Translations in stored order */}
+          {sortedTranslations.map((tr) => (
+            <div key={tr.translationId}>
               <span className="text-xs font-medium text-blue-600 uppercase mb-1 block">
                 {tr.translationName}
               </span>

@@ -18,7 +18,15 @@ interface SettingsActions {
   setDefaultTranslation: (id: string) => void;
   setShowVerseNumbers: (show: boolean) => void;
   toggleParallelTranslation: (id: string) => void;
+  reorderParallelTranslation: (fromIndex: number, toIndex: number) => void;
 }
+
+export const DEFAULT_TRANSLATION_BY_LANG: Record<string, string> = {
+  ko: "ai-ko",
+  en: "kjv",
+  zh: "cuv",
+  es: "rv1909",
+};
 
 export const useSettingsStore = create<SettingsState & SettingsActions>()(
   persist(
@@ -33,6 +41,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setLanguage: (lang) =>
         set((state) => {
           state.language = lang;
+          state.defaultTranslation = DEFAULT_TRANSLATION_BY_LANG[lang] ?? "kjv";
         }),
 
       setFontSize: (size) =>
@@ -63,6 +72,12 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
           } else {
             state.parallelTranslations.push(id);
           }
+        }),
+
+      reorderParallelTranslation: (fromIndex, toIndex) =>
+        set((state) => {
+          const item = state.parallelTranslations.splice(fromIndex, 1)[0];
+          state.parallelTranslations.splice(toIndex, 0, item);
         }),
     })),
     { name: "bible-settings" }

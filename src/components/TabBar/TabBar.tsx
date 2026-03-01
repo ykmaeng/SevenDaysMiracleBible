@@ -32,8 +32,9 @@ export function TabBar() {
             }`}
             onClick={() => setActiveTab(tab.id)}
           >
-            <span className="truncate max-w-[120px]">
+            <span className="truncate max-w-[140px]">
               {t(`books.${tab.bookId}`)} {tab.chapter}
+              <span className="text-[10px] text-gray-400 ml-1 uppercase">{tab.translationId}</span>
             </span>
             {tabs.length > 1 && (
               <button

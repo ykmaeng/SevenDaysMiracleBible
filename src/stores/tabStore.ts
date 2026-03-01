@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+import { useSettingsStore } from "./settingsStore";
 
 const MAX_TABS = Infinity;
 
@@ -30,6 +31,10 @@ function createTabId(): string {
   return crypto.randomUUID();
 }
 
+function getDefaultTranslationId(): string {
+  return useSettingsStore.getState().defaultTranslation || "kjv";
+}
+
 const defaultTab: Tab = {
   id: "initial",
   translationId: "kjv",
@@ -50,7 +55,7 @@ export const useTabStore = create<TabState & TabActions>()(
 
         const newTab: Tab = {
           id: createTabId(),
-          translationId: partial?.translationId ?? "kjv",
+          translationId: partial?.translationId ?? getDefaultTranslationId(),
           bookId: partial?.bookId ?? 1,
           chapter: partial?.chapter ?? 1,
           verse: partial?.verse,
