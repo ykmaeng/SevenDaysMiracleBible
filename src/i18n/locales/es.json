@@ -30,7 +30,11 @@
     "chapterCommentary": "Comentario del capítulo",
     "verseCommentary": "Comentario del versículo",
     "aiGenerated": "Este comentario es contenido generado por IA",
-    "noCommentary": "Aún no hay comentario disponible para este capítulo"
+    "noCommentary": "Aún no hay comentario disponible para este capítulo",
+    "position": "Posición del panel",
+    "left": "Izquierda",
+    "bottom": "Inferior",
+    "right": "Derecha"
   },
   "feedback": {
     "helpful": "Útil",

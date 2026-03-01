@@ -30,7 +30,11 @@
     "chapterCommentary": "장 강해",
     "verseCommentary": "절 강해",
     "aiGenerated": "이 강해는 AI가 생성한 콘텐츠입니다",
-    "noCommentary": "이 장에 대한 강해가 아직 없습니다"
+    "noCommentary": "이 장에 대한 강해가 아직 없습니다",
+    "position": "창 위치",
+    "left": "왼쪽",
+    "bottom": "하단",
+    "right": "오른쪽"
   },
   "feedback": {
     "helpful": "도움이 됨",

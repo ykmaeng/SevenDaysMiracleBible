@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 
+export type CommentaryPosition = "right" | "bottom" | "left";
+
 interface SettingsState {
   language: string;
   fontSize: number;
@@ -10,6 +12,7 @@ interface SettingsState {
   showVerseNumbers: boolean;
   showParallelInline: boolean;
   parallelTranslations: string[];
+  commentaryPosition: CommentaryPosition;
 }
 
 interface SettingsActions {
@@ -19,6 +22,7 @@ interface SettingsActions {
   setDefaultTranslation: (id: string) => void;
   setShowVerseNumbers: (show: boolean) => void;
   setShowParallelInline: (show: boolean) => void;
+  setCommentaryPosition: (pos: CommentaryPosition) => void;
   toggleParallelTranslation: (id: string) => void;
   reorderParallelTranslation: (fromIndex: number, toIndex: number) => void;
 }
@@ -40,6 +44,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       showVerseNumbers: true,
       showParallelInline: false,
       parallelTranslations: ["kjv"],
+      commentaryPosition: "right" as CommentaryPosition,
 
       setLanguage: (lang) =>
         set((state) => {
@@ -70,6 +75,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setShowParallelInline: (show) =>
         set((state) => {
           state.showParallelInline = show;
+        }),
+
+      setCommentaryPosition: (pos) =>
+        set((state) => {
+          state.commentaryPosition = pos;
         }),
 
       toggleParallelTranslation: (id) =>

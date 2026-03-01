@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useSettingsStore } from "../../stores/settingsStore";
+import { useSettingsStore, type CommentaryPosition } from "../../stores/settingsStore";
 
 interface ReaderSettingsDropdownProps {
   showCommentary: boolean;
@@ -21,6 +21,8 @@ export function ReaderSettingsDropdown({
   const setShowVerseNumbers = useSettingsStore((s) => s.setShowVerseNumbers);
   const fontSize = useSettingsStore((s) => s.fontSize);
   const setFontSize = useSettingsStore((s) => s.setFontSize);
+  const commentaryPosition = useSettingsStore((s) => s.commentaryPosition);
+  const setCommentaryPosition = useSettingsStore((s) => s.setCommentaryPosition);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -63,6 +65,46 @@ export function ReaderSettingsDropdown({
             checked={showCommentary}
             onChange={onToggleCommentary}
           />
+
+          {/* Commentary position selector (submenu, visible when commentary is on) */}
+          {showCommentary && (
+            <div className="flex items-center justify-between pl-7 pr-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700">
+              <span className="text-xs text-gray-500 dark:text-gray-400">{t("commentary.position")}</span>
+              <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-gray-700 rounded p-0.5">
+                {(["left", "bottom", "right"] as CommentaryPosition[]).map((pos) => (
+                  <button
+                    key={pos}
+                    onClick={() => setCommentaryPosition(pos)}
+                    className={`p-1 rounded ${
+                      commentaryPosition === pos
+                        ? "bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400"
+                        : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                    }`}
+                    title={t(`commentary.${pos}`)}
+                  >
+                    {pos === "left" && (
+                      <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+                        <rect x="1" y="1" width="5" height="14" rx="1" />
+                        <rect x="7" y="1" width="8" height="14" rx="1" opacity="0.3" />
+                      </svg>
+                    )}
+                    {pos === "bottom" && (
+                      <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+                        <rect x="1" y="9" width="14" height="6" rx="1" />
+                        <rect x="1" y="1" width="14" height="7" rx="1" opacity="0.3" />
+                      </svg>
+                    )}
+                    {pos === "right" && (
+                      <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+                        <rect x="1" y="1" width="8" height="14" rx="1" opacity="0.3" />
+                        <rect x="10" y="1" width="5" height="14" rx="1" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Verse Numbers toggle */}
           <ToggleItem

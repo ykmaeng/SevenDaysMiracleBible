@@ -30,7 +30,11 @@
     "chapterCommentary": "Chapter Commentary",
     "verseCommentary": "Verse Commentary",
     "aiGenerated": "This commentary is AI-generated content",
-    "noCommentary": "No commentary available for this chapter yet"
+    "noCommentary": "No commentary available for this chapter yet",
+    "position": "Panel Position",
+    "left": "Left",
+    "bottom": "Bottom",
+    "right": "Right"
   },
   "feedback": {
     "helpful": "Helpful",

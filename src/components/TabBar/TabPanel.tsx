@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useTabStore, type Tab } from "../../stores/tabStore";
+import { useSettingsStore } from "../../stores/settingsStore";
 import { ChapterView } from "../BibleReader/ChapterView";
 import { ReaderSettingsDropdown } from "../BibleReader/ReaderSettingsDropdown";
 import { BookPicker } from "../Navigation/BookPicker";
@@ -15,6 +16,7 @@ export function TabPanel() {
   const [showBookPicker, setShowBookPicker] = useState(false);
   const [showChapterPicker, setShowChapterPicker] = useState(false);
   const [showCommentary, setShowCommentary] = useState(false);
+  const commentaryPosition = useSettingsStore((s) => s.commentaryPosition);
 
   const handleScrollChange = useCallback(
     (position: number) => {
@@ -86,8 +88,19 @@ export function TabPanel() {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex overflow-hidden">
-        <div className={`${showCommentary ? "w-1/2" : "w-full"} h-full`}>
+      <div className={`flex-1 flex overflow-hidden ${
+        showCommentary && commentaryPosition === "bottom" ? "flex-col" : "flex-row"
+      }`}>
+        {showCommentary && commentaryPosition === "left" && (
+          <div className="w-1/2 h-full border-r border-gray-200 dark:border-gray-700">
+            <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} />
+          </div>
+        )}
+        <div className={`${
+          showCommentary
+            ? commentaryPosition === "bottom" ? "w-full h-1/2" : "w-1/2"
+            : "w-full"
+        } h-full`}>
           <ChapterView
             translationId={activeTab.translationId}
             bookId={activeTab.bookId}
@@ -96,12 +109,14 @@ export function TabPanel() {
             initialScrollPosition={activeTab.scrollPosition}
           />
         </div>
-        {showCommentary && (
+        {showCommentary && commentaryPosition === "right" && (
           <div className="w-1/2 h-full border-l border-gray-200 dark:border-gray-700">
-            <CommentaryPanel
-              bookId={activeTab.bookId}
-              chapter={activeTab.chapter}
-            />
+            <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} />
+          </div>
+        )}
+        {showCommentary && commentaryPosition === "bottom" && (
+          <div className="w-full h-1/2 border-t border-gray-200 dark:border-gray-700">
+            <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} />
           </div>
         )}
       </div>

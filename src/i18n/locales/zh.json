@@ -30,7 +30,11 @@
     "chapterCommentary": "章释经",
     "verseCommentary": "节释经",
     "aiGenerated": "此释经为AI生成内容",
-    "noCommentary": "本章暂无释经内容"
+    "noCommentary": "本章暂无释经内容",
+    "position": "面板位置",
+    "left": "左侧",
+    "bottom": "底部",
+    "right": "右侧"
   },
   "feedback": {
     "helpful": "有帮助",
