@@ -34,6 +34,7 @@ export function LanguageSettings() {
   const { language, setLanguage, fontSize, setFontSize, theme, setTheme, showVerseNumbers, setShowVerseNumbers, parallelTranslations, toggleParallelTranslation, reorderParallelTranslation, dictionaryLang, setDictionaryLang } =
     useSettingsStore();
   const [availableTranslations, setAvailableTranslations] = useState<Translation[]>([]);
+  const [languageOpen, setLanguageOpen] = useState(false);
   const [parallelOpen, setParallelOpen] = useState(false);
   const [downloadsOpen, setDownloadsOpen] = useState(false);
   const dragIdx = useRef<number | null>(null);
@@ -51,26 +52,42 @@ export function LanguageSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Language */}
+      {/* Language (foldable) */}
       <section>
-        <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
-          {t("settings.language")}
-        </h3>
-        <div className="grid grid-cols-2 gap-2">
-          {LANGUAGES.map((lang) => (
-            <button
-              key={lang.code}
-              onClick={() => handleLanguageChange(lang.code)}
-              className={`py-2 px-3 rounded-lg text-sm transition-colors ${
-                language === lang.code
-                  ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-medium"
-                  : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-            >
-              {lang.name}
-            </button>
-          ))}
-        </div>
+        <button
+          onClick={() => setLanguageOpen(!languageOpen)}
+          className="flex items-center justify-between w-full mb-2"
+        >
+          <h3 className="text-sm font-semibold text-gray-500 uppercase">
+            {t("settings.language")}
+            <span className="ml-1.5 text-xs text-blue-500 normal-case font-normal">
+              ({LANGUAGES.find((l) => l.code === language)?.name ?? language})
+            </span>
+          </h3>
+          <svg
+            className={`w-4 h-4 text-gray-400 transition-transform ${languageOpen ? "rotate-180" : ""}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {languageOpen && (
+          <div className="grid grid-cols-2 gap-2">
+            {LANGUAGES.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => handleLanguageChange(lang.code)}
+                className={`py-2 px-3 rounded-lg text-sm transition-colors ${
+                  language === lang.code
+                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-medium"
+                    : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                }`}
+              >
+                {lang.name}
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Font size */}
