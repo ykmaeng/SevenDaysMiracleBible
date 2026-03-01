@@ -11,7 +11,9 @@
   "tabs": {
     "newTab": "New Tab",
     "closeTab": "Close Tab",
-    "maxTabs": "Maximum of 5 tabs allowed"
+    "maxTabs": "Maximum of 5 tabs allowed",
+    "pin": "Pin Tab",
+    "unpin": "Unpin Tab"
   },
   "reader": {
     "selectBook": "Select Book",

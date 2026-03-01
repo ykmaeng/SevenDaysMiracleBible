@@ -11,7 +11,9 @@
   "tabs": {
     "newTab": "新标签",
     "closeTab": "关闭标签",
-    "maxTabs": "最多可打开5个标签"
+    "maxTabs": "最多可打开5个标签",
+    "pin": "固定标签",
+    "unpin": "取消固定"
   },
   "reader": {
     "selectBook": "选择书卷",

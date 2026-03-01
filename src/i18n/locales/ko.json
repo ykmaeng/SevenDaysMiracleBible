@@ -11,7 +11,9 @@
   "tabs": {
     "newTab": "새 탭",
     "closeTab": "탭 닫기",
-    "maxTabs": "탭은 최대 5개까지 열 수 있습니다"
+    "maxTabs": "탭은 최대 5개까지 열 수 있습니다",
+    "pin": "탭 고정",
+    "unpin": "탭 고정 해제"
   },
   "reader": {
     "selectBook": "성경 선택",

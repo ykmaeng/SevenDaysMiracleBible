@@ -11,7 +11,9 @@
   "tabs": {
     "newTab": "Nueva pestaña",
     "closeTab": "Cerrar pestaña",
-    "maxTabs": "Máximo de 5 pestañas permitidas"
+    "maxTabs": "Máximo de 5 pestañas permitidas",
+    "pin": "Fijar pestaña",
+    "unpin": "Desfijar pestaña"
   },
   "reader": {
     "selectBook": "Seleccionar libro",

@@ -12,6 +12,7 @@ export interface Tab {
   chapter: number;
   verse?: number;
   scrollPosition: number;
+  pinned?: boolean;
 }
 
 interface TabState {
@@ -24,6 +25,8 @@ interface TabActions {
   closeTab: (id: string) => void;
   setActiveTab: (id: string) => void;
   updateTab: (id: string, updates: Partial<Tab>) => void;
+  togglePin: (id: string) => void;
+  reorderTab: (fromIndex: number, toIndex: number) => void;
   navigateTo: (bookId: number, chapter: number, verse?: number) => void;
 }
 
@@ -91,6 +94,25 @@ export const useTabStore = create<TabState & TabActions>()(
         set((state) => {
           const tab = state.tabs.find((t) => t.id === id);
           if (tab) Object.assign(tab, updates);
+        });
+      },
+
+      togglePin: (id) => {
+        set((state) => {
+          const tab = state.tabs.find((t) => t.id === id);
+          if (!tab) return;
+          tab.pinned = !tab.pinned;
+          // Sort: pinned tabs first, preserve relative order within each group
+          const pinned = state.tabs.filter((t) => t.pinned);
+          const unpinned = state.tabs.filter((t) => !t.pinned);
+          state.tabs = [...pinned, ...unpinned];
+        });
+      },
+
+      reorderTab: (fromIndex, toIndex) => {
+        set((state) => {
+          const [moved] = state.tabs.splice(fromIndex, 1);
+          state.tabs.splice(toIndex, 0, moved);
         });
       },
 
