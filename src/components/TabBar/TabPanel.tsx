@@ -16,11 +16,16 @@ const TRANSLATION_LANG: Record<string, string> = {
   kjv: "en",
   asv: "en",
   web: "en",
-  ylt: "en",
+  bbe: "en",
   cuv: "zh",
   rv1909: "es",
   hebrew: "he",
   greek: "el",
+  japkougo: "ja",
+  gerelb: "de",
+  frecrampon: "fr",
+  russynodal: "ru",
+  porblivre: "pt",
 };
 
 function translationToLang(translationId: string): string {

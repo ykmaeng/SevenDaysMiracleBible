@@ -38,6 +38,11 @@ export const DEFAULT_TRANSLATION_BY_LANG: Record<string, string> = {
   en: "kjv",
   zh: "cuv",
   es: "rv1909",
+  ja: "japkougo",
+  de: "gerelb",
+  fr: "frecrampon",
+  ru: "russynodal",
+  pt: "porblivre",
 };
 
 export const useSettingsStore = create<SettingsState & SettingsActions>()(

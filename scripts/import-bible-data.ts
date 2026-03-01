@@ -41,7 +41,7 @@ const TRANSLATIONS: Record<string, { lang: string; path: string }> = {
   kjv:    { lang: "en", path: "sources/en/KJV/KJV.json" },
   asv:    { lang: "en", path: "sources/en/ASV/ASV.json" },
   bbe:    { lang: "en", path: "sources/en/BBE/BBE.json" },
-  web:    { lang: "en", path: "sources/en/OEB/OEB.json" },
+  // web: imported separately from BibleSuperSearch (World English Bible)
   rv1909: { lang: "es", path: "sources/es/SpaRV/SpaRV.json" },
   cuv:    { lang: "zh", path: "sources/zh-hant/ChiUn/ChiUn.json" },
 };

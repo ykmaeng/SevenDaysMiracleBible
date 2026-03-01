@@ -124,13 +124,18 @@ console.log(`Seeding translations (${buildCore ? "core" : "full"} mode)...`);
 const translationData: [string, string, string, string, number, number, number, number][] = [
   ['kjv','King James Version','en','The authorized King James Version (1611)',0,0,1,1.5],
   ['asv','American Standard Version','en','American Standard Version (1901)',0,0,0,1.5],
-  ['web','Open English Bible','en','Open English Bible - Public Domain',0,0,0,1.5],
+  ['web','World English Bible','en','Modern English public domain translation (2006)',0,0,0,1.5],
   ['bbe','Bible in Basic English','en','Bible in Basic English (1965)',0,0,0,1.5],
   ['cuv','和合本','zh','Chinese Union Version (1919)',0,0,0,2.0],
   ['rv1909','Reina-Valera','es','Reina-Valera - Dominio Público',0,0,0,1.5],
   ['ai-ko','AI 한국어 번역','ko','원문 기반 AI 번역',0,1,1,2.0],
   ['hebrew','Westminster Leningrad Codex','he','Hebrew Old Testament (WLC)',1,0,0,2.0],
   ['greek','Open Greek New Testament','el','Greek New Testament (OpenGNT)',1,0,0,1.0],
+  ['japkougo','口語訳聖書','ja','口語訳聖書 (1955)',0,0,0,1.5],
+  ['gerelb','Elberfelder Bibel','de','Elberfelder Übersetzung (1905)',0,0,0,1.5],
+  ['frecrampon','Bible Crampon','fr','Traduction Crampon (1923)',0,0,0,1.5],
+  ['russynodal','Синодальный перевод','ru','Синодальный перевод (1876)',0,0,0,2.0],
+  ['porblivre','Bíblia Livre','pt','Bíblia Livre - Domínio Público',0,0,0,1.5],
 ];
 const insertTranslation = db.prepare(
   "INSERT OR IGNORE INTO translations (id,name,language,description,is_original,is_ai_generated,downloaded,download_size_mb) VALUES (?,?,?,?,?,?,?,?)"
