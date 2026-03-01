@@ -13,6 +13,7 @@ import type { Verse } from "../../types/bible";
 
 const TRANSLATION_LANG: Record<string, string> = {
   "ai-ko": "ko",
+  korrv: "ko",
   kjv: "en",
   asv: "en",
   web: "en",
