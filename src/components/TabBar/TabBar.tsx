@@ -20,15 +20,15 @@ export function TabBar() {
   }, []);
 
   return (
-    <div className="flex items-center bg-gray-100 border-b border-gray-200">
+    <div className="flex items-center bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       <div className="flex items-center overflow-x-auto flex-1 min-w-0">
         {tabs.map((tab) => (
           <div
             key={tab.id}
-            className={`flex items-center gap-1 px-3 py-2 text-sm cursor-pointer border-r border-gray-200 min-w-0 shrink-0 ${
+            className={`flex items-center gap-1 px-3 py-2 text-sm cursor-pointer border-r border-gray-200 dark:border-gray-700 min-w-0 shrink-0 ${
               tab.id === activeTabId
-                ? "bg-white text-blue-600 font-medium"
-                : "text-gray-600 hover:bg-gray-50"
+                ? "bg-white dark:bg-gray-900 text-blue-600 font-medium"
+                : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
             }`}
             onClick={() => setActiveTab(tab.id)}
           >
@@ -66,7 +66,7 @@ export function TabBar() {
       <div className="relative shrink-0">
         <button
           onClick={() => setShowTranslationPicker(!showTranslationPicker)}
-          className="px-3 py-2 text-xs font-semibold text-gray-600 hover:text-blue-600 hover:bg-gray-50 uppercase"
+          className="px-3 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 hover:bg-gray-50 dark:hover:bg-gray-700 uppercase"
         >
           {activeTab?.translationId ?? "kjv"}
         </button>
@@ -76,7 +76,7 @@ export function TabBar() {
               className="fixed inset-0 z-10"
               onClick={() => setShowTranslationPicker(false)}
             />
-            <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-20 min-w-[220px] py-1">
+            <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 min-w-[220px] py-1">
               {translations.map((tr) => (
                 <button
                   key={tr.id}
@@ -84,10 +84,10 @@ export function TabBar() {
                     updateTab(activeTabId, { translationId: tr.id });
                     setShowTranslationPicker(false);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between ${
                     activeTab?.translationId === tr.id
-                      ? "text-blue-600 font-medium bg-blue-50"
-                      : "text-gray-700"
+                      ? "text-blue-600 font-medium bg-blue-50 dark:bg-blue-900/30"
+                      : "text-gray-700 dark:text-gray-300"
                   }`}
                 >
                   <span>{tr.name}</span>

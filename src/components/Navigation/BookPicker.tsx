@@ -25,7 +25,7 @@ export function BookPicker({ onSelect, onClose }: BookPickerProps) {
         <button
           key={book.id}
           onClick={() => onSelect(book.id)}
-          className="text-xs py-2 px-1 rounded-lg bg-gray-50 hover:bg-blue-50 hover:text-blue-700 transition-colors text-center truncate"
+          className="text-xs py-2 px-1 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-400 transition-colors text-center truncate"
         >
           {t(`books.${book.id}`)}
         </button>
@@ -34,8 +34,8 @@ export function BookPicker({ onSelect, onClose }: BookPickerProps) {
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-white overflow-auto">
-      <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 overflow-auto">
+      <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
         <h2 className="text-lg font-semibold">{t("reader.selectBook")}</h2>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

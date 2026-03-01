@@ -57,9 +57,9 @@ export function DownloadManager() {
     const isDeletingThis = deleting === tr.id;
 
     return (
-      <div key={tr.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+      <div key={tr.id} className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0">
         <div>
-          <p className="text-sm font-medium text-gray-800">{tr.name}</p>
+          <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{tr.name}</p>
           {tr.description && (
             <p className="text-xs text-gray-500">{tr.description}</p>
           )}
@@ -90,7 +90,7 @@ export function DownloadManager() {
             </div>
           ) : isDownloading ? (
             <div className="flex items-center gap-2">
-              <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-blue-600 rounded-full transition-all"
                   style={{ width: `${dl.progress}%` }}

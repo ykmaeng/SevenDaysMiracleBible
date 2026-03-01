@@ -47,10 +47,10 @@ export function TabPanel() {
   return (
     <div className="flex flex-col h-full">
       {/* Navigation header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-gray-100">
+      <div className="flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
         <button
           onClick={() => setShowBookPicker(true)}
-          className="text-sm font-semibold text-gray-800 hover:text-blue-600"
+          className="text-sm font-semibold text-gray-800 dark:text-gray-200 hover:text-blue-600"
         >
           {t(`books.${activeTab.bookId}`)}
         </button>
@@ -58,7 +58,7 @@ export function TabPanel() {
           <button
             onClick={handlePrevChapter}
             disabled={activeTab.chapter <= 1}
-            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-30"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -66,13 +66,13 @@ export function TabPanel() {
           </button>
           <button
             onClick={() => setShowChapterPicker(true)}
-            className="text-sm font-medium text-gray-600 hover:text-blue-600 min-w-[60px] text-center"
+            className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 min-w-[60px] text-center"
           >
             {t("nav.chapter", { num: activeTab.chapter })}
           </button>
           <button
             onClick={handleNextChapter}
-            className="p-1 text-gray-400 hover:text-gray-600"
+            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -97,7 +97,7 @@ export function TabPanel() {
           />
         </div>
         {showCommentary && (
-          <div className="w-1/2 h-full border-l border-gray-200">
+          <div className="w-1/2 h-full border-l border-gray-200 dark:border-gray-700">
             <CommentaryPanel
               bookId={activeTab.bookId}
               chapter={activeTab.chapter}

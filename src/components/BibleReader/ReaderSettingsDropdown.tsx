@@ -39,7 +39,7 @@ export function ReaderSettingsDropdown({
       <button
         onClick={() => setOpen(!open)}
         className={`p-1.5 rounded ${
-          open ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"
+          open ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
         }`}
         title={t("reader.readerSettings")}
       >
@@ -50,7 +50,7 @@ export function ReaderSettingsDropdown({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+        <div className="absolute right-0 top-full mt-1 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
           {/* Parallel View toggle */}
           <ToggleItem
             label={t("reader.parallelView")}
@@ -73,19 +73,19 @@ export function ReaderSettingsDropdown({
           />
 
           {/* Font Size control */}
-          <div className="flex items-center justify-between px-3 py-2 hover:bg-gray-50">
-            <span className="text-sm text-gray-700">{t("settings.fontSize")}</span>
+          <div className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <span className="text-sm text-gray-700 dark:text-gray-300">{t("settings.fontSize")}</span>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setFontSize(fontSize - 1)}
-                className="w-7 h-7 flex items-center justify-center rounded text-gray-600 hover:bg-gray-200 text-xs font-bold"
+                className="w-7 h-7 flex items-center justify-center rounded text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-bold"
               >
                 A-
               </button>
-              <span className="text-xs text-gray-500 w-6 text-center">{fontSize}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 w-6 text-center">{fontSize}</span>
               <button
                 onClick={() => setFontSize(fontSize + 1)}
-                className="w-7 h-7 flex items-center justify-center rounded text-gray-600 hover:bg-gray-200 text-sm font-bold"
+                className="w-7 h-7 flex items-center justify-center rounded text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 text-sm font-bold"
               >
                 A+
               </button>
@@ -108,13 +108,13 @@ function ToggleItem({
 }) {
   return (
     <button
-      className="flex items-center justify-between w-full px-3 py-2 hover:bg-gray-50"
+      className="flex items-center justify-between w-full px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700"
       onClick={() => onChange(!checked)}
     >
-      <span className="text-sm text-gray-700">{label}</span>
+      <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
       <div
         className={`relative w-9 h-5 rounded-full transition-colors ${
-          checked ? "bg-blue-500" : "bg-gray-300"
+          checked ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"
         }`}
       >
         <div

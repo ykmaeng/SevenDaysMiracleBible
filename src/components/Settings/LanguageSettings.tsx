@@ -43,8 +43,8 @@ export function LanguageSettings() {
               onClick={() => handleLanguageChange(lang.code)}
               className={`py-2 px-3 rounded-lg text-sm transition-colors ${
                 language === lang.code
-                  ? "bg-blue-100 text-blue-700 font-medium"
-                  : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                  ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-medium"
+                  : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
             >
               {lang.name}
@@ -61,14 +61,14 @@ export function LanguageSettings() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setFontSize(fontSize - 1)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
           >
             A-
           </button>
           <span className="text-sm font-medium w-8 text-center">{fontSize}</span>
           <button
             onClick={() => setFontSize(fontSize + 1)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
           >
             A+
           </button>
@@ -87,8 +87,8 @@ export function LanguageSettings() {
               onClick={() => setTheme(th)}
               className={`flex-1 py-2 rounded-lg text-sm transition-colors ${
                 theme === th
-                  ? "bg-blue-100 text-blue-700 font-medium"
-                  : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                  ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-medium"
+                  : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
             >
               {t(`settings.theme${th.charAt(0).toUpperCase() + th.slice(1)}`)}
@@ -100,11 +100,11 @@ export function LanguageSettings() {
       {/* Verse numbers */}
       <section>
         <label className="flex items-center justify-between">
-          <span className="text-sm text-gray-700">{t("settings.showVerseNumbers")}</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">{t("settings.showVerseNumbers")}</span>
           <button
             onClick={() => setShowVerseNumbers(!showVerseNumbers)}
             className={`w-10 h-6 rounded-full transition-colors ${
-              showVerseNumbers ? "bg-blue-600" : "bg-gray-300"
+              showVerseNumbers ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"
             }`}
           >
             <span
@@ -148,8 +148,8 @@ export function LanguageSettings() {
                     onClick={() => toggleParallelTranslation(tr.id)}
                     className={`flex items-center justify-between w-full py-2 px-3 rounded-lg text-sm transition-colors ${
                       isSelected
-                        ? "bg-blue-50 text-blue-700"
-                        : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                        : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                     }`}
                   >
                     <div className="text-left">

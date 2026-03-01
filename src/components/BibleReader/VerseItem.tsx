@@ -17,7 +17,7 @@ export function VerseItem({ verse, parallelVerses }: VerseItemProps) {
     >
       <div className="flex">
         {showVerseNumbers && (
-          <span className="text-gray-400 font-medium mr-2 shrink-0 select-none" style={{ fontSize: '0.8em', minWidth: '1.5em', textAlign: 'right' }}>{verse.verse}</span>
+          <span className="text-gray-400 dark:text-gray-500 font-medium mr-2 shrink-0 select-none" style={{ fontSize: '0.8em', minWidth: '1.5em', textAlign: 'right' }}>{verse.verse}</span>
         )}
         <span className="flex-1">{verse.text}</span>
       </div>
@@ -25,8 +25,8 @@ export function VerseItem({ verse, parallelVerses }: VerseItemProps) {
         <div className="ml-6 mt-0.5 space-y-0.5">
           {parallelVerses.map((pv) => (
             <div key={pv.translationId} className="flex items-baseline gap-1.5" style={{ fontSize: `${Math.max(12, fontSize - 2)}px`, lineHeight: 1.6 }}>
-              <span className="text-blue-500 font-medium shrink-0 text-[0.7em] uppercase">{pv.translationId}</span>
-              <span className="text-gray-500">{pv.text}</span>
+              <span className="text-blue-500 dark:text-blue-400 font-medium shrink-0 text-[0.7em] uppercase">{pv.translationId}</span>
+              <span className="text-gray-500 dark:text-gray-400">{pv.text}</span>
             </div>
           ))}
         </div>

@@ -53,12 +53,12 @@ export function CommentaryPanel({ bookId, chapter }: CommentaryPanelProps) {
   return (
     <div className="h-full overflow-auto px-4 py-3">
       <div className="mb-3">
-        <h3 className="text-sm font-semibold text-gray-800">
+        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
           {t("commentary.chapterCommentary")}
         </h3>
         <p className="text-xs text-gray-400 mt-0.5">{t("commentary.aiGenerated")}</p>
       </div>
-      <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
+      <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
         {commentary.content}
       </div>
     </div>

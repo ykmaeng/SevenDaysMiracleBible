@@ -1,17 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { TabBar } from "./components/TabBar/TabBar";
 import { TabPanel } from "./components/TabBar/TabPanel";
 import { LanguageSettings } from "./components/Settings/LanguageSettings";
+import { useSettingsStore } from "./stores/settingsStore";
 
 type View = "reader" | "settings";
 
 function App() {
   const { t } = useTranslation();
   const [view, setView] = useState<View>("reader");
+  const theme = useSettingsStore((s) => s.theme);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else if (theme === "light") {
+      root.classList.remove("dark");
+    } else {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      const update = () => mq.matches ? root.classList.add("dark") : root.classList.remove("dark");
+      update();
+      mq.addEventListener("change", update);
+      return () => mq.removeEventListener("change", update);
+    }
+  }, [theme]);
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-gray-100">
       {/* Tab bar */}
       {view === "reader" && <TabBar />}
 
@@ -20,7 +37,7 @@ function App() {
         {view === "reader" && <TabPanel />}
         {view === "settings" && (
           <div className="h-full overflow-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+            <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
               <h2 className="text-lg font-semibold">{t("settings.title")}</h2>
               <button
                 onClick={() => setView("reader")}
@@ -39,7 +56,7 @@ function App() {
       </div>
 
       {/* Bottom navigation bar */}
-      <nav className="flex items-center justify-around border-t border-gray-200 bg-white py-2 shrink-0">
+      <nav className="flex items-center justify-around border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-2 shrink-0">
         <button
           onClick={() => setView("reader")}
           className={`flex flex-col items-center gap-0.5 px-4 py-1 ${

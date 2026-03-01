@@ -24,8 +24,8 @@ export function ChapterPicker({ bookId, onSelect, onClose }: ChapterPickerProps)
   const chapters = Array.from({ length: book.chapters }, (_, i) => i + 1);
 
   return (
-    <div className="fixed inset-0 z-50 bg-white overflow-auto">
-      <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 overflow-auto">
+      <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
         <h2 className="text-lg font-semibold">
           {t(`books.${bookId}`)} - {t("reader.selectChapter")}
         </h2>
@@ -42,7 +42,7 @@ export function ChapterPicker({ bookId, onSelect, onClose }: ChapterPickerProps)
             <button
               key={ch}
               onClick={() => onSelect(ch)}
-              className="aspect-square flex items-center justify-center rounded-lg bg-gray-50 hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm font-medium"
+              className="aspect-square flex items-center justify-center rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-400 transition-colors text-sm font-medium"
             >
               {ch}
             </button>

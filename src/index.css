@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --color-primary: #2563eb;
   --color-primary-dark: #1d4ed8;
@@ -35,4 +37,7 @@ body,
 }
 ::-webkit-scrollbar-thumb {
   @apply bg-gray-300 rounded-full;
+}
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-gray-600;
 }
