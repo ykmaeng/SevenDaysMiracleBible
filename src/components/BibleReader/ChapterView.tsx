@@ -37,6 +37,7 @@ export function ChapterView({
 
   // Dictionary popup state
   const [dictWord, setDictWord] = useState<string | null>(null);
+  const [dictSourceLang, setDictSourceLang] = useState<string>("en");
   const [dictPosition, setDictPosition] = useState<{ x: number; y: number; bottom: number } | null>(null);
 
   const showParallelInline = useSettingsStore((s) => s.showParallelInline);
@@ -129,6 +130,7 @@ export function ChapterView({
 
   const handleWordClick = useCallback((info: WordClickInfo) => {
     setDictWord(info.word);
+    setDictSourceLang(info.sourceLang);
     setDictPosition({ x: info.x, y: info.y, bottom: info.bottom });
   }, []);
 
@@ -199,6 +201,7 @@ export function ChapterView({
       {dictWord && dictPosition && parentRef.current && (
         <DictionaryPopup
           word={dictWord}
+          sourceLang={dictSourceLang}
           position={dictPosition}
           containerRect={parentRef.current.getBoundingClientRect()}
           onClose={closeDictPopup}

@@ -141,6 +141,7 @@ export async function deleteDictionary(): Promise<void> {
 
 export const DICTIONARY_DOWNLOAD_KEY = DICTIONARY_DOWNLOAD_ID;
 
+// Map app language codes to Google Translate language codes
 const TRANSLATE_LANG_MAP: Record<string, string> = {
   ko: "ko",
   zh: "zh-CN",
@@ -150,16 +151,38 @@ const TRANSLATE_LANG_MAP: Record<string, string> = {
   fr: "fr",
   pt: "pt",
   ru: "ru",
+  en: "en",
+  he: "iw",
+  el: "el",
 };
+
+function toGoogleLang(lang: string): string | null {
+  return TRANSLATE_LANG_MAP[lang] ?? null;
+}
 
 const DELIMITER = "\n\n";
 
+/** Reassemble full translated text from Google Translate response */
+function extractTranslation(data: unknown): string {
+  let full = "";
+  if (Array.isArray(data) && Array.isArray(data[0])) {
+    for (const segment of data[0]) {
+      if (Array.isArray(segment) && typeof segment[0] === "string") {
+        full += segment[0];
+      }
+    }
+  }
+  return full;
+}
+
 export async function translateDefinitions(
   entry: DictionaryEntry,
+  sourceLang: string,
   targetLang: string
 ): Promise<DictionaryEntry> {
-  const langCode = TRANSLATE_LANG_MAP[targetLang];
-  if (!langCode) return entry;
+  const sl = toGoogleLang(sourceLang);
+  const tl = toGoogleLang(targetLang);
+  if (!sl || !tl) return entry;
 
   // Collect all definition texts
   const texts: string[] = [];
@@ -172,24 +195,13 @@ export async function translateDefinitions(
 
   // Batch translate: join all texts, one API call, then split
   const joined = texts.join(DELIMITER);
-  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${langCode}&dt=t&q=${encodeURIComponent(joined)}`;
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(joined)}`;
 
   const res = await fetch(url);
   if (!res.ok) return entry;
 
   const data = await res.json();
-
-  // Response: [[["translated segment","original segment",...], ...], ...]
-  // Reassemble full translated text from segments
-  let fullTranslated = "";
-  if (Array.isArray(data) && Array.isArray(data[0])) {
-    for (const segment of data[0]) {
-      if (Array.isArray(segment) && typeof segment[0] === "string") {
-        fullTranslated += segment[0];
-      }
-    }
-  }
-
+  const fullTranslated = extractTranslation(data);
   if (!fullTranslated) return entry;
 
   // Split back by delimiter
@@ -209,4 +221,64 @@ export async function translateDefinitions(
   };
 
   return translatedEntry;
+}
+
+/**
+ * Lookup a non-English word via Google Translate.
+ * Returns a DictionaryEntry with the translation as definition.
+ */
+export async function lookupViaTranslate(
+  word: string,
+  sourceLang: string,
+  targetLang: string
+): Promise<DictionaryEntry | null> {
+  const sl = toGoogleLang(sourceLang);
+  const tl = toGoogleLang(targetLang);
+  if (!sl || !tl) return null;
+
+  // Use dt=t (translation) + dt=bd (dictionary/definitions) for richer results
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&dt=bd&q=${encodeURIComponent(word)}`;
+
+  const res = await fetch(url);
+  if (!res.ok) return null;
+
+  const data = await res.json();
+
+  // Extract translation
+  const translated = extractTranslation(data);
+  if (!translated) return null;
+
+  const meanings: DictionaryEntry["meanings"] = [];
+
+  // data[1] contains dictionary entries: [[partOfSpeech, [translations...], ...], ...]
+  if (Array.isArray(data[1])) {
+    for (const group of data[1]) {
+      if (!Array.isArray(group) || group.length < 2) continue;
+      const partOfSpeech = typeof group[0] === "string" ? group[0] : "";
+      const defs: { definition: string; translated?: string }[] = [];
+      if (Array.isArray(group[1])) {
+        for (const item of group[1].slice(0, 4)) {
+          if (typeof item === "string") {
+            defs.push({ definition: item });
+          }
+        }
+      }
+      if (defs.length > 0) {
+        meanings.push({ partOfSpeech, definitions: defs });
+      }
+    }
+  }
+
+  // If no dictionary entries, create a simple translation entry
+  if (meanings.length === 0) {
+    meanings.push({
+      partOfSpeech: "",
+      definitions: [{ definition: translated.trim() }],
+    });
+  }
+
+  return {
+    word,
+    meanings,
+  };
 }

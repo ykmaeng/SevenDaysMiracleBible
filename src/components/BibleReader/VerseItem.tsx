@@ -2,13 +2,38 @@ import { useCallback } from "react";
 import { useSettingsStore } from "../../stores/settingsStore";
 import type { Verse } from "../../types/bible";
 
-const ENGLISH_TRANSLATIONS = new Set(["kjv", "asv", "web", "bbe", "ylt", "darby"]);
-
 export interface WordClickInfo {
   word: string;
+  sourceLang: string;
   x: number;
   y: number;
   bottom: number;
+}
+
+// Map translation IDs to language codes
+const TRANSLATION_LANG: Record<string, string> = {
+  "ai-ko": "ko",
+  korrv: "ko",
+  nkrv: "ko",
+  kjv: "en",
+  asv: "en",
+  web: "en",
+  bbe: "en",
+  ylt: "en",
+  darby: "en",
+  cuv: "zh",
+  rv1909: "es",
+  hebrew: "he",
+  greek: "el",
+  japkougo: "ja",
+  gerelb: "de",
+  frecrampon: "fr",
+  russynodal: "ru",
+  porblivre: "pt",
+};
+
+function translationToLang(translationId: string): string {
+  return TRANSLATION_LANG[translationId] ?? "en";
 }
 
 interface VerseItemProps {
@@ -21,18 +46,16 @@ interface VerseItemProps {
 export function VerseItem({ verse, parallelVerses, isPlaying, onWordClick }: VerseItemProps) {
   const showVerseNumbers = useSettingsStore((s) => s.showVerseNumbers);
   const fontSize = useSettingsStore((s) => s.fontSize);
-  const dictionaryLang = useSettingsStore((s) => s.dictionaryLang);
-
-  const dictEnabled = dictionaryLang !== "en" && !!onWordClick;
 
   const handleWordClick = useCallback(
-    (e: React.MouseEvent<HTMLSpanElement>) => {
+    (e: React.MouseEvent<HTMLSpanElement>, sourceLang: string) => {
       if (!onWordClick) return;
       const word = (e.currentTarget.textContent ?? "").trim();
       if (!word) return;
       const rect = e.currentTarget.getBoundingClientRect();
       onWordClick({
         word,
+        sourceLang,
         x: rect.left + rect.width / 2,
         y: rect.top,
         bottom: rect.bottom,
@@ -42,21 +65,21 @@ export function VerseItem({ verse, parallelVerses, isPlaying, onWordClick }: Ver
   );
 
   const renderText = (text: string, translationId: string, isParallel: boolean) => {
-    const isEnglish = ENGLISH_TRANSLATIONS.has(translationId);
-    if (!isEnglish || !dictEnabled || !isParallel) {
+    if (!isParallel || !onWordClick) {
       return <span className={isParallel ? "text-gray-500 dark:text-gray-400" : "flex-1"}>{text}</span>;
     }
 
-    // Split into words and render each as a clickable span
-    // Split into alphabetic words vs everything else (whitespace, punctuation)
-    const tokens = text.match(/[a-zA-Z'-]+|[^a-zA-Z'-]+/g) ?? [];
+    const sourceLang = translationToLang(translationId);
+
+    // Split into word tokens vs non-word tokens (using Unicode letter property for all languages)
+    const tokens = text.match(/[\p{L}\p{M}'-]+|[^\p{L}\p{M}'-]+/gu) ?? [];
     return (
       <span className="text-gray-500 dark:text-gray-400">
         {tokens.map((token, i) =>
-          /[a-zA-Z]/.test(token) ? (
+          /\p{L}/u.test(token) ? (
             <span
               key={i}
-              onClick={handleWordClick}
+              onClick={(e) => handleWordClick(e, sourceLang)}
               className="cursor-pointer rounded hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/40 dark:hover:text-blue-300 transition-colors"
             >
               {token}

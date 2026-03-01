@@ -19,6 +19,7 @@ const LANGUAGES = [
 
 const DICT_LANGUAGES = [
   { code: "ko", name: "한국어" },
+  { code: "en", name: "English" },
   { code: "zh", name: "中文" },
   { code: "es", name: "Español" },
   { code: "ja", name: "日本語" },
@@ -26,7 +27,6 @@ const DICT_LANGUAGES = [
   { code: "fr", name: "Français" },
   { code: "ru", name: "Русский" },
   { code: "pt", name: "Português" },
-  { code: "en", name: "English (Off)" },
 ];
 
 export function LanguageSettings() {

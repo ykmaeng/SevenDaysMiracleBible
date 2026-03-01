@@ -1,26 +1,27 @@
 import { useState, useCallback, useRef } from "react";
 import type { DictionaryEntry } from "../lib/dictionaryService";
-import { lookupOffline, lookupOnline, translateDefinitions, ensureDictionaryTable } from "../lib/dictionaryService";
+import { lookupOffline, lookupOnline, translateDefinitions, lookupViaTranslate, ensureDictionaryTable } from "../lib/dictionaryService";
 
-// Cache by word+lang so each language gets its own translated result
+// Cache by word+sourceLang+targetLang
 const cache = new Map<string, DictionaryEntry>();
 let tableEnsured = false;
 
 function normalizeWord(raw: string): string {
-  return raw.toLowerCase().replace(/[^a-z'-]/g, "").replace(/^'+|'+$/g, "");
+  // Strip leading/trailing non-letter characters but keep internal ones (hyphens, apostrophes, non-latin chars)
+  return raw.trim().replace(/^[^\p{L}]+|[^\p{L}]+$/gu, "");
 }
 
-function cacheKey(word: string, lang: string): string {
-  return `${word}:${lang}`;
+function cacheKey(word: string, sourceLang: string, targetLang: string): string {
+  return `${word}:${sourceLang}:${targetLang}`;
 }
 
-export function useDictionary(language: string) {
+export function useDictionary(targetLang: string) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DictionaryEntry | null>(null);
   const [error, setError] = useState<string | null>(null);
   const activeWord = useRef<string>("");
 
-  const lookup = useCallback(async (raw: string) => {
+  const lookup = useCallback(async (raw: string, sourceLang: string) => {
     const word = normalizeWord(raw);
     if (!word) return;
 
@@ -28,8 +29,8 @@ export function useDictionary(language: string) {
     setError(null);
     setResult(null);
 
-    // Check memory cache (with language)
-    const key = cacheKey(word, language);
+    // Check memory cache
+    const key = cacheKey(word, sourceLang, targetLang);
     const cached = cache.get(key);
     if (cached) {
       setResult(cached);
@@ -38,45 +39,46 @@ export function useDictionary(language: string) {
 
     setLoading(true);
     try {
-      // Ensure table exists for offline lookup
-      if (!tableEnsured) {
-        try {
-          await ensureDictionaryTable();
-          tableEnsured = true;
-        } catch {
-          // Table creation failed, skip offline
-        }
-      }
-
       let entry: DictionaryEntry | null = null;
 
-      // Try offline first
-      if (tableEnsured) {
-        entry = await lookupOffline(word);
+      if (sourceLang === "en") {
+        // English word: use dictionary API (offline → online) then translate definitions
+        if (!tableEnsured) {
+          try {
+            await ensureDictionaryTable();
+            tableEnsured = true;
+          } catch {
+            // Table creation failed, skip offline
+          }
+        }
+
+        if (tableEnsured) {
+          entry = await lookupOffline(word);
+        }
+        if (!entry) {
+          entry = await lookupOnline(word);
+        }
+
+        if (activeWord.current !== word) return;
+
+        if (entry && targetLang !== "en") {
+          try {
+            entry = await translateDefinitions(entry, "en", targetLang);
+          } catch {
+            // Translation failed — show English definitions
+          }
+        }
+      } else {
+        // Non-English word: use Google Translate as dictionary
+        entry = await lookupViaTranslate(word, sourceLang, targetLang);
       }
 
-      // Try online
-      if (!entry) {
-        entry = await lookupOnline(word);
-      }
-
-      if (activeWord.current !== word) return; // stale
+      if (activeWord.current !== word) return;
 
       if (!entry) {
         setError("noResult");
         return;
       }
-
-      // Translate definitions to user's language
-      if (language !== "en") {
-        try {
-          entry = await translateDefinitions(entry, language);
-        } catch {
-          // Translation failed — show English definitions
-        }
-      }
-
-      if (activeWord.current !== word) return; // stale
 
       cache.set(key, entry);
       setResult(entry);
@@ -89,7 +91,7 @@ export function useDictionary(language: string) {
         setLoading(false);
       }
     }
-  }, [language]);
+  }, [targetLang]);
 
   const clear = useCallback(() => {
     activeWord.current = "";

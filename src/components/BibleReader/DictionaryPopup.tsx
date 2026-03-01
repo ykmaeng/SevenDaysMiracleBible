@@ -3,36 +3,36 @@ import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useDictionary } from "../../hooks/useDictionary";
 
-function speakWord(word: string) {
+function speakWord(word: string, lang: string) {
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(word);
-  utterance.lang = "en";
-  // Try to find an English voice
+  utterance.lang = lang;
   const voices = window.speechSynthesis.getVoices();
-  const enVoice = voices.find((v) => v.lang.startsWith("en") && v.default)
-    ?? voices.find((v) => v.lang.startsWith("en"));
-  if (enVoice) utterance.voice = enVoice;
+  const voice = voices.find((v) => v.lang.startsWith(lang) && v.default)
+    ?? voices.find((v) => v.lang.startsWith(lang));
+  if (voice) utterance.voice = voice;
   utterance.rate = 0.9;
   window.speechSynthesis.speak(utterance);
 }
 
 interface DictionaryPopupProps {
   word: string;
+  sourceLang: string;
   position: { x: number; y: number; bottom: number };
   containerRect: DOMRect;
   onClose: () => void;
 }
 
-export function DictionaryPopup({ word, position, containerRect, onClose }: DictionaryPopupProps) {
+export function DictionaryPopup({ word, sourceLang, position, containerRect, onClose }: DictionaryPopupProps) {
   const { t } = useTranslation();
   const dictionaryLang = useSettingsStore((s) => s.dictionaryLang);
   const { loading, result, error, lookup, clear } = useDictionary(dictionaryLang);
   const popupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    lookup(word);
+    lookup(word, sourceLang);
     return clear;
-  }, [word, lookup, clear]);
+  }, [word, sourceLang, lookup, clear]);
 
   // Click outside to close
   useEffect(() => {
@@ -104,7 +104,7 @@ export function DictionaryPopup({ word, position, containerRect, onClose }: Dict
               )}
             </div>
             <button
-              onClick={() => speakWord(result.word)}
+              onClick={() => speakWord(result.word, sourceLang)}
               className="p-1 rounded-full text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/30 transition-colors shrink-0"
               title="Pronounce"
             >
