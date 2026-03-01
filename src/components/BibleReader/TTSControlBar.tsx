@@ -40,12 +40,13 @@ export function TTSControlBar({
       window.speechSynthesis.removeEventListener("voiceschanged", load);
   }, []);
 
-  // Filter voices relevant to the current language, then show all others
+  // Filter out non-functional voices, then split by language
   const { matchingVoices, otherVoices } = useMemo(() => {
+    const usable = voices.filter((v) => !v.name.includes("Eloquence"));
     if (!lang)
-      return { matchingVoices: voices, otherVoices: [] as SpeechSynthesisVoice[] };
-    const matching = voices.filter((v) => v.lang.startsWith(lang));
-    const other = voices.filter((v) => !v.lang.startsWith(lang));
+      return { matchingVoices: usable, otherVoices: [] as SpeechSynthesisVoice[] };
+    const matching = usable.filter((v) => v.lang.startsWith(lang));
+    const other = usable.filter((v) => !v.lang.startsWith(lang));
     return { matchingVoices: matching, otherVoices: other };
   }, [voices, lang]);
 

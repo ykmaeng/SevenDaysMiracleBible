@@ -16,14 +16,18 @@ interface TTSActions {
   getAvailableVoices: () => SpeechSynthesisVoice[];
 }
 
+function isUsableVoice(v: SpeechSynthesisVoice): boolean {
+  return !v.name.includes("Eloquence");
+}
+
 function findVoiceForLang(
   voices: SpeechSynthesisVoice[],
   lang: string
 ): SpeechSynthesisVoice | undefined {
   // Try exact prefix match (e.g. "ko" matches "ko-KR")
   return (
-    voices.find((v) => v.lang.startsWith(lang + "-")) ??
-    voices.find((v) => v.lang === lang)
+    voices.find((v) => isUsableVoice(v) && v.lang.startsWith(lang + "-")) ??
+    voices.find((v) => isUsableVoice(v) && v.lang === lang)
   );
 }
 

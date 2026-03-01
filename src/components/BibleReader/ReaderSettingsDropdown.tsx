@@ -40,6 +40,7 @@ export function ReaderSettingsDropdown({
   const groupedVoices = useMemo(() => {
     const map = new Map<string, SpeechSynthesisVoice[]>();
     for (const v of voices) {
+      if (v.name.includes("Eloquence")) continue;
       const lang = v.lang.split("-")[0];
       if (!map.has(lang)) map.set(lang, []);
       map.get(lang)!.push(v);
