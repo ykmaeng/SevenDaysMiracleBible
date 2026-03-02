@@ -3,6 +3,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useTranslation } from "react-i18next";
 import { getChapter, getParallelChapter } from "../../lib/bible";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { CORE_TRANSLATIONS } from "../../lib/downloadConfig";
 import { VerseItem } from "./VerseItem";
 import { DictionaryPopup } from "./DictionaryPopup";
 import type { WordClickInfo } from "./VerseItem";
@@ -148,9 +149,18 @@ export function ChapterView({
   }
 
   if (verses.length === 0) {
+    const needsDownload = !CORE_TRANSLATIONS.has(translationId);
     return (
-      <div className="flex items-center justify-center h-full text-gray-400">
-        {t("reader.noContent")}
+      <div className="flex flex-col items-center justify-center h-full gap-4 px-6 text-center">
+        <p className="text-gray-400">{t("reader.noContent")}</p>
+        {needsDownload && (
+          <button
+            onClick={() => window.dispatchEvent(new Event("open-settings"))}
+            className="text-sm px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+          >
+            {t("settings.downloads")}
+          </button>
+        )}
       </div>
     );
   }

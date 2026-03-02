@@ -16,6 +16,13 @@ function App() {
   const fontFamily = useSettingsStore((s) => s.fontFamily);
   const onboardingComplete = useSettingsStore((s) => s.onboardingComplete);
 
+  // Listen for open-settings event (e.g. from download banner)
+  useEffect(() => {
+    const handler = () => setView("settings");
+    window.addEventListener("open-settings", handler);
+    return () => window.removeEventListener("open-settings", handler);
+  }, []);
+
   // Load selected Google Font on startup
   useEffect(() => {
     if (fontFamily) {

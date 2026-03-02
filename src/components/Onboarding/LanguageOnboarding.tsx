@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSettingsStore } from "../../stores/settingsStore";
+import { useSettingsStore, DEFAULT_TRANSLATION_BY_LANG } from "../../stores/settingsStore";
+import { useTabStore } from "../../stores/tabStore";
 
 const ONBOARDING_LANGUAGES = [
   { code: "ko", greeting: "안녕하세요", name: "한국어" },
@@ -17,6 +18,8 @@ const ONBOARDING_LANGUAGES = [
 export function LanguageOnboarding() {
   const { i18n } = useTranslation();
   const { setLanguage, completeOnboarding, setFontFamily } = useSettingsStore();
+  const updateTab = useTabStore((s) => s.updateTab);
+  const tabs = useTabStore((s) => s.tabs);
   const [pressed, setPressed] = useState<string | null>(null);
 
   const handleSelect = (langCode: string) => {
@@ -25,6 +28,11 @@ export function LanguageOnboarding() {
       setLanguage(langCode);
       i18n.changeLanguage(langCode);
       setFontFamily("");
+      // Update all existing tabs to use the selected language's default translation
+      const translationId = DEFAULT_TRANSLATION_BY_LANG[langCode] ?? "kjv";
+      for (const tab of tabs) {
+        updateTab(tab.id, { translationId });
+      }
       completeOnboarding();
     }, 200);
   };
