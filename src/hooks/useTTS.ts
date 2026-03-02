@@ -31,7 +31,10 @@ function findVoiceForLang(
   );
 }
 
+const hasTTS = typeof window !== "undefined" && "speechSynthesis" in window;
+
 function ensureVoicesLoaded(): Promise<SpeechSynthesisVoice[]> {
+  if (!hasTTS) return Promise.resolve([]);
   const voices = window.speechSynthesis.getVoices();
   if (voices.length > 0) return Promise.resolve(voices);
   return new Promise((resolve) => {
@@ -59,6 +62,7 @@ export function useTTS(): TTSState & TTSActions {
 
   // Pre-load voices on mount
   useEffect(() => {
+    if (!hasTTS) return;
     ensureVoicesLoaded().then((v) => {
       voicesRef.current = v;
     });
@@ -111,13 +115,13 @@ export function useTTS(): TTSState & TTSActions {
       }
     };
 
-    window.speechSynthesis.speak(utterance);
+    if (hasTTS) window.speechSynthesis.speak(utterance);
   };
 
   const play = useCallback((verses: Verse[], lang = "", startIndex = 0) => {
     // Stop existing chain before cancel to prevent onend from advancing
     stoppedRef.current = true;
-    window.speechSynthesis.cancel();
+    if (hasTTS) window.speechSynthesis.cancel();
     versesRef.current = verses;
     langRef.current = lang;
     stoppedRef.current = false;
@@ -134,14 +138,14 @@ export function useTTS(): TTSState & TTSActions {
   }, []);
 
   const pause = useCallback(() => {
-    if (window.speechSynthesis.speaking) {
+    if (hasTTS && window.speechSynthesis.speaking) {
       window.speechSynthesis.pause();
       setIsPaused(true);
     }
   }, []);
 
   const resume = useCallback(() => {
-    if (window.speechSynthesis.paused) {
+    if (hasTTS && window.speechSynthesis.paused) {
       window.speechSynthesis.resume();
       setIsPaused(false);
     }
@@ -149,7 +153,7 @@ export function useTTS(): TTSState & TTSActions {
 
   const stop = useCallback(() => {
     stoppedRef.current = true;
-    window.speechSynthesis.cancel();
+    if (hasTTS) window.speechSynthesis.cancel();
     setIsPlaying(false);
     setIsPaused(false);
     setCurrentVerseIndex(0);
@@ -163,7 +167,7 @@ export function useTTS(): TTSState & TTSActions {
   useEffect(() => {
     return () => {
       stoppedRef.current = true;
-      window.speechSynthesis.cancel();
+      if (hasTTS) window.speechSynthesis.cancel();
     };
   }, []);
 

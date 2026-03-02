@@ -105,6 +105,11 @@ CREATE TABLE IF NOT EXISTS bookmarks (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Full-text search
+CREATE VIRTUAL TABLE IF NOT EXISTS verses_fts USING fts5(
+  text, content=verses, content_rowid=id, tokenize='unicode61'
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_verses_lookup ON verses(translation_id, book_id, chapter);
 CREATE INDEX IF NOT EXISTS idx_commentary_lookup ON commentary(book_id, chapter, language);
