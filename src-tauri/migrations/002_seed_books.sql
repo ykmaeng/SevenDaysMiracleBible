@@ -17,12 +17,21 @@ INSERT OR IGNORE INTO books (id, testament, chapters) VALUES
 
 -- Seed available translations
 INSERT OR IGNORE INTO translations (id, name, language, description, is_original, is_ai_generated, downloaded, download_size_mb) VALUES
-('kjv', 'King James Version', 'en', 'The authorized King James Version (1611)', 0, 0, 0, 1.5),
-('asv', 'American Standard Version', 'en', 'American Standard Version (1901)', 0, 0, 0, 1.5),
-('web', 'World English Bible', 'en', 'World English Bible - Public Domain', 0, 0, 0, 1.5),
-('bbe', 'Bible in Basic English', 'en', 'Bible in Basic English (1965)', 0, 0, 0, 1.5),
-('ai-ko', 'AI 한국어 번역', 'ko', '원문 기반 AI 번역 (히브리어/그리스어)', 0, 1, 0, 2.0),
-('cuv', '和合本', 'zh', 'Chinese Union Version (1919)', 0, 0, 0, 2.0),
-('rv1909', 'Reina-Valera 1909', 'es', 'Reina-Valera 1909 - Dominio Público', 0, 0, 0, 1.5),
-('hebrew', 'Westminster Leningrad Codex', 'he', 'Hebrew Old Testament (WLC)', 1, 0, 0, 2.0),
-('greek', 'Open Greek New Testament', 'el', 'Greek New Testament (OpenGNT)', 1, 0, 0, 1.0);
+('kjv', 'King James Version', 'en', 'The authorized King James Version (1611)', 0, 0, 1, 6.0),
+('asv', 'American Standard Version', 'en', 'American Standard Version (1901)', 0, 0, 0, 6.0),
+('web', 'World English Bible', 'en', 'World English Bible - Public Domain', 0, 0, 0, 6.2),
+('bbe', 'Bible in Basic English', 'en', 'Bible in Basic English (1965)', 0, 0, 0, 6.1),
+('ai-ko', 'AI 한국어 번역', 'ko', '원문 기반 AI 번역 (히브리어/그리스어)', 0, 1, 1, 7.3),
+('cuv', '和合本', 'zh', 'Chinese Union Version (1919)', 0, 0, 0, 5.4),
+('rv1909', 'Reina-Valera 1909', 'es', 'Reina-Valera 1909 - Dominio Público', 0, 0, 0, 5.9),
+('hebrew', 'Westminster Leningrad Codex', 'he', 'Hebrew Old Testament (WLC)', 1, 0, 0, 7.6),
+('greek', 'Open Greek New Testament', 'el', 'Greek New Testament (OpenGNT)', 1, 0, 0, 2.3),
+('darby', 'Darby Translation', 'en', 'John Nelson Darby Translation (1890)', 0, 0, 0, 6.0),
+('ylt', "Young's Literal Translation", 'en', "Young's Literal Translation (1862)", 0, 0, 0, 6.0),
+('korrv', '개역한글', 'ko', '개역한글판 (1961)', 0, 0, 0, 11.4),
+('nkrv', '개역개정', 'ko', '개역개정판 (1998)', 0, 0, 0, 6.4),
+('japkougo', '口語訳聖書', 'ja', '口語訳聖書 (1955)', 0, 0, 0, 7.5),
+('gerelb', 'Elberfelder Bibel', 'de', 'Elberfelder Übersetzung (1905)', 0, 0, 0, 6.6),
+('frecrampon', 'Bible Crampon', 'fr', 'Traduction Crampon (1923)', 0, 0, 0, 7.5),
+('porblivre', 'Bíblia Livre', 'pt', 'Bíblia Livre - Domínio Público', 0, 0, 0, 6.3),
+('russynodal', 'Синодальный перевод', 'ru', 'Синодальный перевод (1876)', 0, 0, 0, 9.6);

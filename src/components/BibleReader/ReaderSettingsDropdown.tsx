@@ -31,6 +31,7 @@ export function ReaderSettingsDropdown({
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
+    if (!("speechSynthesis" in window)) return;
     const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
     loadVoices();
     window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
@@ -174,8 +175,8 @@ export function ReaderSettingsDropdown({
               <option value="">System Default</option>
               {[...groupedVoices.entries()].map(([lang, langVoices]) => (
                 <optgroup key={lang} label={lang.toUpperCase()}>
-                  {langVoices.map((v) => (
-                    <option key={v.name} value={v.name}>
+                  {langVoices.map((v, i) => (
+                    <option key={`${lang}-${i}`} value={v.name}>
                       {v.name}
                     </option>
                   ))}

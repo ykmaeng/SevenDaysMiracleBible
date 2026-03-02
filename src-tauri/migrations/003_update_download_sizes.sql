@@ -1,3 +1,6 @@
+-- Ensure core translations are marked as downloaded
+UPDATE translations SET downloaded = 1 WHERE id IN ('kjv', 'ai-ko');
+
 -- Update download sizes to actual file sizes
 UPDATE translations SET download_size_mb = 6.0 WHERE id = 'kjv';
 UPDATE translations SET download_size_mb = 6.0 WHERE id = 'asv';
