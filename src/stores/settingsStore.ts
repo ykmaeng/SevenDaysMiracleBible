@@ -18,6 +18,7 @@ interface SettingsState {
   ttsVoiceName: string;
   ttsSpeed: number;
   dictionaryLang: string;
+  onboardingComplete: boolean;
 }
 
 interface SettingsActions {
@@ -35,6 +36,7 @@ interface SettingsActions {
   setTtsVoiceName: (name: string) => void;
   setTtsSpeed: (speed: number) => void;
   setDictionaryLang: (lang: string) => void;
+  completeOnboarding: () => void;
 }
 
 export const DEFAULT_TRANSLATION_BY_LANG: Record<string, string> = {
@@ -65,6 +67,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       ttsVoiceName: "",
       ttsSpeed: 1.0,
       dictionaryLang: "ko",
+      onboardingComplete: false,
 
       setLanguage: (lang) =>
         set((state) => {
@@ -145,6 +148,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setDictionaryLang: (lang) =>
         set((state) => {
           state.dictionaryLang = lang;
+        }),
+
+      completeOnboarding: () =>
+        set((state) => {
+          state.onboardingComplete = true;
         }),
     })),
     {

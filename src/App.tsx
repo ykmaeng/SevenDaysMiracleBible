@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { TabBar } from "./components/TabBar/TabBar";
 import { TabPanel } from "./components/TabBar/TabPanel";
 import { LanguageSettings } from "./components/Settings/LanguageSettings";
+import { LanguageOnboarding } from "./components/Onboarding/LanguageOnboarding";
 import { useSettingsStore } from "./stores/settingsStore";
 import { loadGoogleFont } from "./lib/googleFonts";
 
@@ -13,6 +14,7 @@ function App() {
   const [view, setView] = useState<View>("reader");
   const theme = useSettingsStore((s) => s.theme);
   const fontFamily = useSettingsStore((s) => s.fontFamily);
+  const onboardingComplete = useSettingsStore((s) => s.onboardingComplete);
 
   // Load selected Google Font on startup
   useEffect(() => {
@@ -37,6 +39,14 @@ function App() {
       return () => mq.removeEventListener("change", update);
     }
   }, [theme]);
+
+  if (!onboardingComplete) {
+    return (
+      <div className="h-screen bg-white dark:bg-gray-900 dark:text-gray-100">
+        <LanguageOnboarding />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-gray-100">
