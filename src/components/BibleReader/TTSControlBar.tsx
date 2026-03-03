@@ -33,11 +33,16 @@ export function TTSControlBar({
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
-    const load = () => setVoices(window.speechSynthesis.getVoices());
-    load();
-    window.speechSynthesis.addEventListener("voiceschanged", load);
-    return () =>
-      window.speechSynthesis.removeEventListener("voiceschanged", load);
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    try {
+      const load = () => setVoices(window.speechSynthesis.getVoices());
+      load();
+      window.speechSynthesis.addEventListener("voiceschanged", load);
+      return () =>
+        window.speechSynthesis.removeEventListener("voiceschanged", load);
+    } catch {
+      // speechSynthesis not available (e.g. Android WebView)
+    }
   }, []);
 
   // Filter out non-functional voices, then split by language

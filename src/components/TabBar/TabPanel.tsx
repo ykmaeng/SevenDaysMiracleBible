@@ -166,25 +166,27 @@ export function TabPanel() {
           </button>
         </div>
         <div className="flex items-center gap-1">
-          <button
-            onClick={tts.isPlaying ? tts.stop : handleTtsPlay}
-            className={`p-1.5 rounded ${
-              tts.isPlaying
-                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
-                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-            }`}
-            title={tts.isPlaying ? t("tts.stop") : t("tts.play")}
-          >
-            {tts.isPlaying ? (
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6 6h12v12H6z" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8H4a1 1 0 00-1 1v6a1 1 0 001 1h2.5l5 4V4l-5 4z" />
-              </svg>
-            )}
-          </button>
+          {tts.isAvailable && (
+            <button
+              onClick={tts.isPlaying ? tts.stop : handleTtsPlay}
+              className={`p-1.5 rounded ${
+                tts.isPlaying
+                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
+                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
+              title={tts.isPlaying ? t("tts.stop") : t("tts.play")}
+            >
+              {tts.isPlaying ? (
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 6h12v12H6z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8H4a1 1 0 00-1 1v6a1 1 0 001 1h2.5l5 4V4l-5 4z" />
+                </svg>
+              )}
+            </button>
+          )}
           <ReaderSettingsDropdown
             showCommentary={showCommentary}
             onToggleCommentary={() => setShowCommentary(!showCommentary)}

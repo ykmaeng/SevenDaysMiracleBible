@@ -3,6 +3,7 @@ import { useSettingsStore } from "../stores/settingsStore";
 import type { Verse } from "../types/bible";
 
 interface TTSState {
+  isAvailable: boolean;
   isPlaying: boolean;
   isPaused: boolean;
   currentVerseIndex: number;
@@ -31,14 +32,31 @@ function findVoiceForLang(
   );
 }
 
-const hasTTS = typeof window !== "undefined" && "speechSynthesis" in window;
+function checkTTS(): boolean {
+  try {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
+    // Verify the API actually works (Android WebView may expose a broken stub)
+    window.speechSynthesis.getVoices();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const hasTTS = checkTTS();
 
 function ensureVoicesLoaded(): Promise<SpeechSynthesisVoice[]> {
   if (!hasTTS) return Promise.resolve([]);
-  const voices = window.speechSynthesis.getVoices();
-  if (voices.length > 0) return Promise.resolve(voices);
+  try {
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) return Promise.resolve(voices);
+  } catch {
+    return Promise.resolve([]);
+  }
   return new Promise((resolve) => {
+    const timeout = setTimeout(() => resolve([]), 3000);
     const onVoicesChanged = () => {
+      clearTimeout(timeout);
       window.speechSynthesis.removeEventListener(
         "voiceschanged",
         onVoicesChanged
@@ -50,6 +68,7 @@ function ensureVoicesLoaded(): Promise<SpeechSynthesisVoice[]> {
 }
 
 export function useTTS(): TTSState & TTSActions {
+  const [isAvailable, setIsAvailable] = useState(hasTTS);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
@@ -60,14 +79,17 @@ export function useTTS(): TTSState & TTSActions {
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
   const speakVerseRef = useRef<((index: number) => void) | null>(null);
 
-  // Pre-load voices on mount
+  // Pre-load voices on mount; disable TTS if no voices found (Android WebView)
   useEffect(() => {
     if (!hasTTS) return;
     ensureVoicesLoaded().then((v) => {
       voicesRef.current = v;
+      if (v.length === 0) setIsAvailable(false);
     });
     const update = () => {
-      voicesRef.current = window.speechSynthesis.getVoices();
+      const v = window.speechSynthesis.getVoices();
+      voicesRef.current = v;
+      if (v.length > 0) setIsAvailable(true);
     };
     window.speechSynthesis.addEventListener("voiceschanged", update);
     return () =>
@@ -172,6 +194,7 @@ export function useTTS(): TTSState & TTSActions {
   }, []);
 
   return {
+    isAvailable,
     isPlaying,
     isPaused,
     currentVerseIndex,

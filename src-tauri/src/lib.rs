@@ -1,6 +1,11 @@
 use std::fs;
 use tauri::Manager;
+use tauri_plugin_fs::FsExt;
 use tauri_plugin_sql::{Migration, MigrationKind};
+
+// Minimum size (bytes) for a valid bible.db with actual verse data.
+// An empty schema-only DB is ~115KB; the real core DB is ~17MB.
+const MIN_VALID_DB_SIZE: u64 = 1_000_000;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -35,23 +40,59 @@ pub fn run() {
         )
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            // Copy bundled bible.db to app data directory if it doesn't exist
             let app_data_dir = app.path().app_data_dir()?;
             fs::create_dir_all(&app_data_dir)?;
             let db_path = app_data_dir.join("bible.db");
 
-            if !db_path.exists() {
+            // Check if DB is missing or just an empty schema (< 1MB)
+            let needs_copy = if db_path.exists() {
+                match fs::metadata(&db_path) {
+                    Ok(meta) => meta.len() < MIN_VALID_DB_SIZE,
+                    Err(_) => true,
+                }
+            } else {
+                true
+            };
+
+            if needs_copy {
+                // Try platform-native fs::copy first (works on desktop)
                 let resource_path = app
                     .path()
-                    .resource_dir()?
-                    .join("resources")
-                    .join("bible-core.db");
+                    .resource_dir()
+                    .ok()
+                    .map(|d| d.join("resources").join("bible-core.db"));
 
-                if resource_path.exists() {
-                    fs::copy(&resource_path, &db_path)?;
-                    println!("Copied bundled bible-core.db to {:?}", db_path);
+                let copied = if let Some(ref rp) = resource_path {
+                    if rp.exists() {
+                        fs::copy(rp, &db_path).is_ok()
+                    } else {
+                        false
+                    }
                 } else {
-                    println!("Warning: bundled bible.db not found at {:?}", resource_path);
+                    false
+                };
+
+                // Fallback: use Tauri fs plugin (works on Android where resources are in APK assets)
+                if !copied {
+                    let resource_file = app
+                        .path()
+                        .resolve("resources/bible-core.db", tauri::path::BaseDirectory::Resource)
+                        .ok();
+
+                    if let Some(ref rf) = resource_file {
+                        match app.fs().read(rf) {
+                            Ok(bytes) => {
+                                if let Err(e) = fs::write(&db_path, &bytes) {
+                                    eprintln!("Failed to write bible.db: {e}");
+                                } else {
+                                    println!("Copied bible-core.db via Tauri fs ({} bytes)", bytes.len());
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!("Failed to read bundled bible-core.db: {e}");
+                            }
+                        }
+                    }
                 }
             }
 
