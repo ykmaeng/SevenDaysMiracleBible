@@ -3,6 +3,8 @@ use tauri::Manager;
 use tauri_plugin_fs::FsExt;
 use tauri_plugin_sql::{Migration, MigrationKind};
 
+mod tts_plugin;
+
 // Minimum size (bytes) for a valid bible.db with actual verse data.
 // An empty schema-only DB is ~115KB; the real core DB is ~17MB.
 const MIN_VALID_DB_SIZE: u64 = 1_000_000;
@@ -39,6 +41,8 @@ pub fn run() {
                 .build(),
         )
         .plugin(tauri_plugin_opener::init())
+        .plugin(tts_plugin::init())
+        .invoke_handler(tts_plugin::commands())
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir()?;
             fs::create_dir_all(&app_data_dir)?;

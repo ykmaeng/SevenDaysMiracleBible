@@ -1,6 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { useSettingsStore } from "../stores/settingsStore";
 import type { Verse } from "../types/bible";
+
+// Platform detection
+const isAndroid =
+  typeof navigator !== "undefined" && /android/i.test(navigator.userAgent);
 
 interface TTSState {
   isAvailable: boolean;
@@ -17,6 +22,7 @@ interface TTSActions {
   getAvailableVoices: () => SpeechSynthesisVoice[];
 }
 
+// ========== Web Speech API helpers (desktop) ==========
 function isUsableVoice(v: SpeechSynthesisVoice): boolean {
   return !v.name.includes("Eloquence");
 }
@@ -25,17 +31,17 @@ function findVoiceForLang(
   voices: SpeechSynthesisVoice[],
   lang: string
 ): SpeechSynthesisVoice | undefined {
-  // Try exact prefix match (e.g. "ko" matches "ko-KR")
   return (
     voices.find((v) => isUsableVoice(v) && v.lang.startsWith(lang + "-")) ??
     voices.find((v) => isUsableVoice(v) && v.lang === lang)
   );
 }
 
-function checkTTS(): boolean {
+function checkWebTTS(): boolean {
+  if (isAndroid) return false; // Skip Web Speech API on Android
   try {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
-    // Verify the API actually works (Android WebView may expose a broken stub)
+    if (typeof window === "undefined" || !("speechSynthesis" in window))
+      return false;
     window.speechSynthesis.getVoices();
     return true;
   } catch {
@@ -43,10 +49,10 @@ function checkTTS(): boolean {
   }
 }
 
-const hasTTS = checkTTS();
+const hasWebTTS = checkWebTTS();
 
 function ensureVoicesLoaded(): Promise<SpeechSynthesisVoice[]> {
-  if (!hasTTS) return Promise.resolve([]);
+  if (!hasWebTTS) return Promise.resolve([]);
   try {
     const voices = window.speechSynthesis.getVoices();
     if (voices.length > 0) return Promise.resolve(voices);
@@ -67,8 +73,39 @@ function ensureVoicesLoaded(): Promise<SpeechSynthesisVoice[]> {
   });
 }
 
+// ========== Native TTS helpers (Android) ==========
+async function nativeIsAvailable(): Promise<boolean> {
+  try {
+    const r = await invoke<{ initialized: boolean; voiceCount: number }>(
+      "tts_is_initialized"
+    );
+    return r.initialized && r.voiceCount > 0;
+  } catch {
+    return false;
+  }
+}
+
+async function nativeSpeak(
+  text: string,
+  language?: string,
+  rate?: number
+): Promise<void> {
+  await invoke("tts_speak", {
+    payload: { text, language: language ?? null, rate: rate ?? 1.0, pitch: 1.0 },
+  });
+}
+
+async function nativeStop(): Promise<void> {
+  try {
+    await invoke("tts_stop");
+  } catch {
+    // ignore
+  }
+}
+
+// ========== Hook ==========
 export function useTTS(): TTSState & TTSActions {
-  const [isAvailable, setIsAvailable] = useState(hasTTS);
+  const [isAvailable, setIsAvailable] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
@@ -79,24 +116,31 @@ export function useTTS(): TTSState & TTSActions {
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
   const speakVerseRef = useRef<((index: number) => void) | null>(null);
 
-  // Pre-load voices on mount; disable TTS if no voices found (Android WebView)
+  // Check availability on mount
   useEffect(() => {
-    if (!hasTTS) return;
-    ensureVoicesLoaded().then((v) => {
-      voicesRef.current = v;
-      if (v.length === 0) setIsAvailable(false);
-    });
-    const update = () => {
-      const v = window.speechSynthesis.getVoices();
-      voicesRef.current = v;
-      if (v.length > 0) setIsAvailable(true);
-    };
-    window.speechSynthesis.addEventListener("voiceschanged", update);
-    return () =>
-      window.speechSynthesis.removeEventListener("voiceschanged", update);
+    if (isAndroid) {
+      // Wait briefly for native TTS init then check
+      const timer = setTimeout(() => {
+        nativeIsAvailable().then(setIsAvailable);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (hasWebTTS) {
+      ensureVoicesLoaded().then((v) => {
+        voicesRef.current = v;
+        setIsAvailable(v.length > 0);
+      });
+      const update = () => {
+        const v = window.speechSynthesis.getVoices();
+        voicesRef.current = v;
+        if (v.length > 0) setIsAvailable(true);
+      };
+      window.speechSynthesis.addEventListener("voiceschanged", update);
+      return () =>
+        window.speechSynthesis.removeEventListener("voiceschanged", update);
+    }
   }, []);
 
-  // speakVerse reads settings directly from the store for always-fresh values
+  // speakVerse — reads settings from the store for fresh values
   speakVerseRef.current = (index: number) => {
     const verses = versesRef.current;
     if (index >= verses.length || stoppedRef.current) {
@@ -108,66 +152,91 @@ export function useTTS(): TTSState & TTSActions {
 
     setCurrentVerseIndex(index);
 
-    const { ttsSpeed, ttsVoiceName } = useSettingsStore.getState();
-    const utterance = new SpeechSynthesisUtterance(verses[index].text);
-    utterance.rate = ttsSpeed;
+    if (isAndroid) {
+      // Native Android TTS — speak returns a Promise that resolves when speech finishes
+      const { ttsSpeed } = useSettingsStore.getState();
+      const lang = langRef.current;
+      nativeSpeak(verses[index].text, lang || undefined, ttsSpeed)
+        .then(() => {
+          if (!stoppedRef.current) {
+            speakVerseRef.current?.(index + 1);
+          }
+        })
+        .catch(() => {
+          setIsPlaying(false);
+          setIsPaused(false);
+        });
+    } else {
+      // Web Speech API (desktop)
+      const { ttsSpeed, ttsVoiceName } = useSettingsStore.getState();
+      const utterance = new SpeechSynthesisUtterance(verses[index].text);
+      utterance.rate = ttsSpeed;
 
-    const lang = langRef.current;
-    if (lang) utterance.lang = lang;
+      const lang = langRef.current;
+      if (lang) utterance.lang = lang;
 
-    const voices = voicesRef.current;
-    if (ttsVoiceName) {
-      const voice = voices.find((v) => v.name === ttsVoiceName);
-      if (voice) utterance.voice = voice;
-    } else if (lang) {
-      const voice = findVoiceForLang(voices, lang);
-      if (voice) utterance.voice = voice;
+      const voices = voicesRef.current;
+      if (ttsVoiceName) {
+        const voice = voices.find((v) => v.name === ttsVoiceName);
+        if (voice) utterance.voice = voice;
+      } else if (lang) {
+        const voice = findVoiceForLang(voices, lang);
+        if (voice) utterance.voice = voice;
+      }
+
+      utterance.onend = () => {
+        if (!stoppedRef.current) {
+          speakVerseRef.current?.(index + 1);
+        }
+      };
+
+      utterance.onerror = (e) => {
+        if (e.error !== "interrupted" && e.error !== "canceled") {
+          setIsPlaying(false);
+          setIsPaused(false);
+        }
+      };
+
+      window.speechSynthesis.speak(utterance);
     }
-
-    utterance.onend = () => {
-      if (!stoppedRef.current) {
-        speakVerseRef.current?.(index + 1);
-      }
-    };
-
-    utterance.onerror = (e) => {
-      if (e.error !== "interrupted" && e.error !== "canceled") {
-        setIsPlaying(false);
-        setIsPaused(false);
-      }
-    };
-
-    if (hasTTS) window.speechSynthesis.speak(utterance);
   };
 
   const play = useCallback((verses: Verse[], lang = "", startIndex = 0) => {
-    // Stop existing chain before cancel to prevent onend from advancing
     stoppedRef.current = true;
-    if (hasTTS) window.speechSynthesis.cancel();
+    if (isAndroid) {
+      nativeStop();
+    } else if (hasWebTTS) {
+      window.speechSynthesis.cancel();
+    }
+
     versesRef.current = verses;
     langRef.current = lang;
     stoppedRef.current = false;
     setIsPlaying(true);
     setIsPaused(false);
 
-    // Ensure voices are ready before speaking
-    ensureVoicesLoaded().then((v) => {
-      voicesRef.current = v;
-      if (!stoppedRef.current) {
-        speakVerseRef.current?.(startIndex);
-      }
-    });
-  }, []);
-
-  const pause = useCallback(() => {
-    if (hasTTS && window.speechSynthesis.speaking) {
-      window.speechSynthesis.pause();
-      setIsPaused(true);
+    if (isAndroid) {
+      speakVerseRef.current?.(startIndex);
+    } else {
+      ensureVoicesLoaded().then((v) => {
+        voicesRef.current = v;
+        if (!stoppedRef.current) {
+          speakVerseRef.current?.(startIndex);
+        }
+      });
     }
   }, []);
 
+  const pause = useCallback(() => {
+    if (!isAndroid && hasWebTTS && window.speechSynthesis.speaking) {
+      window.speechSynthesis.pause();
+      setIsPaused(true);
+    }
+    // Android native TTS doesn't support pause — only stop
+  }, []);
+
   const resume = useCallback(() => {
-    if (hasTTS && window.speechSynthesis.paused) {
+    if (!isAndroid && hasWebTTS && window.speechSynthesis.paused) {
       window.speechSynthesis.resume();
       setIsPaused(false);
     }
@@ -175,7 +244,11 @@ export function useTTS(): TTSState & TTSActions {
 
   const stop = useCallback(() => {
     stoppedRef.current = true;
-    if (hasTTS) window.speechSynthesis.cancel();
+    if (isAndroid) {
+      nativeStop();
+    } else if (hasWebTTS) {
+      window.speechSynthesis.cancel();
+    }
     setIsPlaying(false);
     setIsPaused(false);
     setCurrentVerseIndex(0);
@@ -189,7 +262,11 @@ export function useTTS(): TTSState & TTSActions {
   useEffect(() => {
     return () => {
       stoppedRef.current = true;
-      if (hasTTS) window.speechSynthesis.cancel();
+      if (isAndroid) {
+        nativeStop();
+      } else if (hasWebTTS) {
+        window.speechSynthesis.cancel();
+      }
     };
   }, []);
 
