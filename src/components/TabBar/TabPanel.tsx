@@ -255,6 +255,7 @@ export function TabPanel() {
           speed={ttsSpeed}
           voiceName={ttsVoiceName}
           lang={translationToLang(activeTab.translationId)}
+          voices={tts.voices}
           onPause={tts.pause}
           onResume={tts.resume}
           onStop={tts.stop}

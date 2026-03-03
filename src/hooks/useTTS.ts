@@ -7,11 +7,18 @@ import type { Verse } from "../types/bible";
 const isAndroid =
   typeof navigator !== "undefined" && /android/i.test(navigator.userAgent);
 
+export interface TTSVoice {
+  name: string;
+  lang: string;
+  localService: boolean;
+}
+
 interface TTSState {
   isAvailable: boolean;
   isPlaying: boolean;
   isPaused: boolean;
   currentVerseIndex: number;
+  voices: TTSVoice[];
 }
 
 interface TTSActions {
@@ -88,11 +95,21 @@ async function nativeIsAvailable(): Promise<boolean> {
 async function nativeSpeak(
   text: string,
   language?: string,
-  rate?: number
+  rate?: number,
+  voice?: string
 ): Promise<void> {
   await invoke("tts_speak", {
-    payload: { text, language: language ?? null, rate: rate ?? 1.0, pitch: 1.0 },
+    payload: { text, language: language ?? null, voice: voice ?? null, rate: rate ?? 1.0, pitch: 1.0 },
   });
+}
+
+async function nativeGetVoices(): Promise<TTSVoice[]> {
+  try {
+    const r = await invoke<{ voices: TTSVoice[] }>("tts_get_voices");
+    return r.voices ?? [];
+  } catch {
+    return [];
+  }
 }
 
 async function nativeStop(): Promise<void> {
@@ -109,6 +126,7 @@ export function useTTS(): TTSState & TTSActions {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
+  const [voices, setVoices] = useState<TTSVoice[]>([]);
 
   const versesRef = useRef<Verse[]>([]);
   const langRef = useRef("");
@@ -121,17 +139,24 @@ export function useTTS(): TTSState & TTSActions {
     if (isAndroid) {
       // Wait briefly for native TTS init then check
       const timer = setTimeout(() => {
-        nativeIsAvailable().then(setIsAvailable);
+        nativeIsAvailable().then((avail) => {
+          setIsAvailable(avail);
+          if (avail) {
+            nativeGetVoices().then(setVoices);
+          }
+        });
       }, 500);
       return () => clearTimeout(timer);
     } else if (hasWebTTS) {
       ensureVoicesLoaded().then((v) => {
         voicesRef.current = v;
+        setVoices(v.map((sv) => ({ name: sv.name, lang: sv.lang, localService: sv.localService })));
         setIsAvailable(v.length > 0);
       });
       const update = () => {
         const v = window.speechSynthesis.getVoices();
         voicesRef.current = v;
+        setVoices(v.map((sv) => ({ name: sv.name, lang: sv.lang, localService: sv.localService })));
         if (v.length > 0) setIsAvailable(true);
       };
       window.speechSynthesis.addEventListener("voiceschanged", update);
@@ -154,9 +179,9 @@ export function useTTS(): TTSState & TTSActions {
 
     if (isAndroid) {
       // Native Android TTS — speak returns a Promise that resolves when speech finishes
-      const { ttsSpeed } = useSettingsStore.getState();
+      const { ttsSpeed, ttsVoiceName } = useSettingsStore.getState();
       const lang = langRef.current;
-      nativeSpeak(verses[index].text, lang || undefined, ttsSpeed)
+      nativeSpeak(verses[index].text, lang || undefined, ttsSpeed, ttsVoiceName || undefined)
         .then(() => {
           if (!stoppedRef.current) {
             speakVerseRef.current?.(index + 1);
@@ -275,6 +300,7 @@ export function useTTS(): TTSState & TTSActions {
     isPlaying,
     isPaused,
     currentVerseIndex,
+    voices,
     play,
     pause,
     resume,

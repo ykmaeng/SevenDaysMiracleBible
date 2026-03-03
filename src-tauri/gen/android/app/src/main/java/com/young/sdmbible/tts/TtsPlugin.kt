@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 class SpeakArgs {
     var text: String = ""
     var language: String? = null
+    var voice: String? = null
     var rate: Float = 1.0f
     var pitch: Float = 1.0f
 }
@@ -99,9 +100,19 @@ class TtsPlugin(private val activity: Activity) : Plugin(activity), TextToSpeech
         }
 
         try {
-            args.language?.let { lang ->
-                val locale = Locale.forLanguageTag(lang)
-                engine.setLanguage(locale)
+            // Set specific voice by name, or fall back to language
+            var voiceSet = false
+            args.voice?.let { voiceName ->
+                engine.voices?.find { it.name == voiceName }?.let { voice ->
+                    engine.voice = voice
+                    voiceSet = true
+                }
+            }
+            if (!voiceSet) {
+                args.language?.let { lang ->
+                    val locale = Locale.forLanguageTag(lang)
+                    engine.setLanguage(locale)
+                }
             }
 
             if (args.rate != 1.0f) engine.setSpeechRate(args.rate.coerceIn(0.1f, 4.0f))
@@ -153,6 +164,28 @@ class TtsPlugin(private val activity: Activity) : Plugin(activity), TextToSpeech
             put("initialized", isReady)
             put("voiceCount", tts?.voices?.size ?: 0)
         })
+    }
+
+    @Command
+    fun getVoices(invoke: Invoke) {
+        val engine = tts
+        if (engine == null || !isReady) {
+            invoke.resolve(JSObject().put("voices", org.json.JSONArray()))
+            return
+        }
+
+        val voicesArray = org.json.JSONArray()
+        engine.voices?.forEach { voice ->
+            val obj = org.json.JSONObject().apply {
+                put("name", voice.name)
+                put("lang", voice.locale.toLanguageTag())
+                put("localService", !voice.isNetworkConnectionRequired)
+                put("quality", voice.quality)
+            }
+            voicesArray.put(obj)
+        }
+
+        invoke.resolve(JSObject().put("voices", voicesArray))
     }
 
     override fun onDestroy() {

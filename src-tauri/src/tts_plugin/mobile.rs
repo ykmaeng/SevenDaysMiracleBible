@@ -40,4 +40,10 @@ impl<R: Runtime> TtsBridge<R> {
             .run_mobile_plugin("isInitialized", ())
             .map_err(Into::into)
     }
+
+    pub fn get_voices(&self) -> Result<GetVoicesResponse> {
+        self.0
+            .run_mobile_plugin("getVoices", ())
+            .map_err(Into::into)
+    }
 }

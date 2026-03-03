@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import type { TTSVoice } from "../../hooks/useTTS";
 
 interface TTSControlBarProps {
   isPaused: boolean;
@@ -7,6 +8,7 @@ interface TTSControlBarProps {
   speed: number;
   voiceName: string;
   lang: string;
+  voices: TTSVoice[];
   onPause: () => void;
   onResume: () => void;
   onStop: () => void;
@@ -16,12 +18,18 @@ interface TTSControlBarProps {
 
 const SPEED_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
+/** Clean up voice names for display (remove parenthesized suffixes and common prefixes) */
+function formatVoiceName(name: string): string {
+  return name.replace(/\s*\(.*\)$/, "").replace(/^Google\s+/, "");
+}
+
 export function TTSControlBar({
   isPaused,
   currentVerseNumber,
   speed,
   voiceName,
   lang,
+  voices,
   onPause,
   onResume,
   onStop,
@@ -30,26 +38,12 @@ export function TTSControlBar({
 }: TTSControlBarProps) {
   const { t } = useTranslation();
   const [showVoicePicker, setShowVoicePicker] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    try {
-      const load = () => setVoices(window.speechSynthesis.getVoices());
-      load();
-      window.speechSynthesis.addEventListener("voiceschanged", load);
-      return () =>
-        window.speechSynthesis.removeEventListener("voiceschanged", load);
-    } catch {
-      // speechSynthesis not available (e.g. Android WebView)
-    }
-  }, []);
 
   // Filter out non-functional voices, then split by language
   const { matchingVoices, otherVoices } = useMemo(() => {
     const usable = voices.filter((v) => !v.name.includes("Eloquence"));
     if (!lang)
-      return { matchingVoices: usable, otherVoices: [] as SpeechSynthesisVoice[] };
+      return { matchingVoices: usable, otherVoices: [] as TTSVoice[] };
     const matching = usable.filter((v) => v.lang.startsWith(lang));
     const other = usable.filter((v) => !v.lang.startsWith(lang));
     return { matchingVoices: matching, otherVoices: other };
@@ -60,9 +54,9 @@ export function TTSControlBar({
     ? voices.find((v) => v.lang.startsWith(lang + "-")) ?? voices.find((v) => v.lang === lang)
     : null;
   const displayName = currentVoice
-    ? currentVoice.name.replace(/\s*\(.*\)$/, "")
+    ? formatVoiceName(currentVoice.name)
     : autoVoice
-      ? `Auto (${autoVoice.name.replace(/\s*\(.*\)$/, "")})`
+      ? `Auto (${formatVoiceName(autoVoice.name)})`
       : "Auto";
 
   const cycleSpeed = () => {
@@ -168,7 +162,10 @@ export function TTSControlBar({
                       : "text-gray-700 dark:text-gray-300"
                   }`}
                 >
-                  {v.name}
+                  <span>{formatVoiceName(v.name)}</span>
+                  {v.localService && (
+                    <span className="ml-1 text-[10px] text-gray-400 dark:text-gray-500">local</span>
+                  )}
                 </button>
               ))}
             </>
@@ -192,7 +189,7 @@ export function TTSControlBar({
                       : "text-gray-700 dark:text-gray-300"
                   }`}
                 >
-                  <span>{v.name}</span>
+                  <span>{formatVoiceName(v.name)}</span>
                   <span className="ml-1 text-gray-400 dark:text-gray-500">
                     {v.lang}
                   </span>

@@ -29,6 +29,7 @@ impl Serialize for Error {
 pub struct SpeakRequest {
     pub text: String,
     pub language: Option<String>,
+    pub voice: Option<String>,
     #[serde(default = "default_one")]
     pub rate: f32,
     #[serde(default = "default_one")]
@@ -61,6 +62,22 @@ pub struct IsSpeakingResponse {
 pub struct IsInitializedResponse {
     pub initialized: bool,
     pub voice_count: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct VoiceInfo {
+    pub name: String,
+    pub lang: String,
+    #[serde(default)]
+    pub local_service: bool,
+    #[serde(default)]
+    pub quality: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct GetVoicesResponse {
+    pub voices: Vec<VoiceInfo>,
 }
 
 #[cfg(mobile)]
@@ -131,9 +148,22 @@ async fn tts_is_initialized<R: Runtime>(app: AppHandle<R>) -> Result<IsInitializ
     }
 }
 
+#[command]
+async fn tts_get_voices<R: Runtime>(app: AppHandle<R>) -> Result<GetVoicesResponse> {
+    #[cfg(mobile)]
+    {
+        app.tts().get_voices()
+    }
+    #[cfg(not(mobile))]
+    {
+        let _ = app;
+        Err(Error::NotAvailable)
+    }
+}
+
 /// Returns the Tauri command handler and a setup function for mobile bridge init.
 pub fn commands<R: Runtime>() -> impl Fn(tauri::ipc::Invoke<R>) -> bool {
-    tauri::generate_handler![tts_speak, tts_stop, tts_is_speaking, tts_is_initialized]
+    tauri::generate_handler![tts_speak, tts_stop, tts_is_speaking, tts_is_initialized, tts_get_voices]
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
