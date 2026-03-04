@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useTabStore, type Tab } from "../../stores/tabStore";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { getBooks } from "../../lib/bible";
 import { ChapterView } from "../BibleReader/ChapterView";
 import { ReaderSettingsDropdown } from "../BibleReader/ReaderSettingsDropdown";
 import { TTSControlBar } from "../BibleReader/TTSControlBar";
@@ -9,7 +10,7 @@ import { BookPicker } from "../Navigation/BookPicker";
 import { ChapterPicker } from "../Navigation/ChapterPicker";
 import { CommentaryPanel } from "../Commentary/CommentaryPanel";
 import { useTTS } from "../../hooks/useTTS";
-import type { Verse } from "../../types/bible";
+import type { Book, Verse } from "../../types/bible";
 
 const TRANSLATION_LANG: Record<string, string> = {
   "ai-ko": "ko",
@@ -44,7 +45,10 @@ export function TabPanel() {
   const [showBookPicker, setShowBookPicker] = useState(false);
   const [showChapterPicker, setShowChapterPicker] = useState(false);
   const [showCommentary, setShowCommentary] = useState(false);
+  const [books, setBooks] = useState<Book[]>([]);
   const tts = useTTS();
+
+  useEffect(() => { getBooks().then(setBooks); }, []);
   const versesRef = useRef<Verse[]>([]);
   const ttsSpeed = useSettingsStore((s) => s.ttsSpeed);
   const setTtsSpeed = useSettingsStore((s) => s.setTtsSpeed);
@@ -80,8 +84,12 @@ export function TabPanel() {
     }
   };
 
+  const maxChapter = books.find((b) => b.id === activeTab.bookId)?.chapters ?? 999;
+
   const handleNextChapter = () => {
-    navigateTo(activeTab.bookId, activeTab.chapter + 1);
+    if (activeTab.chapter < maxChapter) {
+      navigateTo(activeTab.bookId, activeTab.chapter + 1);
+    }
   };
 
   const handleTtsPlay = () => {
@@ -97,7 +105,15 @@ export function TabPanel() {
 
   const handleVoiceChange = (name: string) => {
     setTtsVoiceName(name);
-    // Capture index before play() resets state, then restart current verse
+    const idx = tts.currentVerseIndex;
+    if (tts.isPlaying && versesRef.current.length > 0) {
+      const lang = translationToLang(activeTab.translationId);
+      tts.play(versesRef.current, lang, idx);
+    }
+  };
+
+  const handleSpeedChange = (speed: number) => {
+    setTtsSpeed(speed);
     const idx = tts.currentVerseIndex;
     if (tts.isPlaying && versesRef.current.length > 0) {
       const lang = translationToLang(activeTab.translationId);
@@ -158,7 +174,8 @@ export function TabPanel() {
           </button>
           <button
             onClick={handleNextChapter}
-            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            disabled={activeTab.chapter >= maxChapter}
+            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-30"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -190,6 +207,7 @@ export function TabPanel() {
           <ReaderSettingsDropdown
             showCommentary={showCommentary}
             onToggleCommentary={() => setShowCommentary(!showCommentary)}
+            voices={tts.voices}
           />
         </div>
       </div>
@@ -204,7 +222,7 @@ export function TabPanel() {
         {showCommentary && commentaryPosition === "left" && (
           <>
             <div className="h-full overflow-hidden" style={{ width: `${(1 - splitRatio) * 100}%` }}>
-              <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} />
+              <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} onClose={() => setShowCommentary(false)} />
             </div>
             <Divider direction="vertical" dragging={draggingSplit} onPointerDown={handleDividerPointerDown} onPointerMove={handleDividerPointerMove} onPointerUp={handleDividerPointerUp} />
           </>
@@ -231,7 +249,7 @@ export function TabPanel() {
           <>
             <Divider direction="vertical" dragging={draggingSplit} onPointerDown={handleDividerPointerDown} onPointerMove={handleDividerPointerMove} onPointerUp={handleDividerPointerUp} />
             <div className="h-full overflow-hidden" style={{ width: `${(1 - splitRatio) * 100}%` }}>
-              <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} />
+              <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} onClose={() => setShowCommentary(false)} />
             </div>
           </>
         )}
@@ -239,7 +257,7 @@ export function TabPanel() {
           <>
             <Divider direction="horizontal" dragging={draggingSplit} onPointerDown={handleDividerPointerDown} onPointerMove={handleDividerPointerMove} onPointerUp={handleDividerPointerUp} />
             <div className="w-full overflow-hidden" style={{ height: `${(1 - splitRatio) * 100}%` }}>
-              <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} />
+              <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} onClose={() => setShowCommentary(false)} />
             </div>
           </>
         )}
@@ -259,7 +277,7 @@ export function TabPanel() {
           onPause={tts.pause}
           onResume={tts.resume}
           onStop={tts.stop}
-          onSpeedChange={setTtsSpeed}
+          onSpeedChange={handleSpeedChange}
           onVoiceChange={handleVoiceChange}
         />
       )}
@@ -301,14 +319,14 @@ function Divider({
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
-      className={`shrink-0 flex items-center justify-center group ${
-        isVertical ? "w-1.5 cursor-col-resize" : "h-1.5 cursor-row-resize"
+      className={`shrink-0 flex items-center justify-center group touch-none ${
+        isVertical ? "w-2 cursor-col-resize" : "h-2 cursor-row-resize"
       } ${dragging ? "bg-blue-200 dark:bg-blue-800" : "bg-gray-200 dark:bg-gray-700 hover:bg-blue-200 dark:hover:bg-blue-800"} transition-colors`}
     >
       <div
         className={`rounded-full bg-gray-400 dark:bg-gray-500 group-hover:bg-blue-500 ${
           dragging ? "bg-blue-500" : ""
-        } ${isVertical ? "w-0.5 h-6" : "h-0.5 w-6"}`}
+        } ${isVertical ? "w-0.5 h-8" : "h-0.5 w-8"}`}
       />
     </div>
   );

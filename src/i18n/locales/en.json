@@ -32,6 +32,9 @@
     "verseCommentary": "Verse Commentary",
     "aiGenerated": "This commentary is AI-generated content",
     "noCommentary": "No commentary available for this chapter yet",
+    "download": "Download Commentary",
+    "downloadDesc": "AI Commentary ({{size}} MB)",
+    "downloadPrompt": "Download commentary for this language?",
     "position": "Panel Position",
     "left": "Left",
     "bottom": "Bottom",
@@ -78,7 +81,8 @@
     "pause": "Pause",
     "stop": "Stop",
     "speed": "Speed",
-    "voice": "Voice"
+    "voice": "Voice",
+    "systemDefault": "System Default"
   },
   "search": {
     "placeholder": "Search the Bible...",

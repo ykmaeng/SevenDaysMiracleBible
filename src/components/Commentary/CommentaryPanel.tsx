@@ -1,7 +1,10 @@
 import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown, { type Components } from "react-markdown";
-import { getChapterCommentary } from "../../lib/bible";
+import { getChapterCommentary, isCommentaryAvailable } from "../../lib/bible";
+import { downloadCommentary, commentaryDownloadKey } from "../../lib/commentaryService";
+import { CORE_COMMENTARY_LANGUAGES } from "../../lib/downloadConfig";
+import { useDownloadStore } from "../../stores/downloadStore";
 import { useSettingsStore } from "../../stores/settingsStore";
 import type { Commentary } from "../../types/bible";
 
@@ -35,29 +38,46 @@ const mdComponents: Components = {
 interface CommentaryPanelProps {
   bookId: number;
   chapter: number;
+  onClose?: () => void;
 }
 
-export function CommentaryPanel({ bookId, chapter }: CommentaryPanelProps) {
+export function CommentaryPanel({ bookId, chapter, onClose }: CommentaryPanelProps) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const [commentary, setCommentary] = useState<Commentary | null>(null);
+  const [available, setAvailable] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const dlKey = commentaryDownloadKey(language);
+  const dl = useDownloadStore((s) => s.downloads[dlKey]);
+  const clearDownload = useDownloadStore((s) => s.clearDownload);
 
-  useEffect(() => {
+  const loadCommentary = () => {
     let cancelled = false;
     setLoading(true);
 
-    getChapterCommentary(bookId, chapter, language).then((data) => {
+    Promise.all([
+      getChapterCommentary(bookId, chapter, language),
+      isCommentaryAvailable(language),
+    ]).then(([data, avail]) => {
       if (!cancelled) {
         setCommentary(data);
+        setAvailable(avail);
         setLoading(false);
       }
     });
 
-    return () => {
-      cancelled = true;
-    };
-  }, [bookId, chapter, language]);
+    return () => { cancelled = true; };
+  };
+
+  useEffect(loadCommentary, [bookId, chapter, language]);
+
+  // Reload after download completes
+  useEffect(() => {
+    if (dl?.status === "done") {
+      loadCommentary();
+      clearDownload(dlKey);
+    }
+  }, [dl?.status]);
 
   if (loading) {
     return (
@@ -68,6 +88,53 @@ export function CommentaryPanel({ bookId, chapter }: CommentaryPanelProps) {
   }
 
   if (!commentary) {
+    const isCore = CORE_COMMENTARY_LANGUAGES.has(language);
+    const isDownloading = dl && dl.status !== "done" && dl.status !== "error";
+    const isError = dl?.status === "error";
+
+    // Core language (ko): commentary not generated yet for this chapter
+    // Non-core language without data: offer download
+    if (!isCore && !available) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-gray-400 px-4 gap-3">
+          <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          <p className="text-sm text-center">{t("commentary.downloadPrompt")}</p>
+          {isDownloading ? (
+            <div className="flex items-center gap-2">
+              <div className="w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-600 rounded-full transition-all"
+                  style={{ width: `${dl.progress}%` }}
+                />
+              </div>
+              <span className="text-xs text-blue-600">
+                {dl.status === "importing" ? t("download.importing") : `${dl.progress}%`}
+              </span>
+            </div>
+          ) : isError ? (
+            <div className="flex flex-col items-center gap-1">
+              {dl.error && <p className="text-xs text-red-500">{dl.error}</p>}
+              <button
+                onClick={() => { clearDownload(dlKey); downloadCommentary(language); }}
+                className="text-sm text-orange-600 font-medium hover:text-orange-800"
+              >
+                {t("download.retry")}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => downloadCommentary(language)}
+              className="text-sm text-blue-600 font-medium hover:text-blue-800"
+            >
+              {t("commentary.download")}
+            </button>
+          )}
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col items-center justify-center h-full text-gray-400 px-4">
         <svg className="w-12 h-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -79,7 +146,17 @@ export function CommentaryPanel({ bookId, chapter }: CommentaryPanelProps) {
   }
 
   return (
-    <div className="h-full overflow-auto px-4 py-3">
+    <div className="h-full overflow-auto px-4 py-3 relative">
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )}
       <p className="text-xs text-gray-400 mb-2">{t("commentary.aiGenerated")}</p>
       <div className="text-sm text-gray-700 dark:text-gray-300">
         <Markdown components={mdComponents}>{commentary.content}</Markdown>

@@ -10,11 +10,15 @@ export function TabBar() {
   const [showTranslationPicker, setShowTranslationPicker] = useState(false);
   const [translations, setTranslations] = useState<Translation[]>([]);
 
-  // DnD state (pointer-based)
+  // DnD state (long-press + pointer-based)
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
-  const dragStartX = useRef(0);
   const isDragging = useRef(false);
+  const longPressReady = useRef(false);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pointerStartX = useRef(0);
+  const scrollStartX = useRef(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
@@ -31,25 +35,43 @@ export function TabBar() {
     return !!tabs[from]?.pinned === !!tabs[to]?.pinned;
   }, [tabs]);
 
+  const clearLongPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
   const handlePointerDown = (e: React.PointerEvent, index: number) => {
-    // Ignore if clicking buttons inside the tab
     if ((e.target as HTMLElement).closest("button")) return;
-    dragStartX.current = e.clientX;
+    longPressReady.current = false;
     isDragging.current = false;
-    setDragIndex(index);
+    pointerStartX.current = e.clientX;
+    scrollStartX.current = scrollContainerRef.current?.scrollLeft ?? 0;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    clearLongPress();
+    longPressTimer.current = setTimeout(() => {
+      longPressReady.current = true;
+      setDragIndex(index);
+    }, 400);
   };
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (dragIndex === null) return;
+    const dx = e.clientX - pointerStartX.current;
 
-    // Require minimum 5px movement to start drag
-    if (!isDragging.current) {
-      if (Math.abs(e.clientX - dragStartX.current) < 5) return;
-      isDragging.current = true;
+    // Long press not yet fired → scroll the tab bar
+    if (!longPressReady.current) {
+      if (Math.abs(dx) > 3) clearLongPress(); // cancel long press on move
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollLeft = scrollStartX.current - dx;
+      }
+      return;
     }
 
-    // Find which tab the pointer is over
+    // Long press fired → DnD mode
+    if (dragIndex === null) return;
+    isDragging.current = true;
+
     const x = e.clientX;
     for (let i = 0; i < tabRefs.current.length; i++) {
       const el = tabRefs.current[i];
@@ -68,25 +90,28 @@ export function TabBar() {
   }, [dragIndex, canDrop]);
 
   const handlePointerUp = useCallback(() => {
+    clearLongPress();
     if (dragIndex !== null && dropIndex !== null && isDragging.current) {
       reorderTab(dragIndex, dropIndex);
     }
     setDragIndex(null);
     setDropIndex(null);
     isDragging.current = false;
+    longPressReady.current = false;
   }, [dragIndex, dropIndex, reorderTab]);
 
   return (
     <div className="flex items-center bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-      <div className="flex items-center overflow-x-auto flex-1 min-w-0">
+      <div ref={scrollContainerRef} className="flex items-center overflow-x-hidden flex-1 min-w-0">
         {tabs.map((tab, index) => (
           <div
             key={tab.id}
+            data-tab
             ref={(el) => { tabRefs.current[index] = el; }}
             onPointerDown={(e) => handlePointerDown(e, index)}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
-            className={`group flex items-center gap-1 py-2 text-sm border-r border-gray-200 dark:border-gray-700 min-w-0 shrink-0 select-none ${
+            className={`group flex items-center gap-1 py-2 text-sm border-r border-gray-200 dark:border-gray-700 min-w-0 shrink-0 select-none touch-none ${
               dragIndex !== null ? "cursor-grabbing" : "cursor-grab"
             } ${
               dragIndex === index && isDragging.current ? "opacity-40" : ""

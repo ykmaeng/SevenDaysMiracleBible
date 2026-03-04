@@ -151,6 +151,14 @@ export async function getParallelChapter(
   return result;
 }
 
+export async function isCommentaryAvailable(language: string): Promise<boolean> {
+  const result = await query<{ c: number }>(
+    "SELECT COUNT(*) as c FROM commentary WHERE language = $1 AND verse IS NULL",
+    [language]
+  );
+  return (result[0]?.c ?? 0) > 0;
+}
+
 export async function searchVerses(
   translationId: string,
   searchText: string,

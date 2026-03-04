@@ -190,6 +190,41 @@ for (const file of jsonFiles) {
   console.log(`  Inserted ${verses.length} verses`);
 }
 
+// Import commentary data
+const COMMENTARY_DIR = join(OUTPUT_DIR, "commentary");
+let commentaryFiles = existsSync(COMMENTARY_DIR)
+  ? readdirSync(COMMENTARY_DIR).filter((f) => f.startsWith("commentary-") && f.endsWith(".json"))
+  : [];
+
+if (buildCore) {
+  commentaryFiles = commentaryFiles.filter((f) => f === "commentary-ko.json");
+  console.log(`Core mode: loading only commentary ${commentaryFiles.join(", ") || "(none)"}`);
+}
+
+if (commentaryFiles.length > 0) {
+  const insertCommentary = db.prepare(
+    "INSERT OR IGNORE INTO commentary (book_id, chapter, verse, language, content, model_version) VALUES (?, ?, ?, ?, ?, ?)"
+  );
+  const insertManyCommentary = db.transaction(
+    (entries: { book_id: number; chapter: number; language: string; content: string; model_version: string }[]) => {
+      for (const e of entries) {
+        insertCommentary.run(e.book_id, e.chapter, null, e.language, e.content, e.model_version);
+      }
+    }
+  );
+
+  let totalCommentary = 0;
+  for (const file of commentaryFiles) {
+    const filePath = join(COMMENTARY_DIR, file);
+    console.log(`Loading commentary: ${file}...`);
+    const entries = JSON.parse(readFileSync(filePath, "utf-8"));
+    insertManyCommentary(entries);
+    totalCommentary += entries.length;
+    console.log(`  Inserted ${entries.length} commentary entries`);
+  }
+  console.log(`Total commentary: ${totalCommentary}`);
+}
+
 // Create FTS index
 console.log("Building full-text search index...");
 db.exec(`CREATE VIRTUAL TABLE IF NOT EXISTS verses_fts USING fts5(
@@ -203,9 +238,11 @@ db.pragma("journal_mode = DELETE");
 // Verify
 const count = db.prepare("SELECT COUNT(*) as c FROM verses").get() as { c: number };
 const ftsCount = db.prepare("SELECT COUNT(*) as c FROM verses_fts").get() as { c: number };
+const commentaryCount = db.prepare("SELECT COUNT(*) as c FROM commentary").get() as { c: number };
 console.log(`\nDatabase built successfully! (${buildCore ? "core" : "full"})`);
 console.log(`  Verses: ${count.c}`);
 console.log(`  FTS entries: ${ftsCount.c}`);
+console.log(`  Commentary: ${commentaryCount.c}`);
 console.log(`  Output: ${DB_PATH}`);
 
 db.close();
