@@ -1,19 +1,26 @@
 /**
  * AI Bible Commentary Generator
  *
- * Generates chapter-level commentary in multiple languages using the Claude API.
+ * Generates chapter-level commentary in multiple languages using Claude Code CLI.
  *
  * Usage:
- *   ANTHROPIC_API_KEY=sk-... npx tsx scripts/generate-ai-commentary.ts \
- *     --language ko \
- *     --book 1 \
- *     --chapter 1
+ *   npx tsx scripts/generate-ai-commentary.ts
+ *   npx tsx scripts/generate-ai-commentary.ts --book=9
+ *   npx tsx scripts/generate-ai-commentary.ts --book=9 --chapter=1
+ *   npx tsx scripts/generate-ai-commentary.ts --model=claude-sonnet-4-6
+ *   npx tsx scripts/generate-ai-commentary.ts --sync-db   # bulk import JSON → DB
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
-import { join } from "path";
+import { writeFileSync, existsSync, readFileSync, mkdirSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+import { spawnSync } from "child_process";
+import Database from "better-sqlite3";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const OUTPUT_DIR = join(__dirname, "data", "output", "commentary");
+const DB_PATH = join(__dirname, "..", "src-tauri", "resources", "bible-core.db");
 
 const LANGUAGE_NAMES: Record<string, string> = {
   ko: "Korean",
@@ -40,19 +47,24 @@ const BOOK_NAMES: Record<number, string> = {
   62: "1 John", 63: "2 John", 64: "3 John", 65: "Jude", 66: "Revelation",
 };
 
+const CHAPTER_COUNTS: Record<number, number> = {
+  1:50,2:40,3:27,4:36,5:34,6:24,7:21,8:4,9:31,10:24,
+  11:22,12:25,13:29,14:36,15:10,16:13,17:10,18:42,19:150,
+  20:31,21:12,22:8,23:66,24:52,25:5,26:48,27:12,28:14,29:3,
+  30:9,31:1,32:4,33:7,34:3,35:3,36:3,37:2,38:14,39:4,
+  40:28,41:16,42:24,43:21,44:28,45:16,46:16,47:13,48:6,49:6,
+  50:4,51:4,52:5,53:3,54:6,55:4,56:3,57:1,
+  58:13,59:5,60:5,61:3,62:5,63:1,64:1,65:1,66:22,
+};
+
 function buildCommentaryPrompt(
-  language: string,
   languageName: string,
   bookName: string,
   chapter: number,
-  kjvText: string
 ): string {
   return `You are a seasoned Bible scholar and pastor writing an in-depth chapter commentary (성경강해). Write in ${languageName}.
 
 CHAPTER: ${bookName} Chapter ${chapter}
-
-TEXT (KJV):
-${kjvText}
 
 Write a comprehensive, scholarly yet accessible commentary covering ALL of the following sections:
 
@@ -92,131 +104,173 @@ RULES:
 - Avoid denominational bias
 - Do not reproduce the full Bible text — reference verses by number
 - Use respectful, pastoral tone — this is for spiritual edification, not academic papers
-- Where relevant, include insights from church history or notable commentators`;
+- Where relevant, include insights from church history or notable commentators
+- Output ONLY the commentary text, no preamble or explanation.`;
 }
 
-async function generateCommentary(
-  apiKey: string,
-  language: string,
-  bookId: number,
-  chapter: number,
-  kjvVerses: { verse: number; text: string }[]
-): Promise<string> {
-  const bookName = BOOK_NAMES[bookId] ?? `Book ${bookId}`;
-  const languageName = LANGUAGE_NAMES[language] ?? language;
-  const kjvText = kjvVerses.map((v) => `${v.verse}. ${v.text}`).join("\n");
+function callClaude(prompt: string, model: string): string {
+  const env = { ...process.env };
+  delete env.CLAUDECODE;
+  delete env.CLAUDE_CODE_ENTRYPOINT;
 
-  const prompt = buildCommentaryPrompt(language, languageName, bookName, chapter, kjvText);
-
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-5-20250929",
-      max_tokens: 4096,
-      messages: [{ role: "user", content: prompt }],
-    }),
+  const result = spawnSync("claude", ["-p", "--model", model], {
+    input: prompt,
+    encoding: "utf-8",
+    env,
+    timeout: 300_000,
   });
 
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status} ${await response.text()}`);
-  }
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(result.stderr || `exit code ${result.status}`);
 
-  const data = await response.json();
-  return data.content[0]?.text ?? "";
+  return (result.stdout ?? "").trim();
 }
 
 async function main() {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    console.error("Error: ANTHROPIC_API_KEY environment variable is required");
-    process.exit(1);
-  }
-
   const args = process.argv.slice(2);
   const language = args.find((a) => a.startsWith("--language="))?.split("=")[1] ?? "ko";
   const bookFilter = args.find((a) => a.startsWith("--book="))?.split("=")[1];
   const chapterFilter = args.find((a) => a.startsWith("--chapter="))?.split("=")[1];
+  const model = args.find((a) => a.startsWith("--model="))?.split("=")[1] ?? "claude-sonnet-4-6";
+
+  const syncOnly = args.includes("--sync-db");
 
   if (!LANGUAGE_NAMES[language]) {
     console.error(`Unsupported language: ${language}`);
     process.exit(1);
   }
 
-  // Load KJV data
-  const kjvPath = join(__dirname, "data", "output", "kjv.json");
-  if (!existsSync(kjvPath)) {
-    console.error("KJV data not found. Run import-bible-data.ts first.");
-    process.exit(1);
-  }
-
-  const kjvData = JSON.parse(readFileSync(kjvPath, "utf-8")) as {
-    book_id: number;
-    chapter: number;
-    verse: number;
-    text: string;
-  }[];
-
-  // Group by book+chapter
-  const chapters = new Map<string, { verse: number; text: string }[]>();
-  for (const v of kjvData) {
-    if (bookFilter && v.book_id !== parseInt(bookFilter)) continue;
-    if (chapterFilter && v.chapter !== parseInt(chapterFilter)) continue;
-
-    const key = `${v.book_id}-${v.chapter}`;
-    if (!chapters.has(key)) chapters.set(key, []);
-    chapters.get(key)!.push({ verse: v.verse, text: v.text });
-  }
-
   mkdirSync(OUTPUT_DIR, { recursive: true });
 
-  console.log(`Generating ${language} commentary for ${chapters.size} chapters...`);
+  // Open DB for direct writes
+  const db = existsSync(DB_PATH) ? new Database(DB_PATH) : null;
+  const insertDb = db?.prepare(
+    "INSERT OR REPLACE INTO commentary (book_id, chapter, verse, language, content, model_version) VALUES (?, ?, ?, ?, ?, ?)"
+  );
+  if (db) {
+    console.log(`DB: ${DB_PATH}`);
+  } else {
+    console.log("Warning: bible-core.db not found, skipping DB writes.");
+  }
 
-  const results: {
+  // Load existing commentary data for resume support
+  const outPath = join(OUTPUT_DIR, `commentary-${language}.json`);
+  const existing: {
     book_id: number;
     chapter: number;
     language: string;
     content: string;
     model_version: string;
-  }[] = [];
+  }[] = existsSync(outPath) ? JSON.parse(readFileSync(outPath, "utf-8")) : [];
 
-  let processed = 0;
-  for (const [key, verses] of chapters) {
-    const [bookIdStr, chapterStr] = key.split("-");
-    const bookId = parseInt(bookIdStr);
-    const chapter = parseInt(chapterStr);
+  const existingKeys = new Set(existing.map((e) => `${e.book_id}-${e.chapter}`));
+  console.log(`Found ${existing.length} existing commentaries.`);
 
-    process.stdout.write(
-      `  ${BOOK_NAMES[bookId]} ${chapter} (${++processed}/${chapters.size})... `
-    );
+  // --sync-db: bulk import existing JSON into DB and exit
+  if (syncOnly) {
+    if (!db) {
+      console.error("Cannot sync: bible-core.db not found.");
+      process.exit(1);
+    }
+    const bulkInsert = db.transaction(() => {
+      for (const e of existing) {
+        insertDb!.run(e.book_id, e.chapter, null, e.language, e.content, e.model_version);
+      }
+    });
+    bulkInsert();
+    const dbCount = db.prepare("SELECT COUNT(*) as c FROM commentary").get() as { c: number };
+    console.log(`Synced ${existing.length} entries to DB. Total in DB: ${dbCount.c}`);
+    db.close();
+    return;
+  }
 
-    try {
-      const content = await generateCommentary(apiKey, language, bookId, chapter, verses);
+  // Build pending list
+  const pending: { bookId: number; chapter: number }[] = [];
+  const startBook = bookFilter ? parseInt(bookFilter) : 1;
+  const endBook = bookFilter ? parseInt(bookFilter) : 66;
 
-      results.push({
-        book_id: bookId,
-        chapter,
-        language,
-        content,
-        model_version: "claude-sonnet-4-5-20250929",
-      });
+  for (let bookId = startBook; bookId <= endBook; bookId++) {
+    const maxCh = CHAPTER_COUNTS[bookId] ?? 0;
+    const startCh = chapterFilter ? parseInt(chapterFilter) : 1;
+    const endCh = chapterFilter ? parseInt(chapterFilter) : maxCh;
 
-      console.log("done");
-
-      // Rate limiting
-      await new Promise((r) => setTimeout(r, 500));
-    } catch (err) {
-      console.log(`ERROR: ${err}`);
+    for (let ch = startCh; ch <= endCh; ch++) {
+      const key = `${bookId}-${ch}`;
+      if (!existingKeys.has(key)) {
+        pending.push({ bookId, chapter: ch });
+      }
     }
   }
 
-  const outPath = join(OUTPUT_DIR, `commentary-${language}.json`);
-  writeFileSync(outPath, JSON.stringify(results, null, 2));
-  console.log(`\nWrote ${results.length} commentaries to ${outPath}`);
+  if (pending.length === 0) {
+    console.log("All requested chapters already have commentary. Nothing to do.");
+    return;
+  }
+
+  console.log(`Generating ${language} commentary for ${pending.length} chapters (model: ${model})...\n`);
+
+  const results = [...existing];
+  let processed = 0;
+
+  for (const { bookId, chapter } of pending) {
+    const bookName = BOOK_NAMES[bookId] ?? `Book ${bookId}`;
+    const languageName = LANGUAGE_NAMES[language] ?? language;
+
+    process.stdout.write(
+      `  [${++processed}/${pending.length}] ${bookName} ${chapter}... `
+    );
+
+    const MAX_RETRIES = 3;
+    let success = false;
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const prompt = buildCommentaryPrompt(languageName, bookName, chapter);
+        const content = callClaude(prompt, model);
+
+        if (!content) {
+          if (attempt < MAX_RETRIES) {
+            process.stdout.write(`empty, retry ${attempt}/${MAX_RETRIES}... `);
+            continue;
+          }
+          console.log("EMPTY (gave up)");
+          break;
+        }
+
+        results.push({
+          book_id: bookId,
+          chapter,
+          language,
+          content,
+          model_version: model,
+        });
+
+        // Write to JSON + DB simultaneously
+        writeFileSync(outPath, JSON.stringify(results, null, 2));
+        insertDb?.run(bookId, chapter, null, language, content, model);
+        console.log(`done (${content.length} chars)`);
+        success = true;
+        break;
+      } catch (err) {
+        if (attempt < MAX_RETRIES) {
+          process.stdout.write(`retry ${attempt}/${MAX_RETRIES}... `);
+          // Wait before retry
+          await new Promise((r) => setTimeout(r, 5000));
+        } else {
+          console.log(`FAILED after ${MAX_RETRIES} attempts: ${err}`);
+          writeFileSync(outPath, JSON.stringify(results, null, 2));
+        }
+      }
+    }
+  }
+
+  const newCount = results.length - existing.length;
+  console.log(`\nTotal: ${results.length} commentaries (${newCount} new) → ${outPath}`);
+  if (db) {
+    const dbCount = db.prepare("SELECT COUNT(*) as c FROM commentary").get() as { c: number };
+    console.log(`DB commentary entries: ${dbCount.c}`);
+    db.close();
+  }
 }
 
 main().catch(console.error);

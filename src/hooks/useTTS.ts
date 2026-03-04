@@ -106,8 +106,10 @@ async function nativeSpeak(
 async function nativeGetVoices(): Promise<TTSVoice[]> {
   try {
     const r = await invoke<{ voices: TTSVoice[] }>("tts_get_voices");
+    console.log("[TTS] nativeGetVoices raw:", JSON.stringify(r));
     return r.voices ?? [];
-  } catch {
+  } catch (e) {
+    console.error("[TTS] nativeGetVoices failed:", e);
     return [];
   }
 }
@@ -134,6 +136,15 @@ export function useTTS(): TTSState & TTSActions {
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
   const speakVerseRef = useRef<((index: number) => void) | null>(null);
 
+  // Fetch native voices with retry
+  const fetchNativeVoices = useCallback(() => {
+    if (!isAndroid) return;
+    nativeGetVoices().then((v) => {
+      console.log("[TTS] fetched voices:", v.length);
+      if (v.length > 0) setVoices(v);
+    });
+  }, []);
+
   // Check availability on mount
   useEffect(() => {
     if (isAndroid) {
@@ -142,7 +153,9 @@ export function useTTS(): TTSState & TTSActions {
         nativeIsAvailable().then((avail) => {
           setIsAvailable(avail);
           if (avail) {
-            nativeGetVoices().then(setVoices);
+            fetchNativeVoices();
+            // Retry after 2s in case voices weren't ready yet
+            setTimeout(fetchNativeVoices, 2000);
           }
         });
       }, 500);
@@ -253,19 +266,27 @@ export function useTTS(): TTSState & TTSActions {
   }, []);
 
   const pause = useCallback(() => {
-    if (!isAndroid && hasWebTTS && window.speechSynthesis.speaking) {
+    if (isAndroid) {
+      // Android has no native pause — simulate by stopping and remembering position
+      stoppedRef.current = true;
+      nativeStop();
+      setIsPaused(true);
+    } else if (hasWebTTS && window.speechSynthesis.speaking) {
       window.speechSynthesis.pause();
       setIsPaused(true);
     }
-    // Android native TTS doesn't support pause — only stop
   }, []);
 
   const resume = useCallback(() => {
-    if (!isAndroid && hasWebTTS && window.speechSynthesis.paused) {
+    if (isAndroid) {
+      stoppedRef.current = false;
+      setIsPaused(false);
+      speakVerseRef.current?.(currentVerseIndex);
+    } else if (hasWebTTS && window.speechSynthesis.paused) {
       window.speechSynthesis.resume();
       setIsPaused(false);
     }
-  }, []);
+  }, [currentVerseIndex]);
 
   const stop = useCallback(() => {
     stoppedRef.current = true;

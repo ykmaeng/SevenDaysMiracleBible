@@ -115,8 +115,8 @@ class TtsPlugin(private val activity: Activity) : Plugin(activity), TextToSpeech
                 }
             }
 
-            if (args.rate != 1.0f) engine.setSpeechRate(args.rate.coerceIn(0.1f, 4.0f))
-            if (args.pitch != 1.0f) engine.setPitch(args.pitch.coerceIn(0.5f, 2.0f))
+            engine.setSpeechRate(args.rate.coerceIn(0.1f, 4.0f))
+            engine.setPitch(args.pitch.coerceIn(0.5f, 2.0f))
 
             val utteranceId = "tts_${System.currentTimeMillis()}"
             val params = Bundle().apply {
@@ -170,12 +170,16 @@ class TtsPlugin(private val activity: Activity) : Plugin(activity), TextToSpeech
     fun getVoices(invoke: Invoke) {
         val engine = tts
         if (engine == null || !isReady) {
+            Log.w(TAG, "getVoices: engine=${engine != null}, isReady=$isReady")
             invoke.resolve(JSObject().put("voices", org.json.JSONArray()))
             return
         }
 
+        val rawVoices = engine.voices
+        Log.i(TAG, "getVoices: ${rawVoices?.size ?: "null"} voices from engine")
+
         val voicesArray = org.json.JSONArray()
-        engine.voices?.forEach { voice ->
+        rawVoices?.forEach { voice ->
             val obj = org.json.JSONObject().apply {
                 put("name", voice.name)
                 put("lang", voice.locale.toLanguageTag())
@@ -185,6 +189,7 @@ class TtsPlugin(private val activity: Activity) : Plugin(activity), TextToSpeech
             voicesArray.put(obj)
         }
 
+        Log.i(TAG, "getVoices: returning ${voicesArray.length()} voices")
         invoke.resolve(JSObject().put("voices", voicesArray))
     }
 

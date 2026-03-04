@@ -1,15 +1,18 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore, type CommentaryPosition } from "../../stores/settingsStore";
+import type { TTSVoice } from "../../hooks/useTTS";
 
 interface ReaderSettingsDropdownProps {
   showCommentary: boolean;
   onToggleCommentary: () => void;
+  voices: TTSVoice[];
 }
 
 export function ReaderSettingsDropdown({
   showCommentary,
   onToggleCommentary,
+  voices: ttsVoices,
 }: ReaderSettingsDropdownProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -28,26 +31,16 @@ export function ReaderSettingsDropdown({
   const ttsSpeed = useSettingsStore((s) => s.ttsSpeed);
   const setTtsSpeed = useSettingsStore((s) => s.setTtsSpeed);
 
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-
-  useEffect(() => {
-    if (!("speechSynthesis" in window)) return;
-    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
-    loadVoices();
-    window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
-    return () => window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
-  }, []);
-
   const groupedVoices = useMemo(() => {
-    const map = new Map<string, SpeechSynthesisVoice[]>();
-    for (const v of voices) {
+    const map = new Map<string, TTSVoice[]>();
+    for (const v of ttsVoices) {
       if (v.name.includes("Eloquence")) continue;
       const lang = v.lang.split("-")[0];
       if (!map.has(lang)) map.set(lang, []);
       map.get(lang)!.push(v);
     }
     return map;
-  }, [voices]);
+  }, [ttsVoices]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -172,12 +165,12 @@ export function ReaderSettingsDropdown({
               onChange={(e) => setTtsVoiceName(e.target.value)}
               className="ml-2 max-w-[140px] text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded px-2 py-1.5 border-none outline-none"
             >
-              <option value="">System Default</option>
+              <option value="">{t("tts.systemDefault")}</option>
               {[...groupedVoices.entries()].map(([lang, langVoices]) => (
                 <optgroup key={lang} label={lang.toUpperCase()}>
                   {langVoices.map((v, i) => (
                     <option key={`${lang}-${i}`} value={v.name}>
-                      {v.name}
+                      {v.name.replace(/\s*\(.*\)$/, "").replace(/^Google\s+/, "")}
                     </option>
                   ))}
                 </optgroup>
