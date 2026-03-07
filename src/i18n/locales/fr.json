@@ -71,7 +71,9 @@
     "cancel": "Annuler",
     "retry": "Réessayer",
     "confirmDelete": "\u00cates-vous s\u00fbr de vouloir supprimer cette traduction\u00a0? Vous pourrez la ret\u00e9l\u00e9charger plus tard.",
-    "size": "{{size}} Mo"
+    "size": "{{size}} Mo",
+    "completeToast": "{{name}} téléchargement terminé",
+    "errorToast": "{{name}} échec du téléchargement"
   },
   "tts": {
     "title": "Synth\u00e8se vocale",

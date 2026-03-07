@@ -1,7 +1,9 @@
 import { fetch } from "@tauri-apps/plugin-http";
+import i18n from "../i18n";
 import { execute } from "./db";
 import { getCommentaryDownloadUrl, CORE_COMMENTARY_LANGUAGES } from "./downloadConfig";
 import { useDownloadStore } from "../stores/downloadStore";
+import { useToastStore } from "../stores/toastStore";
 
 interface CommentaryRow {
   book_id: number;
@@ -64,10 +66,18 @@ export async function downloadCommentary(language: string): Promise<void> {
 
     store.setStatus(key, "done");
     console.log(`[commentary] ${language} complete`);
+    useToastStore.getState().showToast(
+      i18n.t("download.completeToast", { name: key }),
+      "success"
+    );
   } catch (err) {
     console.error("[commentary] Error:", err);
     const message = toErrorMessage(err);
     store.setStatus(key, "error", message);
+    useToastStore.getState().showToast(
+      i18n.t("download.errorToast", { name: key }),
+      "error"
+    );
     throw err;
   }
 }

@@ -25,6 +25,17 @@ export function DownloadManager() {
     refreshDict();
   }, []);
 
+  // Refresh when any translation download completes
+  useEffect(() => {
+    const doneKeys = Object.entries(downloads)
+      .filter(([k, v]) => !k.startsWith("commentary-") && k !== DICTIONARY_DOWNLOAD_KEY && v.status === "done")
+      .map(([k]) => k);
+    if (doneKeys.length > 0) {
+      refresh();
+      for (const k of doneKeys) clearDownload(k);
+    }
+  }, [downloads]);
+
   const handleDownload = async (id: string) => {
     try {
       await downloadTranslation(id);
@@ -65,6 +76,7 @@ export function DownloadManager() {
     const dl = downloads[tr.id];
     const isDownloading = dl && dl.status !== "done" && dl.status !== "error";
     const isError = dl?.status === "error";
+    const isDone = tr.downloaded || dl?.status === "done";
     const isCore = CORE_TRANSLATIONS.has(tr.id);
     const isDeletingThis = deleting === tr.id;
 
@@ -85,7 +97,7 @@ export function DownloadManager() {
           )}
         </div>
         <div>
-          {tr.downloaded ? (
+          {isDone ? (
             <div className="flex items-center gap-2">
               <span className="text-xs text-green-600 font-medium">
                 {t("download.downloaded")}
@@ -213,6 +225,7 @@ function DictionaryDownloadItem({
   const dl = downloads[DICTIONARY_DOWNLOAD_KEY];
   const isDownloading = dl && dl.status !== "done" && dl.status !== "error";
   const isError = dl?.status === "error";
+  const isDone = downloaded || dl?.status === "done";
 
   const handleDownload = async () => {
     try {
@@ -257,7 +270,7 @@ function DictionaryDownloadItem({
         )}
       </div>
       <div>
-        {downloaded ? (
+        {isDone ? (
           <div className="flex items-center gap-2">
             <span className="text-xs text-green-600 font-medium">
               {t("download.downloaded")}
@@ -389,6 +402,7 @@ function CommentaryDownloadList({
         const isDownloaded = downloadedLangs.has(c.language);
         const isDownloading = dl && dl.status !== "done" && dl.status !== "error";
         const isError = dl?.status === "error";
+        const isDone = isDownloaded || dl?.status === "done";
         const isDeletingThis = deletingLang === c.language;
 
         return (
@@ -403,7 +417,7 @@ function CommentaryDownloadList({
               )}
             </div>
             <div>
-              {isDownloaded ? (
+              {isDone ? (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-green-600 font-medium">
                     {t("download.downloaded")}

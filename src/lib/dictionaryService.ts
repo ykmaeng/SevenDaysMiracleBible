@@ -1,7 +1,9 @@
 import { fetch } from "@tauri-apps/plugin-http";
+import i18n from "../i18n";
 import { execute, query } from "./db";
 import { DOWNLOAD_CONFIG } from "./downloadConfig";
 import { useDownloadStore } from "../stores/downloadStore";
+import { useToastStore } from "../stores/toastStore";
 
 export interface DictionaryEntry {
   word: string;
@@ -123,9 +125,17 @@ export async function downloadDictionary(): Promise<void> {
     }
 
     store.setStatus(DICTIONARY_DOWNLOAD_ID, "done");
+    useToastStore.getState().showToast(
+      i18n.t("download.completeToast", { name: DICTIONARY_DOWNLOAD_ID }),
+      "success"
+    );
   } catch (err) {
     const message = toErrorMessage(err);
     store.setStatus(DICTIONARY_DOWNLOAD_ID, "error", message);
+    useToastStore.getState().showToast(
+      i18n.t("download.errorToast", { name: DICTIONARY_DOWNLOAD_ID }),
+      "error"
+    );
     throw err;
   }
 }

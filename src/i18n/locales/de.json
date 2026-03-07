@@ -71,7 +71,9 @@
     "cancel": "Abbrechen",
     "retry": "Erneut versuchen",
     "confirmDelete": "Möchten Sie diese Übersetzung wirklich löschen? Sie können sie später erneut herunterladen.",
-    "size": "{{size}} MB"
+    "size": "{{size}} MB",
+    "completeToast": "{{name}} Download abgeschlossen",
+    "errorToast": "{{name}} Download fehlgeschlagen"
   },
   "tts": {
     "title": "Sprachausgabe",

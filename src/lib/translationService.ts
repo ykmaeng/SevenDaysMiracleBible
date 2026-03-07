@@ -1,7 +1,9 @@
 import { fetch } from "@tauri-apps/plugin-http";
+import i18n from "../i18n";
 import { execute, query } from "./db";
 import { getTranslationDownloadUrl, CORE_TRANSLATIONS } from "./downloadConfig";
 import { useDownloadStore } from "../stores/downloadStore";
+import { useToastStore } from "../stores/toastStore";
 
 interface VerseRow {
   translation_id: string;
@@ -67,10 +69,18 @@ export async function downloadTranslation(translationId: string): Promise<void> 
     store.setStatus(translationId, "done");
     window.dispatchEvent(new Event("translations-changed"));
     console.log(`[download] ${translationId} complete`);
+    useToastStore.getState().showToast(
+      i18n.t("download.completeToast", { name: translationId }),
+      "success"
+    );
   } catch (err) {
     console.error("[download] Error:", err);
     const message = toErrorMessage(err);
     store.setStatus(translationId, "error", message);
+    useToastStore.getState().showToast(
+      i18n.t("download.errorToast", { name: translationId }),
+      "error"
+    );
     throw err;
   }
 }

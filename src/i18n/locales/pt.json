@@ -71,7 +71,9 @@
     "cancel": "Cancelar",
     "retry": "Tentar Novamente",
     "confirmDelete": "Tem certeza de que deseja excluir esta tradução? Você pode baixá-la novamente depois.",
-    "size": "{{size}} MB"
+    "size": "{{size}} MB",
+    "completeToast": "{{name}} download concluído",
+    "errorToast": "{{name}} falha no download"
   },
   "tts": {
     "title": "Texto para Fala",

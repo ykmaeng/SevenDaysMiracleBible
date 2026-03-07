@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { TabBar } from "./components/TabBar/TabBar";
 import { TabPanel } from "./components/TabBar/TabPanel";
+import { ToastContainer } from "./components/Toast";
 import { LanguageSettings } from "./components/Settings/LanguageSettings";
 import { LanguageOnboarding } from "./components/Onboarding/LanguageOnboarding";
 import { useSettingsStore } from "./stores/settingsStore";
@@ -82,6 +83,8 @@ function App() {
           </div>
         )}
       </div>
+
+      <ToastContainer />
 
       {/* Bottom navigation bar */}
       <nav className="flex items-center justify-around border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-2 shrink-0">
