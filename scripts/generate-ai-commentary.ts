@@ -68,29 +68,29 @@ CHAPTER: ${bookName} Chapter ${chapter}
 
 Write a comprehensive, scholarly yet accessible commentary covering ALL of the following sections:
 
-## 배경과 문맥 (Background & Context)
+## 배경과 문맥
 - This chapter's position within the book and the broader biblical narrative
 - Historical setting: time period, author, audience, circumstances of writing
 - Literary genre and structure of this chapter (narrative, poetry, prophecy, epistle, etc.)
 - Connection to preceding and following chapters
 
-## 본문 해설 (Verse-by-Verse Exposition)
+## 본문 해설
 - Walk through the chapter's key passages in order
 - Explain difficult or significant words/phrases with reference to original Hebrew/Greek meaning where relevant
 - Highlight literary devices, parallelism, chiasm, or rhetorical structures
 - Note textual or translation issues where they significantly affect meaning
 
-## 핵심 신학 주제 (Key Theological Themes)
+## 핵심 신학 주제
 - Central theological message(s) of this chapter
 - How this chapter contributes to major biblical doctrines (God's character, salvation, covenant, kingdom, etc.)
 - Typology and foreshadowing — connections to Christ and the gospel (for OT passages)
 - How this passage fits into redemptive history (creation → fall → redemption → restoration)
 
-## 교차 참조 (Cross-References)
+## 교차 참조
 - 3-5 most important cross-references with brief explanation of how they connect
 - Show how Scripture interprets Scripture on the themes found here
 
-## 적용 (Application)
+## 적용
 - What did this passage mean to the original audience?
 - What timeless principles emerge for believers today?
 - Specific, practical challenges or encouragements for modern life
@@ -99,7 +99,9 @@ Write a comprehensive, scholarly yet accessible commentary covering ALL of the f
 RULES:
 - Write entirely in ${languageName}
 - Length: 1,500-2,000 words (심도있는 강해)
-- Use markdown formatting with ## headers for each section
+- Use markdown formatting with ## headers for each section exactly as shown above (Korean only, no English in parentheses)
+- Start directly with "## 배경과 문맥" — do NOT add a title line (no # or ## title before the first section)
+- Do NOT use horizontal rules (---)
 - Be theologically orthodox and balanced (evangelical perspective)
 - Avoid denominational bias
 - Do not reproduce the full Bible text — reference verses by number
@@ -209,6 +211,9 @@ async function main() {
 
   console.log(`Generating ${language} commentary for ${pending.length} chapters (model: ${model})...\n`);
 
+  const intervalSec = args.find((a) => a.startsWith("--interval="))?.split("=")[1];
+  const INTERVAL_MS = intervalSec ? parseInt(intervalSec) * 1000 : 0;
+
   const results = [...existing];
   let processed = 0;
 
@@ -250,6 +255,10 @@ async function main() {
         insertDb?.run(bookId, chapter, null, language, content, model);
         console.log(`done (${content.length} chars)`);
         success = true;
+        // Wait between chapters to avoid rate limits
+        if (INTERVAL_MS > 0) {
+          await new Promise((r) => setTimeout(r, INTERVAL_MS));
+        }
         break;
       } catch (err) {
         if (attempt < MAX_RETRIES) {
