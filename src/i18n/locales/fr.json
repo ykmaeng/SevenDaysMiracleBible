@@ -164,5 +164,34 @@
     "64": "3 Jean",
     "65": "Jude",
     "66": "Apocalypse"
+  },
+  "features": {
+    "title": "Fonctionnalités",
+    "add": "Plus",
+    "bookmarks": "Signets",
+    "bookmarksDesc": "Enregistrer et gérer les versets",
+    "bookmarksInstruction": "Appuyez sur un verset puis sur le bouton signet pour l'enregistrer. Consultez vos signets dans le menu du bas.",
+    "highlights": "Surlignage",
+    "highlightsDesc": "Marquer les versets avec des couleurs",
+    "highlightsInstruction": "Appuyez sur un verset puis sur le bouton surlignage pour choisir parmi 5 couleurs.",
+    "notes": "Notes",
+    "notesDesc": "Ajouter des notes aux versets",
+    "notesInstruction": "Appuyez sur un verset puis sur le bouton note pour rédiger une note.",
+    "tabBar": "Menu inférieur",
+    "floatingMenu": "Menu du verset",
+    "noBookmarks": "Aucun signet enregistré"
+  },
+  "verseActions": {
+    "copy": "Copier",
+    "share": "Partager",
+    "bookmark": "Signet",
+    "highlight": "Surligner",
+    "note": "Note",
+    "copied": "Verset copié",
+    "bookmarkAdded": "Signet ajouté",
+    "bookmarkRemoved": "Signet supprimé",
+    "removeHighlight": "Supprimer",
+    "notePrompt": "Saisissez votre note",
+    "noteSaved": "Note enregistrée"
   }
 }

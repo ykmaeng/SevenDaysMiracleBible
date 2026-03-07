@@ -164,5 +164,34 @@
     "64": "ヨハネの手紙第三",
     "65": "ユダの手紙",
     "66": "ヨハネの黙示録"
+  },
+  "features": {
+    "title": "追加機能",
+    "add": "追加",
+    "bookmarks": "ブックマーク",
+    "bookmarksDesc": "聖句を保存・管理します",
+    "bookmarksInstruction": "聖句をタップしてブックマークボタンを押すと保存できます。保存したブックマークは下部メニューから確認できます。",
+    "highlights": "ハイライト",
+    "highlightsDesc": "聖句に色を付けます",
+    "highlightsInstruction": "聖句をタップしてハイライトボタンを押し、5色から選択してください。",
+    "notes": "メモ",
+    "notesDesc": "聖句にメモを追加します",
+    "notesInstruction": "聖句をタップしてメモボタンを押し、メモを入力してください。",
+    "tabBar": "下部メニュー",
+    "floatingMenu": "聖句メニュー",
+    "noBookmarks": "保存されたブックマークはありません"
+  },
+  "verseActions": {
+    "copy": "コピー",
+    "share": "共有",
+    "bookmark": "ブックマーク",
+    "highlight": "ハイライト",
+    "note": "メモ",
+    "copied": "聖句をコピーしました",
+    "bookmarkAdded": "ブックマーク追加",
+    "bookmarkRemoved": "ブックマーク削除",
+    "removeHighlight": "削除",
+    "notePrompt": "メモを入力してください",
+    "noteSaved": "メモ保存済み"
   }
 }

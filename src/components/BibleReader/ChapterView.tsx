@@ -3,16 +3,20 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useTranslation } from "react-i18next";
 import { getChapter, getParallelChapter } from "../../lib/bible";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { useBookmarkStore } from "../../stores/bookmarkStore";
+import { useFeatureStore } from "../../stores/featureStore";
 import { CORE_TRANSLATIONS } from "../../lib/downloadConfig";
 import { VerseItem } from "./VerseItem";
 import { DictionaryPopup } from "./DictionaryPopup";
-import type { WordClickInfo } from "./VerseItem";
+import { VerseActionToolbar } from "./VerseActionToolbar";
+import type { WordClickInfo, VerseClickInfo } from "./VerseItem";
 import type { Verse } from "../../types/bible";
 
 interface ChapterViewProps {
   translationId: string;
   bookId: number;
   chapter: number;
+  bookName?: string;
   onScrollPositionChange?: (position: number) => void;
   initialScrollPosition?: number;
   ttsVerseIndex?: number;
@@ -23,6 +27,7 @@ export function ChapterView({
   translationId,
   bookId,
   chapter,
+  bookName,
   onScrollPositionChange,
   initialScrollPosition,
   ttsVerseIndex,
@@ -41,8 +46,17 @@ export function ChapterView({
   const [dictSourceLang, setDictSourceLang] = useState<string>("en");
   const [dictPosition, setDictPosition] = useState<{ x: number; y: number; bottom: number } | null>(null);
 
+  // Verse action toolbar state
+  const [selectedVerse, setSelectedVerse] = useState<Verse | null>(null);
+  const [toolbarPosition, setToolbarPosition] = useState<{ x: number; y: number; bottom: number } | null>(null);
+
+  // Bookmark store
+  const bookmarks = useBookmarkStore((s) => s.bookmarks);
+  const loadChapterBookmarks = useBookmarkStore((s) => s.loadChapterBookmarks);
+
   const showParallelInline = useSettingsStore((s) => s.showParallelInline);
   const parallelTranslations = useSettingsStore((s) => s.parallelTranslations);
+  const isHighlightsEnabled = useFeatureStore((s) => s.isEnabled("highlights"));
 
   const activeParallelIds = useMemo(
     () => parallelTranslations.filter((id) => id !== translationId),
@@ -87,6 +101,11 @@ export function ChapterView({
     };
   }, [showParallelInline, activeParallelIds, bookId, chapter]);
 
+  // Load bookmarks for current chapter
+  useEffect(() => {
+    loadChapterBookmarks(bookId, chapter);
+  }, [bookId, chapter, loadChapterBookmarks]);
+
   const virtualizer = useVirtualizer({
     count: verses.length,
     getScrollElement: () => parentRef.current,
@@ -113,26 +132,54 @@ export function ChapterView({
 
     const handler = () => {
       onScrollPositionChange?.(el.scrollTop);
-      // Close dictionary popup on scroll
+      // Close popups on scroll
       if (dictWord) {
         setDictWord(null);
         setDictPosition(null);
       }
+      if (selectedVerse) {
+        setSelectedVerse(null);
+        setToolbarPosition(null);
+      }
     };
     el.addEventListener("scroll", handler, { passive: true });
     return () => el.removeEventListener("scroll", handler);
-  }, [onScrollPositionChange, dictWord]);
+  }, [onScrollPositionChange, dictWord, selectedVerse]);
 
-  // Close popup when chapter changes
+  // Close popups when chapter changes
   useEffect(() => {
     setDictWord(null);
     setDictPosition(null);
+    setSelectedVerse(null);
+    setToolbarPosition(null);
   }, [bookId, chapter]);
 
   const handleWordClick = useCallback((info: WordClickInfo) => {
+    // Close toolbar when opening dictionary
+    setSelectedVerse(null);
+    setToolbarPosition(null);
     setDictWord(info.word);
     setDictSourceLang(info.sourceLang);
     setDictPosition({ x: info.x, y: info.y, bottom: info.bottom });
+  }, []);
+
+  const handleVerseClick = useCallback((info: VerseClickInfo) => {
+    // Close dictionary when opening toolbar
+    setDictWord(null);
+    setDictPosition(null);
+    // Toggle: if same verse clicked, close toolbar
+    if (selectedVerse?.verse === info.verse.verse) {
+      setSelectedVerse(null);
+      setToolbarPosition(null);
+    } else {
+      setSelectedVerse(info.verse);
+      setToolbarPosition({ x: info.x, y: info.y, bottom: info.bottom });
+    }
+  }, [selectedVerse]);
+
+  const closeToolbar = useCallback(() => {
+    setSelectedVerse(null);
+    setToolbarPosition(null);
   }, []);
 
   const closeDictPopup = useCallback(() => {
@@ -200,7 +247,10 @@ export function ChapterView({
                 verse={verse}
                 parallelVerses={pVerses}
                 isPlaying={ttsVerseIndex === virtualItem.index}
+                isSelected={selectedVerse?.verse === verse.verse}
+                highlightColor={isHighlightsEnabled ? bookmarks[`${verse.book_id}:${verse.chapter}:${verse.verse}`]?.color : undefined}
                 onWordClick={handleWordClick}
+                onVerseClick={handleVerseClick}
               />
             </div>
           );
@@ -215,6 +265,17 @@ export function ChapterView({
           position={dictPosition}
           containerRect={parentRef.current.getBoundingClientRect()}
           onClose={closeDictPopup}
+        />
+      )}
+
+      {/* Verse Action Toolbar */}
+      {selectedVerse && toolbarPosition && parentRef.current && (
+        <VerseActionToolbar
+          verse={selectedVerse}
+          bookName={bookName ?? `Book ${selectedVerse.book_id}`}
+          position={toolbarPosition}
+          containerRect={parentRef.current.getBoundingClientRect()}
+          onClose={closeToolbar}
         />
       )}
     </div>

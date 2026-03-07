@@ -164,5 +164,34 @@
     "64": "3 Juan",
     "65": "Judas",
     "66": "Apocalipsis"
+  },
+  "features": {
+    "title": "Funciones",
+    "add": "Más",
+    "bookmarks": "Marcadores",
+    "bookmarksDesc": "Guarda y gestiona versículos",
+    "bookmarksInstruction": "Toca un versículo y pulsa el botón de marcador para guardarlo. Consulta los marcadores guardados en el menú inferior.",
+    "highlights": "Resaltado",
+    "highlightsDesc": "Marca versículos con colores",
+    "highlightsInstruction": "Toca un versículo y pulsa el botón de resaltado para elegir entre 5 colores.",
+    "notes": "Notas",
+    "notesDesc": "Añade notas a los versículos",
+    "notesInstruction": "Toca un versículo y pulsa el botón de nota para escribir una nota.",
+    "tabBar": "Menú inferior",
+    "floatingMenu": "Menú del versículo",
+    "noBookmarks": "No hay marcadores guardados"
+  },
+  "verseActions": {
+    "copy": "Copiar",
+    "share": "Compartir",
+    "bookmark": "Marcador",
+    "highlight": "Resaltar",
+    "note": "Nota",
+    "copied": "Versículo copiado",
+    "bookmarkAdded": "Marcador añadido",
+    "bookmarkRemoved": "Marcador eliminado",
+    "removeHighlight": "Quitar",
+    "notePrompt": "Escribe tu nota",
+    "noteSaved": "Nota guardada"
   }
 }

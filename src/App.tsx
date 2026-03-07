@@ -5,10 +5,14 @@ import { TabPanel } from "./components/TabBar/TabPanel";
 import { ToastContainer } from "./components/Toast";
 import { LanguageSettings } from "./components/Settings/LanguageSettings";
 import { LanguageOnboarding } from "./components/Onboarding/LanguageOnboarding";
+import { FeaturesView } from "./components/Features/FeaturesView";
+import { BookmarksView } from "./components/Bookmarks/BookmarksView";
 import { useSettingsStore } from "./stores/settingsStore";
+import { useFeatureStore, FEATURE_REGISTRY } from "./stores/featureStore";
+import { useTabStore } from "./stores/tabStore";
 import { loadGoogleFont } from "./lib/googleFonts";
 
-type View = "reader" | "settings";
+type View = "reader" | "settings" | "features" | "bookmarks";
 
 function App() {
   const { t } = useTranslation();
@@ -16,6 +20,12 @@ function App() {
   const theme = useSettingsStore((s) => s.theme);
   const fontFamily = useSettingsStore((s) => s.fontFamily);
   const onboardingComplete = useSettingsStore((s) => s.onboardingComplete);
+  const enabledFeatures = useFeatureStore((s) => s.enabledFeatures);
+  const navigateTo = useTabStore((s) => s.navigateTo);
+
+  const tabBarFeatures = FEATURE_REGISTRY.filter(
+    (f) => f.showInTabBar && enabledFeatures.includes(f.id)
+  );
 
   // Listen for open-settings event (e.g. from download banner)
   useEffect(() => {
@@ -82,6 +92,16 @@ function App() {
             </div>
           </div>
         )}
+        {view === "features" && <FeaturesView onClose={() => setView("reader")} />}
+        {view === "bookmarks" && (
+          <BookmarksView
+            onClose={() => setView("reader")}
+            onNavigate={(bookId, chapter, verse) => {
+              navigateTo(bookId, chapter, verse);
+              setView("reader");
+            }}
+          />
+        )}
       </div>
 
       <ToastContainer />
@@ -90,7 +110,7 @@ function App() {
       <nav className="flex items-center justify-around border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-2 shrink-0">
         <button
           onClick={() => setView("reader")}
-          className={`flex flex-col items-center gap-0.5 px-4 py-1 ${
+          className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
             view === "reader" ? "text-blue-600" : "text-gray-400"
           }`}
         >
@@ -99,9 +119,35 @@ function App() {
           </svg>
           <span className="text-[10px]">{t("app.title")}</span>
         </button>
+
+        {tabBarFeatures.map((feature) => (
+          <button
+            key={feature.id}
+            onClick={() => setView(feature.id as View)}
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
+              view === feature.id ? "text-blue-600" : "text-gray-400"
+            }`}
+          >
+            <NavFeatureIcon id={feature.id} />
+            <span className="text-[10px]">{t(feature.labelKey)}</span>
+          </button>
+        ))}
+
+        <button
+          onClick={() => setView("features")}
+          className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
+            view === "features" ? "text-blue-600" : "text-gray-400"
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span className="text-[10px]">{t("features.add")}</span>
+        </button>
+
         <button
           onClick={() => setView("settings")}
-          className={`flex flex-col items-center gap-0.5 px-4 py-1 ${
+          className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
             view === "settings" ? "text-blue-600" : "text-gray-400"
           }`}
         >
@@ -114,6 +160,23 @@ function App() {
       </nav>
     </div>
   );
+}
+
+function NavFeatureIcon({ id }: { id: string }) {
+  switch (id) {
+    case "bookmarks":
+      return (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      );
+  }
 }
 
 export default App;

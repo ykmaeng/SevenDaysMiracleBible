@@ -168,5 +168,34 @@
     "64": "3 John",
     "65": "Jude",
     "66": "Revelation"
+  },
+  "features": {
+    "title": "Features",
+    "add": "More",
+    "bookmarks": "Bookmarks",
+    "bookmarksDesc": "Save and manage verses",
+    "bookmarksInstruction": "Tap a verse, then press the bookmark button to save it. View saved bookmarks from the bottom menu.",
+    "highlights": "Highlights",
+    "highlightsDesc": "Mark verses with colors",
+    "highlightsInstruction": "Tap a verse, then press the highlight button to choose from 5 colors.",
+    "notes": "Notes",
+    "notesDesc": "Add notes to verses",
+    "notesInstruction": "Tap a verse, then press the note button to write a note.",
+    "tabBar": "Bottom Menu",
+    "floatingMenu": "Verse Menu",
+    "noBookmarks": "No bookmarks saved"
+  },
+  "verseActions": {
+    "copy": "Copy",
+    "share": "Share",
+    "bookmark": "Bookmark",
+    "highlight": "Highlight",
+    "note": "Note",
+    "copied": "Verse copied to clipboard",
+    "bookmarkAdded": "Bookmark added",
+    "bookmarkRemoved": "Bookmark removed",
+    "removeHighlight": "Remove",
+    "notePrompt": "Enter your note",
+    "noteSaved": "Note saved"
   }
 }

@@ -164,5 +164,34 @@
     "64": "3. Johannes",
     "65": "Judas",
     "66": "Offenbarung"
+  },
+  "features": {
+    "title": "Funktionen",
+    "add": "Mehr",
+    "bookmarks": "Lesezeichen",
+    "bookmarksDesc": "Verse speichern und verwalten",
+    "bookmarksInstruction": "Tippen Sie auf einen Vers und drücken Sie die Lesezeichen-Taste zum Speichern. Gespeicherte Lesezeichen finden Sie im unteren Menü.",
+    "highlights": "Markierungen",
+    "highlightsDesc": "Verse farblich markieren",
+    "highlightsInstruction": "Tippen Sie auf einen Vers und drücken Sie die Markierungs-Taste, um aus 5 Farben zu wählen.",
+    "notes": "Notizen",
+    "notesDesc": "Notizen zu Versen hinzufügen",
+    "notesInstruction": "Tippen Sie auf einen Vers und drücken Sie die Notiz-Taste, um eine Notiz zu schreiben.",
+    "tabBar": "Unteres Menü",
+    "floatingMenu": "Vers-Menü",
+    "noBookmarks": "Keine Lesezeichen gespeichert"
+  },
+  "verseActions": {
+    "copy": "Kopieren",
+    "share": "Teilen",
+    "bookmark": "Lesezeichen",
+    "highlight": "Markieren",
+    "note": "Notiz",
+    "copied": "Vers kopiert",
+    "bookmarkAdded": "Lesezeichen hinzugefügt",
+    "bookmarkRemoved": "Lesezeichen entfernt",
+    "removeHighlight": "Entfernen",
+    "notePrompt": "Notiz eingeben",
+    "noteSaved": "Notiz gespeichert"
   }
 }
