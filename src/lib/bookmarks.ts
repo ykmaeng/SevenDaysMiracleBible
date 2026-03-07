@@ -5,12 +5,25 @@ export interface BookmarkWithText extends Bookmark {
   text: string | null;
 }
 
-export async function getAllBookmarks(translationId: string): Promise<BookmarkWithText[]> {
+export async function getAllBookmarks(fallbackTranslationId: string): Promise<BookmarkWithText[]> {
   return query<BookmarkWithText>(
     `SELECT b.*, v.text FROM bookmarks b
-     LEFT JOIN verses v ON v.book_id = b.book_id AND v.chapter = b.chapter AND v.verse = b.verse AND v.translation_id = $1
+     LEFT JOIN verses v ON v.book_id = b.book_id AND v.chapter = b.chapter AND v.verse = b.verse
+       AND v.translation_id = COALESCE(b.translation_id, $1)
+     WHERE b.color IS NULL
      ORDER BY b.book_id, b.chapter, b.verse`,
-    [translationId]
+    [fallbackTranslationId]
+  );
+}
+
+export async function getAllHighlights(fallbackTranslationId: string): Promise<BookmarkWithText[]> {
+  return query<BookmarkWithText>(
+    `SELECT b.*, v.text FROM bookmarks b
+     LEFT JOIN verses v ON v.book_id = b.book_id AND v.chapter = b.chapter AND v.verse = b.verse
+       AND v.translation_id = COALESCE(b.translation_id, $1)
+     WHERE b.color IS NOT NULL
+     ORDER BY b.book_id, b.chapter, b.verse`,
+    [fallbackTranslationId]
   );
 }
 
@@ -26,11 +39,12 @@ export async function addBookmark(
   chapter: number,
   verse: number,
   color?: string,
-  note?: string
+  note?: string,
+  translationId?: string
 ): Promise<number> {
   const result = await execute(
-    "INSERT OR REPLACE INTO bookmarks (book_id, chapter, verse, color, note) VALUES ($1, $2, $3, $4, $5)",
-    [bookId, chapter, verse, color ?? null, note ?? null]
+    "INSERT OR REPLACE INTO bookmarks (book_id, chapter, verse, color, note, translation_id) VALUES ($1, $2, $3, $4, $5, $6)",
+    [bookId, chapter, verse, color ?? null, note ?? null, translationId ?? null]
   );
   return result.lastInsertId ?? 0;
 }

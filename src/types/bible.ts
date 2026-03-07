@@ -73,6 +73,7 @@ export interface Bookmark {
   verse: number;
   note: string | null;
   color: string | null;
+  translation_id: string | null;
   created_at: string;
 }
 

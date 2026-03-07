@@ -183,7 +183,10 @@
     "notesInstruction": "Tap a verse, then press the note button to write a note.",
     "tabBar": "Bottom Menu",
     "floatingMenu": "Verse Menu",
-    "noBookmarks": "No bookmarks saved"
+    "noBookmarks": "No bookmarks saved",
+    "all": "All",
+    "noHighlights": "No highlighted verses",
+    "goToVerse": "Go to verse"
   },
   "verseActions": {
     "copy": "Copy",

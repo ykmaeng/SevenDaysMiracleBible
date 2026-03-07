@@ -3845,6 +3845,7 @@ dependencies = [
  "tauri-plugin-fs",
  "tauri-plugin-http",
  "tauri-plugin-opener",
+ "tauri-plugin-sharesheet",
  "tauri-plugin-sql",
  "thiserror 1.0.69",
 ]
@@ -4598,6 +4599,21 @@ dependencies = [
  "url",
  "windows",
  "zbus",
+]
+
+[[package]]
+name = "tauri-plugin-sharesheet"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6fe9f40c5f62fe0780abe84f192f084beda5d66e1a9095a24fa99d1c5b9c0956"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 1.0.69",
 ]
 
 [[package]]

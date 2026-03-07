@@ -179,7 +179,10 @@
     "notesInstruction": "点击经文后按笔记按钮撰写笔记。",
     "tabBar": "底部菜单",
     "floatingMenu": "经文菜单",
-    "noBookmarks": "暂无书签"
+    "noBookmarks": "暂无书签",
+    "all": "全部",
+    "noHighlights": "没有高亮的经文",
+    "goToVerse": "跳转到经文"
   },
   "verseActions": {
     "copy": "复制",

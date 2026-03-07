@@ -30,9 +30,15 @@ pub fn run() {
             sql: include_str!("../migrations/003_update_download_sizes.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 5,
+            description: "add translation_id to bookmarks",
+            sql: include_str!("../migrations/005_bookmark_translation_id.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(
@@ -42,7 +48,14 @@ pub fn run() {
         )
         .plugin(tauri_plugin_opener::init())
         .plugin(tts_plugin::init())
-        .invoke_handler(tts_plugin::commands())
+        .invoke_handler(tts_plugin::commands());
+
+    #[cfg(mobile)]
+    {
+        builder = builder.plugin(tauri_plugin_sharesheet::init());
+    }
+
+    builder
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir()?;
             fs::create_dir_all(&app_data_dir)?;

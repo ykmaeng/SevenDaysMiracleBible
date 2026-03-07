@@ -179,7 +179,10 @@
     "notesInstruction": "聖句をタップしてメモボタンを押し、メモを入力してください。",
     "tabBar": "下部メニュー",
     "floatingMenu": "聖句メニュー",
-    "noBookmarks": "保存されたブックマークはありません"
+    "noBookmarks": "保存されたブックマークはありません",
+    "all": "すべて",
+    "noHighlights": "ハイライトされた聖句はありません",
+    "goToVerse": "聖句に移動"
   },
   "verseActions": {
     "copy": "コピー",

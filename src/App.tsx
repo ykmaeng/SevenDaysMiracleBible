@@ -7,12 +7,13 @@ import { LanguageSettings } from "./components/Settings/LanguageSettings";
 import { LanguageOnboarding } from "./components/Onboarding/LanguageOnboarding";
 import { FeaturesView } from "./components/Features/FeaturesView";
 import { BookmarksView } from "./components/Bookmarks/BookmarksView";
+import { HighlightsView } from "./components/Highlights/HighlightsView";
 import { useSettingsStore } from "./stores/settingsStore";
 import { useFeatureStore, FEATURE_REGISTRY } from "./stores/featureStore";
 import { useTabStore } from "./stores/tabStore";
 import { loadGoogleFont } from "./lib/googleFonts";
 
-type View = "reader" | "settings" | "features" | "bookmarks";
+type View = "reader" | "settings" | "features" | "bookmarks" | "highlights";
 
 function App() {
   const { t } = useTranslation();
@@ -102,6 +103,15 @@ function App() {
             }}
           />
         )}
+        {view === "highlights" && (
+          <HighlightsView
+            onClose={() => setView("reader")}
+            onNavigate={(bookId, chapter, verse) => {
+              navigateTo(bookId, chapter, verse);
+              setView("reader");
+            }}
+          />
+        )}
       </div>
 
       <ToastContainer />
@@ -168,6 +178,12 @@ function NavFeatureIcon({ id }: { id: string }) {
       return (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+        </svg>
+      );
+    case "highlights":
+      return (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
         </svg>
       );
     default:

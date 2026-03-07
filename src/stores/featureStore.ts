@@ -25,7 +25,7 @@ export const FEATURE_REGISTRY: FeatureConfig[] = [
     labelKey: "features.highlights",
     descKey: "features.highlightsDesc",
     instructionKey: "features.highlightsInstruction",
-    showInTabBar: false,
+    showInTabBar: true,
     showInFloating: true,
   },
   {

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useSettingsStore } from "../../stores/settingsStore";
 import type { Verse } from "../../types/bible";
 
@@ -9,6 +9,21 @@ export interface WordClickInfo {
   y: number;
   bottom: number;
 }
+
+export interface VerseClickInfo {
+  verse: Verse;
+  x: number;
+  y: number;
+  bottom: number;
+}
+
+const HIGHLIGHT_BG: Record<string, string> = {
+  yellow: "bg-yellow-100/60 dark:bg-yellow-900/30",
+  green: "bg-green-100/60 dark:bg-green-900/30",
+  blue: "bg-blue-100/60 dark:bg-blue-900/30",
+  red: "bg-red-100/60 dark:bg-red-900/30",
+  purple: "bg-purple-100/60 dark:bg-purple-900/30",
+};
 
 // Map translation IDs to language codes
 const TRANSLATION_LANG: Record<string, string> = {
@@ -40,13 +55,36 @@ interface VerseItemProps {
   verse: Verse;
   parallelVerses?: { translationId: string; translationName: string; text: string }[];
   isPlaying?: boolean;
+  isSelected?: boolean;
+  highlightColor?: string | null;
   onWordClick?: (info: WordClickInfo) => void;
+  onVerseClick?: (info: VerseClickInfo) => void;
 }
 
-export function VerseItem({ verse, parallelVerses, isPlaying, onWordClick }: VerseItemProps) {
+export function VerseItem({ verse, parallelVerses, isPlaying, isSelected, highlightColor, onWordClick, onVerseClick }: VerseItemProps) {
   const showVerseNumbers = useSettingsStore((s) => s.showVerseNumbers);
   const fontSize = useSettingsStore((s) => s.fontSize);
   const fontFamily = useSettingsStore((s) => s.fontFamily);
+  const verseRef = useRef<HTMLDivElement>(null);
+
+  const handleVerseClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!onVerseClick) return;
+      // Don't trigger if user clicked on a parallel word (dictionary)
+      const target = e.target as HTMLElement;
+      if (target.closest("[data-parallel-word]")) return;
+      const el = verseRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      onVerseClick({
+        verse,
+        x: rect.left + rect.width / 2,
+        y: rect.top,
+        bottom: rect.bottom,
+      });
+    },
+    [onVerseClick, verse]
+  );
 
   const handleWordClick = useCallback(
     (e: React.MouseEvent<HTMLSpanElement>, sourceLang: string) => {
@@ -80,6 +118,7 @@ export function VerseItem({ verse, parallelVerses, isPlaying, onWordClick }: Ver
           /\p{L}/u.test(token) ? (
             <span
               key={i}
+              data-parallel-word
               onClick={(e) => handleWordClick(e, sourceLang)}
               className="cursor-pointer rounded hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/40 dark:hover:text-blue-300 transition-colors"
             >
@@ -93,14 +132,20 @@ export function VerseItem({ verse, parallelVerses, isPlaying, onWordClick }: Ver
     );
   };
 
+  const highlightCls = highlightColor && HIGHLIGHT_BG[highlightColor] ? HIGHLIGHT_BG[highlightColor] : "";
+
   return (
     <div
-      className={`rounded px-0.5 py-0.5 transition-colors ${
+      ref={verseRef}
+      onClick={handleVerseClick}
+      className={`rounded px-0.5 py-0.5 transition-colors cursor-pointer ${
         isPlaying
           ? "bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-200 dark:ring-blue-700"
-          : ""
+          : isSelected
+          ? "bg-blue-50/50 dark:bg-blue-900/20 ring-1 ring-blue-300/50 dark:ring-blue-600/50"
+          : highlightCls || ""
       }`}
-      style={{ fontSize: `${fontSize}px`, lineHeight: 1.8, fontFamily: fontFamily || undefined }}
+      style={{ fontSize: `${fontSize}px`, lineHeight: 1.5, fontFamily: fontFamily || undefined }}
     >
       <div className="flex">
         {showVerseNumbers && (
@@ -111,7 +156,7 @@ export function VerseItem({ verse, parallelVerses, isPlaying, onWordClick }: Ver
       {parallelVerses && parallelVerses.length > 0 && (
         <div className="ml-6 mt-0.5 space-y-0.5">
           {parallelVerses.map((pv) => (
-            <div key={pv.translationId} className="flex items-baseline gap-1.5" style={{ fontSize: `${Math.max(12, fontSize - 2)}px`, lineHeight: 1.6 }}>
+            <div key={pv.translationId} className="flex items-baseline gap-1.5" style={{ fontSize: `${Math.max(12, fontSize - 2)}px`, lineHeight: 1.35 }}>
               <span className="text-blue-500 dark:text-blue-400 font-medium shrink-0 text-[0.7em] uppercase">{pv.translationId}</span>
               {renderText(pv.text, pv.translationId, true)}
             </div>

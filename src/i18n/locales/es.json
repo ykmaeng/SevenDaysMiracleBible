@@ -179,7 +179,10 @@
     "notesInstruction": "Toca un versículo y pulsa el botón de nota para escribir una nota.",
     "tabBar": "Menú inferior",
     "floatingMenu": "Menú del versículo",
-    "noBookmarks": "No hay marcadores guardados"
+    "noBookmarks": "No hay marcadores guardados",
+    "all": "Todo",
+    "noHighlights": "No hay versículos resaltados",
+    "goToVerse": "Ir al versículo"
   },
   "verseActions": {
     "copy": "Copiar",

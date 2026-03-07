@@ -69,15 +69,19 @@ export function VerseActionToolbar({ verse, bookName, position, containerRect, o
 
   const handleShare = useCallback(async () => {
     const text = `${verseRef} - ${verse.text}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ text });
-      } catch {
-        // user cancelled
+    try {
+      const { shareText } = await import("@buildyourwebapp/tauri-plugin-sharesheet");
+      await shareText(text);
+    } catch {
+      // Fallback: try Web Share API, then clipboard
+      if (navigator.share) {
+        try {
+          await navigator.share({ text });
+        } catch { /* user cancelled */ }
+      } else {
+        await navigator.clipboard.writeText(text);
+        showToast(t("verseActions.copied"), "success");
       }
-    } else {
-      await navigator.clipboard.writeText(text);
-      showToast(t("verseActions.copied"), "success");
     }
     onClose();
   }, [verseRef, verse.text, showToast, t, onClose]);
@@ -87,7 +91,7 @@ export function VerseActionToolbar({ verse, bookName, position, containerRect, o
       await removeBookmark(verse.book_id, verse.chapter, verse.verse);
       showToast(t("verseActions.bookmarkRemoved"), "success");
     } else {
-      await addBookmark(verse.book_id, verse.chapter, verse.verse);
+      await addBookmark(verse.book_id, verse.chapter, verse.verse, undefined, undefined, verse.translation_id);
       showToast(t("verseActions.bookmarkAdded"), "success");
     }
     onClose();
@@ -97,7 +101,7 @@ export function VerseActionToolbar({ verse, bookName, position, containerRect, o
     if (bookmark) {
       await updateColor(verse.book_id, verse.chapter, verse.verse, color);
     } else {
-      await addBookmark(verse.book_id, verse.chapter, verse.verse, color);
+      await addBookmark(verse.book_id, verse.chapter, verse.verse, color, undefined, verse.translation_id);
     }
     onClose();
   }, [bookmark, verse, addBookmark, updateColor, onClose]);
@@ -122,7 +126,7 @@ export function VerseActionToolbar({ verse, bookName, position, containerRect, o
     if (bookmark) {
       await updateNote(verse.book_id, verse.chapter, verse.verse, note || null);
     } else {
-      await addBookmark(verse.book_id, verse.chapter, verse.verse, undefined, note || undefined);
+      await addBookmark(verse.book_id, verse.chapter, verse.verse, undefined, note || undefined, verse.translation_id);
     }
     if (note) showToast(t("verseActions.noteSaved"), "success");
     onClose();
