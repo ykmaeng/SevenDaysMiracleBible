@@ -25,8 +25,8 @@ interface DictionaryPopupProps {
 
 export function DictionaryPopup({ word, sourceLang, position, containerRect, onClose }: DictionaryPopupProps) {
   const { t } = useTranslation();
-  const dictionaryLang = useSettingsStore((s) => s.dictionaryLang);
-  const { loading, result, error, lookup, clear } = useDictionary(dictionaryLang);
+  const language = useSettingsStore((s) => s.language);
+  const { loading, result, error, lookup, clear } = useDictionary(language);
   const popupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

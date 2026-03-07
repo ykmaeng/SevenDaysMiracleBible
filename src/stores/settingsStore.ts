@@ -18,7 +18,6 @@ interface SettingsState {
   ttsVoiceName: string;
   ttsSpeed: number;
   showDictionary: boolean;
-  dictionaryLang: string;
   onboardingComplete: boolean;
 }
 
@@ -37,7 +36,6 @@ interface SettingsActions {
   setTtsVoiceName: (name: string) => void;
   setTtsSpeed: (speed: number) => void;
   setShowDictionary: (show: boolean) => void;
-  setDictionaryLang: (lang: string) => void;
   completeOnboarding: () => void;
 }
 
@@ -69,15 +67,10 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       ttsVoiceName: "",
       ttsSpeed: 1.0,
       showDictionary: true,
-      dictionaryLang: "ko",
       onboardingComplete: false,
 
       setLanguage: (lang) =>
         set((state) => {
-          // Sync dictionary lang if it was matching the old app language
-          if (state.dictionaryLang === state.language) {
-            state.dictionaryLang = lang;
-          }
           state.language = lang;
           state.defaultTranslation = DEFAULT_TRANSLATION_BY_LANG[lang] ?? "kjv";
         }),
@@ -151,11 +144,6 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setShowDictionary: (show) =>
         set((state) => {
           state.showDictionary = show;
-        }),
-
-      setDictionaryLang: (lang) =>
-        set((state) => {
-          state.dictionaryLang = lang;
         }),
 
       completeOnboarding: () =>

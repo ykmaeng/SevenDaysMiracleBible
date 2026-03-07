@@ -67,26 +67,13 @@ function getFontOptions(lang: string): FontOption[] {
   return FONT_OPTIONS[lang] ?? FONT_OPTIONS._default;
 }
 
-const DICT_LANGUAGES = [
-  { code: "ko", name: "한국어" },
-  { code: "en", name: "English" },
-  { code: "zh", name: "中文" },
-  { code: "es", name: "Español" },
-  { code: "ja", name: "日本語" },
-  { code: "de", name: "Deutsch" },
-  { code: "fr", name: "Français" },
-  { code: "ru", name: "Русский" },
-  { code: "pt", name: "Português" },
-];
-
 export function LanguageSettings() {
   const { t, i18n } = useTranslation();
-  const { language, setLanguage, fontSize, setFontSize, fontFamily, setFontFamily, theme, setTheme, showVerseNumbers, setShowVerseNumbers, parallelTranslations, toggleParallelTranslation, reorderParallelTranslation, dictionaryLang, setDictionaryLang } =
+  const { language, setLanguage, fontSize, setFontSize, fontFamily, setFontFamily, theme, setTheme, showVerseNumbers, setShowVerseNumbers, parallelTranslations, toggleParallelTranslation, reorderParallelTranslation } =
     useSettingsStore();
   const [availableTranslations, setAvailableTranslations] = useState<Translation[]>([]);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [fontOpen, setFontOpen] = useState(false);
-  const [dictOpen, setDictOpen] = useState(false);
   const [parallelOpen, setParallelOpen] = useState(false);
   const [downloadsOpen, setDownloadsOpen] = useState(false);
   const dragIdx = useRef<number | null>(null);
@@ -263,49 +250,6 @@ export function LanguageSettings() {
             />
           </button>
         </label>
-      </section>
-
-      {/* Dictionary language (foldable) */}
-      <section>
-        <button
-          onClick={() => setDictOpen(!dictOpen)}
-          className="flex items-center justify-between w-full mb-2"
-        >
-          <h3 className="text-sm font-semibold text-gray-500 uppercase">
-            {t("dictionary.settingsTitle")}
-            <span className="ml-1.5 text-xs text-blue-500 normal-case font-normal">
-              ({DICT_LANGUAGES.find((l) => l.code === dictionaryLang)?.name ?? dictionaryLang})
-            </span>
-          </h3>
-          <svg
-            className={`w-4 h-4 text-gray-400 transition-transform ${dictOpen ? "rotate-180" : ""}`}
-            fill="none" viewBox="0 0 24 24" stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        {dictOpen && (
-          <div>
-            <div className="grid grid-cols-2 gap-2">
-              {DICT_LANGUAGES.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => setDictionaryLang(lang.code)}
-                  className={`py-2 px-3 rounded-lg text-sm transition-colors ${
-                    dictionaryLang === lang.code
-                      ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-medium"
-                      : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
-                >
-                  {lang.name}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-              {t("dictionary.settingsDesc")}
-            </p>
-          </div>
-        )}
       </section>
 
       {/* Parallel translations (foldable) */}
