@@ -24,7 +24,8 @@
     "aiTranslation": "AI Translation",
     "noContent": "No content available",
     "parallelView": "Parallel View",
-    "readerSettings": "Reader Settings"
+    "readerSettings": "Reader Settings",
+    "showDictionary": "Dictionary"
   },
   "commentary": {
     "title": "AI Commentary",

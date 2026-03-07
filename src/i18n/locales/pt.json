@@ -24,7 +24,8 @@
     "aiTranslation": "Tradução por IA",
     "noContent": "Nenhum conteúdo disponível",
     "parallelView": "Visualização Paralela",
-    "readerSettings": "Configurações de Leitura"
+    "readerSettings": "Configurações de Leitura",
+    "showDictionary": "Dicionário"
   },
   "commentary": {
     "title": "Comentário por IA",

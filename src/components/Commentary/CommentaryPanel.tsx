@@ -79,6 +79,12 @@ export function CommentaryPanel({ bookId, chapter, onClose }: CommentaryPanelPro
     }
   }, [dl?.status]);
 
+  // Reload when commentary is deleted from Settings
+  useEffect(() => {
+    window.addEventListener("commentary-changed", loadCommentary);
+    return () => window.removeEventListener("commentary-changed", loadCommentary);
+  }, [bookId, chapter, language]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full text-gray-400">

@@ -239,6 +239,7 @@ export function TabPanel() {
             translationId={activeTab.translationId}
             bookId={activeTab.bookId}
             chapter={activeTab.chapter}
+            bookName={t(`books.${activeTab.bookId}`)}
             onScrollPositionChange={handleScrollChange}
             initialScrollPosition={activeTab.scrollPosition}
             ttsVerseIndex={tts.isPlaying ? tts.currentVerseIndex : undefined}

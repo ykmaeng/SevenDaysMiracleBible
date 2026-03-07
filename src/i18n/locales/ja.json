@@ -24,7 +24,8 @@
     "aiTranslation": "AI翻訳",
     "noContent": "コンテンツがありません",
     "parallelView": "対訳表示",
-    "readerSettings": "表示設定"
+    "readerSettings": "表示設定",
+    "showDictionary": "辞書"
   },
   "commentary": {
     "title": "AI解説",

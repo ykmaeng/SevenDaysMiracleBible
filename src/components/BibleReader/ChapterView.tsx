@@ -56,6 +56,7 @@ export function ChapterView({
 
   const showParallelInline = useSettingsStore((s) => s.showParallelInline);
   const parallelTranslations = useSettingsStore((s) => s.parallelTranslations);
+  const showDictionary = useSettingsStore((s) => s.showDictionary);
   const isHighlightsEnabled = useFeatureStore((s) => s.isEnabled("highlights"));
 
   const activeParallelIds = useMemo(
@@ -163,23 +164,35 @@ export function ChapterView({
     setDictPosition({ x: info.x, y: info.y, bottom: info.bottom });
   }, []);
 
+  // Track last selected verse + close timestamp so toggle works with toolbar's mousedown
+  const lastSelectedVerseRef = useRef<number | null>(null);
+  const lastCloseTimeRef = useRef<number>(0);
+
   const handleVerseClick = useCallback((info: VerseClickInfo) => {
-    // Close dictionary when opening toolbar
     setDictWord(null);
     setDictPosition(null);
+    // If toolbar was just closed by mousedown on this same verse, don't reopen
+    const justClosed = Date.now() - lastCloseTimeRef.current < 300;
+    if (justClosed && lastSelectedVerseRef.current === info.verse.verse) {
+      lastSelectedVerseRef.current = null;
+      return;
+    }
     // Toggle: if same verse clicked, close toolbar
-    if (selectedVerse?.verse === info.verse.verse) {
+    if (lastSelectedVerseRef.current === info.verse.verse) {
       setSelectedVerse(null);
       setToolbarPosition(null);
+      lastSelectedVerseRef.current = null;
     } else {
       setSelectedVerse(info.verse);
       setToolbarPosition({ x: info.x, y: info.y, bottom: info.bottom });
+      lastSelectedVerseRef.current = info.verse.verse;
     }
-  }, [selectedVerse]);
+  }, []);
 
   const closeToolbar = useCallback(() => {
     setSelectedVerse(null);
     setToolbarPosition(null);
+    lastCloseTimeRef.current = Date.now();
   }, []);
 
   const closeDictPopup = useCallback(() => {
@@ -249,7 +262,7 @@ export function ChapterView({
                 isPlaying={ttsVerseIndex === virtualItem.index}
                 isSelected={selectedVerse?.verse === verse.verse}
                 highlightColor={isHighlightsEnabled ? bookmarks[`${verse.book_id}:${verse.chapter}:${verse.verse}`]?.color : undefined}
-                onWordClick={handleWordClick}
+                onWordClick={showDictionary ? handleWordClick : undefined}
                 onVerseClick={handleVerseClick}
               />
             </div>

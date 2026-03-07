@@ -24,7 +24,8 @@
     "aiTranslation": "ИИ-перевод",
     "noContent": "Содержимое недоступно",
     "parallelView": "Параллельный просмотр",
-    "readerSettings": "Настройки чтения"
+    "readerSettings": "Настройки чтения",
+    "showDictionary": "Словарь"
   },
   "commentary": {
     "title": "ИИ-комментарий",

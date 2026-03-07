@@ -1,7 +1,7 @@
 import { fetch } from "@tauri-apps/plugin-http";
 import i18n from "../i18n";
 import { execute } from "./db";
-import { getCommentaryDownloadUrl, CORE_COMMENTARY_LANGUAGES } from "./downloadConfig";
+import { getCommentaryDownloadUrl, CORE_COMMENTARY_LANGUAGES, COMMENTARY_LANGUAGES } from "./downloadConfig";
 import { useDownloadStore } from "../stores/downloadStore";
 import { useToastStore } from "../stores/toastStore";
 
@@ -26,6 +26,8 @@ export function commentaryDownloadKey(language: string): string {
 export async function downloadCommentary(language: string): Promise<void> {
   const key = commentaryDownloadKey(language);
   const store = useDownloadStore.getState();
+  const existing = store.downloads[key];
+  if (existing && (existing.status === "downloading" || existing.status === "importing")) return;
   store.startDownload(key);
 
   try {
@@ -65,17 +67,19 @@ export async function downloadCommentary(language: string): Promise<void> {
     }
 
     store.setStatus(key, "done");
+    const displayName = COMMENTARY_LANGUAGES.find((c) => c.language === language)?.name ?? language;
     console.log(`[commentary] ${language} complete`);
     useToastStore.getState().showToast(
-      i18n.t("download.completeToast", { name: key }),
+      i18n.t("download.completeToast", { name: displayName }),
       "success"
     );
   } catch (err) {
     console.error("[commentary] Error:", err);
     const message = toErrorMessage(err);
     store.setStatus(key, "error", message);
+    const displayName = COMMENTARY_LANGUAGES.find((c) => c.language === language)?.name ?? language;
     useToastStore.getState().showToast(
-      i18n.t("download.errorToast", { name: key }),
+      i18n.t("download.errorToast", { name: displayName }),
       "error"
     );
     throw err;
@@ -92,6 +96,7 @@ export async function deleteCommentary(language: string): Promise<void> {
       "DELETE FROM commentary WHERE language = $1 AND verse IS NULL",
       [language]
     );
+    window.dispatchEvent(new Event("commentary-changed"));
   } catch (err) {
     console.error("[commentary] Delete error:", err);
     throw err;

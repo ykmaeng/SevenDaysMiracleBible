@@ -99,7 +99,26 @@ export function DownloadManager() {
           )}
         </div>
         <div>
-          {isDone ? (
+          {isDownloading ? (
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-600 rounded-full transition-all"
+                  style={{ width: `${dl.progress}%` }}
+                />
+              </div>
+              <span className="text-xs text-blue-600">
+                {dl.status === "importing" ? t("download.importing") : `${dl.progress}%`}
+              </span>
+            </div>
+          ) : isError ? (
+            <button
+              onClick={() => handleRetry(tr.id)}
+              className="text-xs text-orange-600 font-medium hover:text-orange-800"
+            >
+              {t("download.retry")}
+            </button>
+          ) : isDone ? (
             <div className="flex items-center gap-2">
               <span className="text-xs text-green-600 font-medium">
                 {t("download.downloaded")}
@@ -131,25 +150,6 @@ export function DownloadManager() {
                 )
               )}
             </div>
-          ) : isDownloading ? (
-            <div className="flex items-center gap-2">
-              <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-blue-600 rounded-full transition-all"
-                  style={{ width: `${dl.progress}%` }}
-                />
-              </div>
-              <span className="text-xs text-blue-600">
-                {dl.status === "importing" ? t("download.importing") : `${dl.progress}%`}
-              </span>
-            </div>
-          ) : isError ? (
-            <button
-              onClick={() => handleRetry(tr.id)}
-              className="text-xs text-orange-600 font-medium hover:text-orange-800"
-            >
-              {t("download.retry")}
-            </button>
           ) : (
             <button
               onClick={() => handleDownload(tr.id)}
@@ -272,7 +272,26 @@ function DictionaryDownloadItem({
         )}
       </div>
       <div>
-        {isDone ? (
+        {isDownloading ? (
+          <div className="flex items-center gap-2">
+            <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-600 rounded-full transition-all"
+                style={{ width: `${dl.progress}%` }}
+              />
+            </div>
+            <span className="text-xs text-blue-600">
+              {dl.status === "importing" ? t("download.importing") : `${dl.progress}%`}
+            </span>
+          </div>
+        ) : isError ? (
+          <button
+            onClick={handleRetry}
+            className="text-xs text-orange-600 font-medium hover:text-orange-800"
+          >
+            {t("download.retry")}
+          </button>
+        ) : isDone ? (
           <div className="flex items-center gap-2">
             <span className="text-xs text-green-600 font-medium">
               {t("download.downloaded")}
@@ -302,25 +321,6 @@ function DictionaryDownloadItem({
               </button>
             )}
           </div>
-        ) : isDownloading ? (
-          <div className="flex items-center gap-2">
-            <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-600 rounded-full transition-all"
-                style={{ width: `${dl.progress}%` }}
-              />
-            </div>
-            <span className="text-xs text-blue-600">
-              {dl.status === "importing" ? t("download.importing") : `${dl.progress}%`}
-            </span>
-          </div>
-        ) : isError ? (
-          <button
-            onClick={handleRetry}
-            className="text-xs text-orange-600 font-medium hover:text-orange-800"
-          >
-            {t("download.retry")}
-          </button>
         ) : (
           <button
             onClick={handleDownload}
@@ -417,7 +417,26 @@ function CommentaryDownloadList({
               )}
             </div>
             <div>
-              {isDone ? (
+              {isDownloading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-blue-600 rounded-full transition-all"
+                      style={{ width: `${dl.progress}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-blue-600">
+                    {dl.status === "importing" ? t("download.importing") : `${dl.progress}%`}
+                  </span>
+                </div>
+              ) : isError ? (
+                <button
+                  onClick={() => { clearDownload(key); handleDownload(c.language); }}
+                  className="text-xs text-orange-600 font-medium hover:text-orange-800"
+                >
+                  {t("download.retry")}
+                </button>
+              ) : isDone ? (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-green-600 font-medium">
                     {t("download.downloaded")}
@@ -447,25 +466,6 @@ function CommentaryDownloadList({
                     </button>
                   )}
                 </div>
-              ) : isDownloading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-600 rounded-full transition-all"
-                      style={{ width: `${dl.progress}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-blue-600">
-                    {dl.status === "importing" ? t("download.importing") : `${dl.progress}%`}
-                  </span>
-                </div>
-              ) : isError ? (
-                <button
-                  onClick={() => { clearDownload(key); handleDownload(c.language); }}
-                  className="text-xs text-orange-600 font-medium hover:text-orange-800"
-                >
-                  {t("download.retry")}
-                </button>
               ) : (
                 <button
                   onClick={() => handleDownload(c.language)}

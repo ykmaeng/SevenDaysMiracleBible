@@ -39,17 +39,21 @@ export async function ensureDictionaryTable(): Promise<void> {
 }
 
 export async function lookupOffline(word: string): Promise<DictionaryEntry | null> {
-  const rows = await query<DictionaryRow>(
-    "SELECT word, phonetic, data FROM dictionary WHERE word = $1",
-    [word.toLowerCase()]
-  );
-  if (rows.length === 0) return null;
-  const row = rows[0];
-  return {
-    word: row.word,
-    phonetic: row.phonetic ?? undefined,
-    meanings: JSON.parse(row.data),
-  };
+  try {
+    const rows = await query<DictionaryRow>(
+      "SELECT word, phonetic, data FROM dictionary WHERE word = $1",
+      [word.toLowerCase()]
+    );
+    if (rows.length === 0) return null;
+    const row = rows[0];
+    return {
+      word: row.word,
+      phonetic: row.phonetic ?? undefined,
+      meanings: JSON.parse(row.data),
+    };
+  } catch {
+    return null; // table may not exist after deletion
+  }
 }
 
 export async function lookupOnline(word: string): Promise<DictionaryEntry | null> {
@@ -91,6 +95,8 @@ export async function isDictionaryDownloaded(): Promise<boolean> {
 
 export async function downloadDictionary(): Promise<void> {
   const store = useDownloadStore.getState();
+  const existing = store.downloads[DICTIONARY_DOWNLOAD_ID];
+  if (existing && (existing.status === "downloading" || existing.status === "importing")) return;
   store.startDownload(DICTIONARY_DOWNLOAD_ID);
 
   try {
@@ -126,14 +132,14 @@ export async function downloadDictionary(): Promise<void> {
 
     store.setStatus(DICTIONARY_DOWNLOAD_ID, "done");
     useToastStore.getState().showToast(
-      i18n.t("download.completeToast", { name: DICTIONARY_DOWNLOAD_ID }),
+      i18n.t("download.completeToast", { name: i18n.t("dictionary.offline") }),
       "success"
     );
   } catch (err) {
     const message = toErrorMessage(err);
     store.setStatus(DICTIONARY_DOWNLOAD_ID, "error", message);
     useToastStore.getState().showToast(
-      i18n.t("download.errorToast", { name: DICTIONARY_DOWNLOAD_ID }),
+      i18n.t("download.errorToast", { name: i18n.t("dictionary.offline") }),
       "error"
     );
     throw err;

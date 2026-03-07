@@ -24,7 +24,8 @@
     "aiTranslation": "AI翻译",
     "noContent": "暂无内容",
     "parallelView": "对照翻译视图",
-    "readerSettings": "阅读设置"
+    "readerSettings": "阅读设置",
+    "showDictionary": "词典"
   },
   "commentary": {
     "title": "AI释经",

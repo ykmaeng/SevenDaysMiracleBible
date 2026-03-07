@@ -24,7 +24,8 @@
     "aiTranslation": "KI-Übersetzung",
     "noContent": "Kein Inhalt verfügbar",
     "parallelView": "Parallelansicht",
-    "readerSettings": "Leseeinstellungen"
+    "readerSettings": "Leseeinstellungen",
+    "showDictionary": "Wörterbuch"
   },
   "commentary": {
     "title": "KI-Kommentar",

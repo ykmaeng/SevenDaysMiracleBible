@@ -24,7 +24,8 @@
     "aiTranslation": "Traduction IA",
     "noContent": "Aucun contenu disponible",
     "parallelView": "Vue parall\u00e8le",
-    "readerSettings": "Param\u00e8tres de lecture"
+    "readerSettings": "Param\u00e8tres de lecture",
+    "showDictionary": "Dictionnaire"
   },
   "commentary": {
     "title": "Commentaire IA",

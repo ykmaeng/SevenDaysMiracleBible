@@ -21,6 +21,8 @@ function toErrorMessage(err: unknown): string {
 
 export async function downloadTranslation(translationId: string): Promise<void> {
   const store = useDownloadStore.getState();
+  const existing = store.downloads[translationId];
+  if (existing && (existing.status === "downloading" || existing.status === "importing")) return;
   store.startDownload(translationId);
 
   try {

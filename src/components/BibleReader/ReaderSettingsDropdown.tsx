@@ -26,6 +26,8 @@ export function ReaderSettingsDropdown({
   const setFontSize = useSettingsStore((s) => s.setFontSize);
   const commentaryPosition = useSettingsStore((s) => s.commentaryPosition);
   const setCommentaryPosition = useSettingsStore((s) => s.setCommentaryPosition);
+  const showDictionary = useSettingsStore((s) => s.showDictionary);
+  const setShowDictionary = useSettingsStore((s) => s.setShowDictionary);
   const ttsVoiceName = useSettingsStore((s) => s.ttsVoiceName);
   const setTtsVoiceName = useSettingsStore((s) => s.setTtsVoiceName);
   const ttsSpeed = useSettingsStore((s) => s.ttsSpeed);
@@ -123,6 +125,13 @@ export function ReaderSettingsDropdown({
               </div>
             </div>
           )}
+
+          {/* Dictionary toggle */}
+          <ToggleItem
+            label={t("reader.showDictionary")}
+            checked={showDictionary}
+            onChange={setShowDictionary}
+          />
 
           {/* Verse Numbers toggle */}
           <ToggleItem

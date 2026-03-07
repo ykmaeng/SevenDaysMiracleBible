@@ -24,7 +24,8 @@
     "aiTranslation": "AI 번역",
     "noContent": "콘텐츠가 없습니다",
     "parallelView": "동시번역보기",
-    "readerSettings": "보기 설정"
+    "readerSettings": "보기 설정",
+    "showDictionary": "사전 보기"
   },
   "commentary": {
     "title": "AI 강해",

@@ -17,6 +17,7 @@ interface SettingsState {
   commentarySplitRatio: number;
   ttsVoiceName: string;
   ttsSpeed: number;
+  showDictionary: boolean;
   dictionaryLang: string;
   onboardingComplete: boolean;
 }
@@ -35,6 +36,7 @@ interface SettingsActions {
   reorderParallelTranslation: (fromIndex: number, toIndex: number) => void;
   setTtsVoiceName: (name: string) => void;
   setTtsSpeed: (speed: number) => void;
+  setShowDictionary: (show: boolean) => void;
   setDictionaryLang: (lang: string) => void;
   completeOnboarding: () => void;
 }
@@ -66,6 +68,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       commentarySplitRatio: 0.5,
       ttsVoiceName: "",
       ttsSpeed: 1.0,
+      showDictionary: true,
       dictionaryLang: "ko",
       onboardingComplete: false,
 
@@ -143,6 +146,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setTtsSpeed: (speed) =>
         set((state) => {
           state.ttsSpeed = Math.max(0.5, Math.min(2.0, speed));
+        }),
+
+      setShowDictionary: (show) =>
+        set((state) => {
+          state.showDictionary = show;
         }),
 
       setDictionaryLang: (lang) =>
