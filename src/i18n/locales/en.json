@@ -64,6 +64,7 @@
   },
   "download": {
     "title": "Downloads",
+    "bibleTranslations": "Bible Translations",
     "available": "Available",
     "downloaded": "Downloaded",
     "downloading": "Downloading...",

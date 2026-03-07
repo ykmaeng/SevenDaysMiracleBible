@@ -64,6 +64,7 @@
   },
   "download": {
     "title": "다운로드",
+    "bibleTranslations": "성경번역본",
     "available": "다운로드 가능",
     "downloaded": "다운로드됨",
     "downloading": "다운로드 중...",

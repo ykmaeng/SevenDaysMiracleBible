@@ -159,7 +159,7 @@ const insertVerse = db.prepare(
 );
 
 let jsonFiles = readdirSync(OUTPUT_DIR).filter(
-  (f) => f.endsWith(".json") && f !== "cross_references.json"
+  (f) => f.endsWith(".json") && f !== "cross_references.json" && f !== "translation-progress.json"
 );
 
 if (buildCore) {

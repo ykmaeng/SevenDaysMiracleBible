@@ -61,6 +61,7 @@
   },
   "download": {
     "title": "下载",
+    "bibleTranslations": "圣经译本",
     "available": "可下载",
     "downloaded": "已下载",
     "downloading": "下载中...",

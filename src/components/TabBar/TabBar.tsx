@@ -191,7 +191,7 @@ export function TabBar() {
                 <button
                   key={tr.id}
                   onClick={() => {
-                    updateTab(activeTabId, { translationId: tr.id });
+                    updateTab(activeTabId, { translationId: tr.id, scrollPosition: 0 });
                     setShowTranslationPicker(false);
                   }}
                   className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between ${

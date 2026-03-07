@@ -61,6 +61,7 @@
   },
   "download": {
     "title": "ダウンロード",
+    "bibleTranslations": "聖書翻訳",
     "available": "ダウンロード可能",
     "downloaded": "ダウンロード済み",
     "downloading": "ダウンロード中...",

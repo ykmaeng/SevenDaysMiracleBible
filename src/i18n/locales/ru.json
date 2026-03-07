@@ -61,6 +61,7 @@
   },
   "download": {
     "title": "Загрузки",
+    "bibleTranslations": "Переводы Библии",
     "available": "Доступные",
     "downloaded": "Загружено",
     "downloading": "Загрузка...",

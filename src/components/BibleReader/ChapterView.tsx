@@ -95,7 +95,7 @@ export function ChapterView({
   });
 
   useEffect(() => {
-    if (initialScrollPosition && parentRef.current) {
+    if (initialScrollPosition != null && parentRef.current) {
       parentRef.current.scrollTop = initialScrollPosition;
     }
   }, [initialScrollPosition, verses]);

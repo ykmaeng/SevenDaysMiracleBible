@@ -56,8 +56,10 @@ export function DownloadManager() {
     handleDownload(id);
   };
 
-  const downloaded = translations.filter((tr) => tr.downloaded);
-  const available = translations.filter((tr) => !tr.downloaded);
+  const sorted = [...translations].sort((a, b) => {
+    if (a.downloaded === b.downloaded) return 0;
+    return a.downloaded ? -1 : 1;
+  });
 
   const renderItem = (tr: Translation) => {
     const dl = downloads[tr.id];
@@ -149,25 +151,14 @@ export function DownloadManager() {
 
   return (
     <div className="space-y-6">
-      {downloaded.length > 0 && (
+      {sorted.length > 0 && (
         <section>
           <div className="flex items-center gap-3 mb-2">
             <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-            <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">{t("download.downloaded")}</span>
+            <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">{t("download.bibleTranslations")}</span>
             <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
           </div>
-          <div>{downloaded.map(renderItem)}</div>
-        </section>
-      )}
-
-      {available.length > 0 && (
-        <section>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-            <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">{t("download.available")}</span>
-            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-          </div>
-          <div>{available.map(renderItem)}</div>
+          <div>{sorted.map(renderItem)}</div>
         </section>
       )}
 
