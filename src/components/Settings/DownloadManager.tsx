@@ -81,19 +81,21 @@ export function DownloadManager() {
     const isDeletingThis = deleting === tr.id;
 
     return (
-      <div key={tr.id} className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0">
-        <div>
-          <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{tr.name}</p>
+      <div key={tr.id} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{tr.name}</span>
+            <span className="text-[11px] text-gray-400">
+              {tr.language.toUpperCase()}
+              {tr.is_ai_generated ? " · AI" : ""}
+              {tr.download_size_mb ? ` · ${t("download.size", { size: tr.download_size_mb })}` : ""}
+            </span>
+          </div>
           {tr.description && (
             <p className="text-xs text-gray-500">{tr.description}</p>
           )}
-          <p className="text-xs text-gray-400">
-            {tr.language.toUpperCase()}
-            {tr.is_ai_generated ? " \u00b7 AI" : ""}
-            {tr.download_size_mb ? ` \u00b7 ${t("download.size", { size: tr.download_size_mb })}` : ""}
-          </p>
           {isError && dl.error && (
-            <p className="text-xs text-red-500 mt-1">{dl.error}</p>
+            <p className="text-xs text-red-500">{dl.error}</p>
           )}
         </div>
         <div>
@@ -259,14 +261,14 @@ function DictionaryDownloadItem({
   };
 
   return (
-    <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0">
-      <div>
-        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+    <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+      <div className="flex items-center gap-1.5 min-w-0">
+        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
           {t("dictionary.download")}
-        </p>
-        <p className="text-xs text-gray-400">EN</p>
+        </span>
+        <span className="text-[11px] text-gray-400">EN</span>
         {isError && dl.error && (
-          <p className="text-xs text-red-500 mt-1">{dl.error}</p>
+          <span className="text-xs text-red-500">{dl.error}</span>
         )}
       </div>
       <div>
@@ -406,14 +408,12 @@ function CommentaryDownloadList({
         const isDeletingThis = deletingLang === c.language;
 
         return (
-          <div key={c.language} className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0">
-            <div>
-              <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{c.name}</p>
-              <p className="text-xs text-gray-400">
-                {c.language.toUpperCase()} · AI · {t("download.size", { size: c.sizeMb })}
-              </p>
+          <div key={c.language} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-sm font-medium text-gray-800 dark:text-gray-200 leading-none">{c.name}</span>
+              <span className="text-[11px] text-gray-400 leading-none">{t("download.size", { size: c.sizeMb })}</span>
               {isError && dl.error && (
-                <p className="text-xs text-red-500 mt-1">{dl.error}</p>
+                <span className="text-xs text-red-500">{dl.error}</span>
               )}
             </div>
             <div>
