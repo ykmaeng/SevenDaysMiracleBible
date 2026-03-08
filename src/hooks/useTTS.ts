@@ -239,13 +239,16 @@ export function useTTS(): TTSState & TTSActions {
     }
   };
 
-  const play = useCallback((verses: Verse[], lang = "", startIndex = 0) => {
+  const play = useCallback(async (verses: Verse[], lang = "", startIndex = 0) => {
     stoppedRef.current = true;
     if (isAndroid) {
-      nativeStop();
+      await nativeStop();
     } else if (hasWebTTS) {
       window.speechSynthesis.cancel();
     }
+
+    // Small delay to let pending speech promises settle
+    await new Promise((r) => setTimeout(r, 50));
 
     versesRef.current = verses;
     langRef.current = lang;
