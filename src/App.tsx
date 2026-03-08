@@ -86,7 +86,7 @@ function App() {
     <div className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-gray-100">
       {/* Tab bar */}
       {view === "reader" && (
-        <div className={`transition-all duration-150 ease-out overflow-hidden ${immersive ? "max-h-0 -mt-1" : "max-h-14"}`}>
+        <div className={`transition-all duration-150 ease-out ${immersive ? "max-h-0 -mt-1 overflow-hidden" : "max-h-14"}`}>
           <TabBar />
         </div>
       )}
