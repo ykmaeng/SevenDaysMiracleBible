@@ -22,6 +22,7 @@ interface ParagraphGroupProps {
   verses: Verse[];
   sectionHeading?: SectionHeading;
   isFirstParagraph?: boolean;
+  chapterHeader?: { bookName: string; chapter: number };
   ttsVerseNumber?: number;
   selectedVerses?: Set<number>;
   highlightColors?: Record<string, string | null>;
@@ -34,6 +35,7 @@ export function ParagraphGroup({
   verses,
   sectionHeading,
   isFirstParagraph,
+  chapterHeader,
   ttsVerseNumber,
   selectedVerses,
   highlightColors,
@@ -70,11 +72,21 @@ export function ParagraphGroup({
 
   return (
     <div ref={groupRef}>
+      {chapterHeader && isFirstParagraph && (
+        <div className="text-center pt-8 pb-8" style={{ fontFamily: fontFamily || undefined }}>
+          <span className="text-3xl font-black text-gray-800 dark:text-gray-100">
+            {chapterHeader.bookName}
+          </span>
+          <span className="text-3xl font-black text-gray-800 dark:text-gray-100 ml-2">
+            {chapterHeader.chapter}
+          </span>
+        </div>
+      )}
       {sectionTitle && (
         <div className={`${!isFirstParagraph ? "mt-5" : ""} mb-2 pl-3`}>
           <h3
-            className="text-gray-400 dark:text-gray-500 font-medium"
-            style={{ fontSize: `${fontSize - 1}px` }}
+            className="text-gray-400 dark:text-gray-500 font-bold"
+            style={{ fontSize: `${fontSize - 1}px`, fontFamily: fontFamily || undefined }}
           >
             {sectionTitle}
           </h3>
@@ -82,7 +94,7 @@ export function ParagraphGroup({
       )}
       {!isFirstParagraph && !sectionTitle && <div className="mt-3" />}
       <div
-        className="pl-3 pr-2 py-1"
+        className="pl-4 pr-2 py-1"
         style={{ fontSize: `${fontSize}px`, lineHeight: 1.8, fontFamily: fontFamily || undefined }}
       >
         {verses.map((verse) => {
@@ -104,7 +116,7 @@ export function ParagraphGroup({
                 }`}
               >
                 {showVerseNumbers && (
-                  <sup className="text-gray-400 dark:text-gray-500 font-medium select-none mx-1" style={{ fontSize: '0.55em' }}>
+                  <sup className="text-gray-400 dark:text-gray-500 font-medium select-none mx-1" style={{ fontSize: '0.65em' }}>
                     {verse.verse}
                   </sup>
                 )}
@@ -112,7 +124,7 @@ export function ParagraphGroup({
               </span>
               {/* Parallel translations — each on new line */}
               {hasParallel && (
-                <div className="ml-4 mt-0.5 mb-1 space-y-1" style={{ fontSize: `${Math.max(12, fontSize - 2)}px`, lineHeight: 1.5 }}>
+                <div className="ml-2 mt-2 mb-2 space-y-2" style={{ fontSize: `${Math.max(12, fontSize - 2)}px`, lineHeight: 1.5 }}>
                   {parallelIds!.map((tid) => {
                     const pv = parallelData!.get(tid)?.get(verse.verse);
                     if (!pv) return null;
