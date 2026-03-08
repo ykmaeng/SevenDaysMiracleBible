@@ -96,6 +96,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
     if (versesRef.current.length > 0) {
       const lang = translationToLang(activeTab.translationId);
       tts.play(versesRef.current, lang);
+      window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: true }));
     }
   };
 
@@ -126,6 +127,13 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
     tts.stop();
   }, [activeTab.bookId, activeTab.chapter, activeTab.translationId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Restore UI when TTS stops
+  useEffect(() => {
+    if (!tts.isPlaying) {
+      window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: false }));
+    }
+  }, [tts.isPlaying]);
+
   const handleDividerPointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
@@ -149,7 +157,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
   return (
     <div className="flex flex-col h-full">
       {/* Navigation header */}
-      <div className={`flex items-center justify-between px-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 transition-all duration-300 ${immersive ? "max-h-0 py-0 overflow-hidden" : "max-h-20 py-2"}`}>
+      <div className={`flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 transition-all duration-150 ease-out ${immersive ? "max-h-0 overflow-hidden opacity-0" : "max-h-14"}`}>
         <button
           onClick={() => setShowBookPicker(true)}
           className="text-sm font-semibold text-gray-800 dark:text-gray-200 hover:text-blue-600"

@@ -223,16 +223,19 @@ export function ChapterView({
       const delta = top - s.lastY;
       s.lastY = top;
 
+      // Skip if near bottom (prevent flickering from layout shifts)
+      const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+
       // Reset accumulator on direction change
       if ((delta > 0 && s.accum < 0) || (delta < 0 && s.accum > 0)) {
         s.accum = 0;
       }
       s.accum += delta;
 
-      if (s.accum > 60) {
+      if (s.accum > 10) {
         window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: true }));
         s.accum = 0;
-      } else if (s.accum < -60) {
+      } else if (s.accum < -10 && !nearBottom) {
         window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: false }));
         s.accum = 0;
       }

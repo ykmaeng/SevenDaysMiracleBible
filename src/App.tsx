@@ -86,7 +86,7 @@ function App() {
     <div className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-gray-100">
       {/* Tab bar */}
       {view === "reader" && (
-        <div className={`transition-all duration-300 overflow-hidden ${immersive ? "max-h-0" : "max-h-20"}`}>
+        <div className={`transition-all duration-150 ease-out overflow-hidden ${immersive ? "max-h-0 -mt-1" : "max-h-14"}`}>
           <TabBar />
         </div>
       )}
@@ -136,7 +136,7 @@ function App() {
       <ToastContainer />
 
       {/* Bottom navigation bar */}
-      <nav className={`flex items-center justify-around border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 transition-all duration-300 overflow-hidden ${immersive && view === "reader" ? "max-h-0 py-0" : "max-h-20 py-2"}`}>
+      <nav className={`flex items-center justify-around border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 transition-all duration-150 overflow-hidden ${immersive && view === "reader" ? "max-h-0 py-0" : "max-h-20 py-2"}`}>
         <button
           onClick={() => setView("reader")}
           className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
