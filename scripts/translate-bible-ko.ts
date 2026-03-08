@@ -24,7 +24,7 @@ const execAsync = promisify(exec);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR = join(__dirname, "data", "output");
 const PROGRESS_FILE = join(OUTPUT_DIR, "translation-progress.json");
-const OUTPUT_FILE = join(OUTPUT_DIR, "ai-ko.json");
+const OUTPUT_FILE = join(OUTPUT_DIR, "sav-ko.json");
 const TEMP_DIR = join(OUTPUT_DIR, "tmp-prompts");
 
 if (!existsSync(TEMP_DIR)) mkdirSync(TEMP_DIR, { recursive: true });
@@ -207,7 +207,7 @@ async function translateBatch(batch: Batch): Promise<Verse[]> {
 
       // Normalize and add translation_id
       return parsed.map((v) => ({
-        translation_id: "ai-ko",
+        translation_id: "sav-ko",
         book_id: v.book_id ?? batch.bookId,
         chapter: v.chapter,
         verse: v.verse,

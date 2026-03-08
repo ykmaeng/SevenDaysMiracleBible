@@ -10,7 +10,7 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
     _app: &AppHandle<R>,
     api: PluginApi<R, C>,
 ) -> Result<TtsBridge<R>> {
-    let handle = api.register_android_plugin("com.young.sdmbible.tts", "TtsPlugin")?;
+    let handle = api.register_android_plugin("bible.selah.tts", "TtsPlugin")?;
     Ok(TtsBridge(handle))
 }
 

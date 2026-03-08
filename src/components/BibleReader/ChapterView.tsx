@@ -1,16 +1,23 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useTranslation } from "react-i18next";
-import { getChapter, getParallelChapter } from "../../lib/bible";
+import { getChapter, getParallelChapter, getParagraphBreaks, getSectionHeadings } from "../../lib/bible";
+import type { SectionHeading } from "../../lib/bible";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useBookmarkStore } from "../../stores/bookmarkStore";
 import { useFeatureStore } from "../../stores/featureStore";
 import { CORE_TRANSLATIONS } from "../../lib/downloadConfig";
-import { VerseItem } from "./VerseItem";
+import { ParagraphGroup } from "./ParagraphGroup";
 import { DictionaryPopup } from "./DictionaryPopup";
 import { VerseActionToolbar } from "./VerseActionToolbar";
-import type { WordClickInfo, VerseClickInfo } from "./VerseItem";
+import type { VerseClickInfo } from "./VerseItem";
 import type { Verse } from "../../types/bible";
+
+interface ParagraphData {
+  verses: Verse[];
+  sectionHeading?: SectionHeading;
+  isFirst: boolean;
+}
 
 interface ChapterViewProps {
   translationId: string;
@@ -36,6 +43,8 @@ export function ChapterView({
   const { t } = useTranslation();
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [paragraphVerses, setParagraphVerses] = useState<Set<number>>(new Set());
+  const [sectionHeadings, setSectionHeadings] = useState<Map<number, SectionHeading>>(new Map());
   const [parallelData, setParallelData] = useState<
     Map<string, Map<number, { translationId: string; translationName: string; text: string }>>
   >(new Map());
@@ -43,12 +52,11 @@ export function ChapterView({
 
   // Dictionary popup state
   const [dictWord, setDictWord] = useState<string | null>(null);
-  const [dictSourceLang, setDictSourceLang] = useState<string>("en");
+  const [dictSourceLang] = useState<string>("en");
   const [dictPosition, setDictPosition] = useState<{ x: number; y: number; bottom: number } | null>(null);
 
-  // Verse action toolbar state
-  const [selectedVerse, setSelectedVerse] = useState<Verse | null>(null);
-  const [toolbarPosition, setToolbarPosition] = useState<{ x: number; y: number; bottom: number } | null>(null);
+  // Verse selection state (multi-select)
+  const [selectedVerses, setSelectedVerses] = useState<Map<number, Verse>>(new Map());
 
   // Bookmark store
   const bookmarks = useBookmarkStore((s) => s.bookmarks);
@@ -56,13 +64,15 @@ export function ChapterView({
 
   const showParallelInline = useSettingsStore((s) => s.showParallelInline);
   const parallelTranslations = useSettingsStore((s) => s.parallelTranslations);
-  const showDictionary = useSettingsStore((s) => s.showDictionary);
   const isHighlightsEnabled = useFeatureStore((s) => s.isEnabled("highlights"));
 
   const activeParallelIds = useMemo(
     () => parallelTranslations.filter((id) => id !== translationId),
     [parallelTranslations, translationId]
   );
+
+  // Inline paragraph mode when no parallel translations; per-verse groups otherwise
+  const hasParallel = showParallelInline && activeParallelIds.length > 0;
 
   const onVersesLoadedRef = useRef(onVersesLoaded);
   onVersesLoadedRef.current = onVersesLoaded;
@@ -71,9 +81,15 @@ export function ChapterView({
     let cancelled = false;
     setLoading(true);
 
-    getChapter(translationId, bookId, chapter).then((data) => {
+    Promise.all([
+      getChapter(translationId, bookId, chapter),
+      getParagraphBreaks(bookId, chapter).catch(() => []),
+      getSectionHeadings(bookId, chapter).catch(() => []),
+    ]).then(([data, breaks, headings]) => {
       if (!cancelled) {
         setVerses(data);
+        setParagraphVerses(new Set(breaks.map((b) => b.verse)));
+        setSectionHeadings(new Map(headings.map((h) => [h.verse, h])));
         setLoading(false);
         onVersesLoadedRef.current?.(data);
       }
@@ -107,10 +123,69 @@ export function ChapterView({
     loadChapterBookmarks(bookId, chapter);
   }, [bookId, chapter, loadChapterBookmarks]);
 
+  // Build paragraph groups — inline grouping or per-verse groups
+  const paragraphGroups = useMemo(() => {
+    if (verses.length === 0) return [];
+
+    if (hasParallel) {
+      // Per-verse groups: each verse is its own group
+      return verses.map((verse, i) => ({
+        verses: [verse],
+        sectionHeading: sectionHeadings.get(verse.verse),
+        isFirst: i === 0,
+      }));
+    }
+
+    // Inline paragraph mode: group verses by paragraph breaks
+    const groups: ParagraphData[] = [];
+    let currentGroup: Verse[] = [];
+    let currentHeading: SectionHeading | undefined;
+
+    for (const verse of verses) {
+      const isBreak = paragraphVerses.has(verse.verse);
+      const heading = sectionHeadings.get(verse.verse);
+
+      if ((isBreak || heading) && currentGroup.length > 0) {
+        groups.push({
+          verses: currentGroup,
+          sectionHeading: currentHeading,
+          isFirst: groups.length === 0,
+        });
+        currentGroup = [];
+        currentHeading = undefined;
+      }
+
+      if (heading) currentHeading = heading;
+      if (verse.verse === 1 && !currentHeading) {
+        currentHeading = sectionHeadings.get(1);
+      }
+      currentGroup.push(verse);
+    }
+
+    if (currentGroup.length > 0) {
+      groups.push({
+        verses: currentGroup,
+        sectionHeading: currentHeading,
+        isFirst: groups.length === 0,
+      });
+    }
+
+    return groups;
+  }, [hasParallel, verses, paragraphVerses, sectionHeadings]);
+
+  // Map verse index to paragraph group index (for TTS scrolling)
+  const verseToGroupIndex = useMemo(() => {
+    const map = new Map<number, number>();
+    paragraphGroups.forEach((group, groupIdx) => {
+      group.verses.forEach((v) => map.set(v.verse - 1, groupIdx));
+    });
+    return map;
+  }, [paragraphGroups]);
+
   const virtualizer = useVirtualizer({
-    count: verses.length,
+    count: paragraphGroups.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => (showParallelInline && activeParallelIds.length > 0 ? 80 : 48),
+    estimateSize: () => hasParallel ? 80 : 120,
     overscan: 10,
   });
 
@@ -121,10 +196,12 @@ export function ChapterView({
   }, [initialScrollPosition, verses]);
 
   useEffect(() => {
-    if (ttsVerseIndex != null && ttsVerseIndex >= 0 && ttsVerseIndex < verses.length) {
-      virtualizer.scrollToIndex(ttsVerseIndex, { align: "center", behavior: "smooth" });
+    if (ttsVerseIndex == null || ttsVerseIndex < 0 || ttsVerseIndex >= verses.length) return;
+    const groupIdx = verseToGroupIndex.get(ttsVerseIndex);
+    if (groupIdx != null) {
+      virtualizer.scrollToIndex(groupIdx, { align: "center", behavior: "smooth" });
     }
-  }, [ttsVerseIndex, verses.length, virtualizer]);
+  }, [ttsVerseIndex, verses.length, virtualizer, verseToGroupIndex]);
 
   // Scroll handler: track position + close popup
   useEffect(() => {
@@ -133,72 +210,70 @@ export function ChapterView({
 
     const handler = () => {
       onScrollPositionChange?.(el.scrollTop);
-      // Close popups on scroll
+      // Close dictionary on scroll
       if (dictWord) {
         setDictWord(null);
         setDictPosition(null);
       }
-      if (selectedVerse) {
-        setSelectedVerse(null);
-        setToolbarPosition(null);
-      }
     };
     el.addEventListener("scroll", handler, { passive: true });
     return () => el.removeEventListener("scroll", handler);
-  }, [onScrollPositionChange, dictWord, selectedVerse]);
+  }, [onScrollPositionChange, dictWord]);
 
   // Close popups when chapter changes
   useEffect(() => {
     setDictWord(null);
     setDictPosition(null);
-    setSelectedVerse(null);
-    setToolbarPosition(null);
+    setSelectedVerses(new Map());
   }, [bookId, chapter]);
-
-  const handleWordClick = useCallback((info: WordClickInfo) => {
-    // Close toolbar when opening dictionary
-    setSelectedVerse(null);
-    setToolbarPosition(null);
-    setDictWord(info.word);
-    setDictSourceLang(info.sourceLang);
-    setDictPosition({ x: info.x, y: info.y, bottom: info.bottom });
-  }, []);
-
-  // Track last selected verse + close timestamp so toggle works with toolbar's mousedown
-  const lastSelectedVerseRef = useRef<number | null>(null);
-  const lastCloseTimeRef = useRef<number>(0);
 
   const handleVerseClick = useCallback((info: VerseClickInfo) => {
     setDictWord(null);
     setDictPosition(null);
-    // If toolbar was just closed by mousedown on this same verse, don't reopen
-    const justClosed = Date.now() - lastCloseTimeRef.current < 300;
-    if (justClosed && lastSelectedVerseRef.current === info.verse.verse) {
-      lastSelectedVerseRef.current = null;
-      return;
-    }
-    // Toggle: if same verse clicked, close toolbar
-    if (lastSelectedVerseRef.current === info.verse.verse) {
-      setSelectedVerse(null);
-      setToolbarPosition(null);
-      lastSelectedVerseRef.current = null;
-    } else {
-      setSelectedVerse(info.verse);
-      setToolbarPosition({ x: info.x, y: info.y, bottom: info.bottom });
-      lastSelectedVerseRef.current = info.verse.verse;
-    }
+    // Toggle verse selection
+    setSelectedVerses((prev) => {
+      const next = new Map(prev);
+      if (next.has(info.verse.verse)) {
+        next.delete(info.verse.verse);
+      } else {
+        next.set(info.verse.verse, info.verse);
+      }
+      return next;
+    });
   }, []);
 
   const closeToolbar = useCallback(() => {
-    setSelectedVerse(null);
-    setToolbarPosition(null);
-    lastCloseTimeRef.current = Date.now();
+    setSelectedVerses(new Map());
   }, []);
 
   const closeDictPopup = useCallback(() => {
     setDictWord(null);
     setDictPosition(null);
   }, []);
+
+  // Get highlight colors map for paragraph mode
+  const highlightColorMap = useMemo(() => {
+    if (!isHighlightsEnabled) return {};
+    const map: Record<string, string | null> = {};
+    for (const [key, bm] of Object.entries(bookmarks)) {
+      if (bm?.color) map[key] = bm.color;
+    }
+    return map;
+  }, [bookmarks, isHighlightsEnabled]);
+
+  // Selected verse numbers set for ParagraphGroup
+  const selectedVerseNumbers = useMemo(() => new Set(selectedVerses.keys()), [selectedVerses]);
+
+  // Sorted selected verses for toolbar
+  const sortedSelectedVerses = useMemo(
+    () => [...selectedVerses.values()].sort((a, b) => a.verse - b.verse),
+    [selectedVerses]
+  );
+
+  // Get TTS verse number for paragraph mode
+  const ttsVerseNumber = ttsVerseIndex != null && ttsVerseIndex >= 0 && ttsVerseIndex < verses.length
+    ? verses[ttsVerseIndex].verse
+    : undefined;
 
   if (loading) {
     return (
@@ -235,14 +310,7 @@ export function ChapterView({
         }}
       >
         {virtualizer.getVirtualItems().map((virtualItem) => {
-          const verse = verses[virtualItem.index];
-          const pVerses =
-            showParallelInline && activeParallelIds.length > 0
-              ? activeParallelIds
-                  .map((tid) => parallelData.get(tid)?.get(verse.verse))
-                  .filter(Boolean) as { translationId: string; translationName: string; text: string }[]
-              : undefined;
-
+          const group = paragraphGroups[virtualItem.index];
           return (
             <div
               key={virtualItem.key}
@@ -256,14 +324,16 @@ export function ChapterView({
               ref={virtualizer.measureElement}
               data-index={virtualItem.index}
             >
-              <VerseItem
-                verse={verse}
-                parallelVerses={pVerses}
-                isPlaying={ttsVerseIndex === virtualItem.index}
-                isSelected={selectedVerse?.verse === verse.verse}
-                highlightColor={isHighlightsEnabled ? bookmarks[`${verse.book_id}:${verse.chapter}:${verse.verse}`]?.color : undefined}
-                onWordClick={showDictionary ? handleWordClick : undefined}
+              <ParagraphGroup
+                verses={group.verses}
+                sectionHeading={group.sectionHeading}
+                isFirstParagraph={group.isFirst}
+                ttsVerseNumber={ttsVerseNumber}
+                selectedVerses={selectedVerseNumbers}
+                highlightColors={highlightColorMap}
                 onVerseClick={handleVerseClick}
+                parallelData={hasParallel ? parallelData : undefined}
+                parallelIds={hasParallel ? activeParallelIds : undefined}
               />
             </div>
           );
@@ -281,13 +351,11 @@ export function ChapterView({
         />
       )}
 
-      {/* Verse Action Toolbar */}
-      {selectedVerse && toolbarPosition && parentRef.current && (
+      {/* Verse Action Toolbar (bottom sheet) */}
+      {sortedSelectedVerses.length > 0 && (
         <VerseActionToolbar
-          verse={selectedVerse}
-          bookName={bookName ?? `Book ${selectedVerse.book_id}`}
-          position={toolbarPosition}
-          containerRect={parentRef.current.getBoundingClientRect()}
+          verses={sortedSelectedVerses}
+          bookName={bookName ?? `Book ${sortedSelectedVerses[0].book_id}`}
           onClose={closeToolbar}
         />
       )}

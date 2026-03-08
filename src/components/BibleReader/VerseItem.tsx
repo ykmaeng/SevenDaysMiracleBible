@@ -1,6 +1,7 @@
 import { useCallback, useRef } from "react";
 import { useSettingsStore } from "../../stores/settingsStore";
 import type { Verse } from "../../types/bible";
+import type { SectionHeading } from "../../lib/bible";
 
 export interface WordClickInfo {
   word: string;
@@ -27,7 +28,7 @@ const HIGHLIGHT_BG: Record<string, string> = {
 
 // Map translation IDs to language codes
 const TRANSLATION_LANG: Record<string, string> = {
-  "ai-ko": "ko",
+  "sav-ko": "ko",
   korrv: "ko",
   nkrv: "ko",
   kjv: "en",
@@ -59,12 +60,15 @@ interface VerseItemProps {
   highlightColor?: string | null;
   onWordClick?: (info: WordClickInfo) => void;
   onVerseClick?: (info: VerseClickInfo) => void;
+  sectionHeading?: SectionHeading;
+  isParagraphStart?: boolean;
 }
 
-export function VerseItem({ verse, parallelVerses, isPlaying, isSelected, highlightColor, onWordClick, onVerseClick }: VerseItemProps) {
+export function VerseItem({ verse, parallelVerses, isPlaying, isSelected, highlightColor, onWordClick, onVerseClick, sectionHeading, isParagraphStart }: VerseItemProps) {
   const showVerseNumbers = useSettingsStore((s) => s.showVerseNumbers);
   const fontSize = useSettingsStore((s) => s.fontSize);
   const fontFamily = useSettingsStore((s) => s.fontFamily);
+  const language = useSettingsStore((s) => s.language);
   const verseRef = useRef<HTMLDivElement>(null);
 
   const handleVerseClick = useCallback(
@@ -134,35 +138,55 @@ export function VerseItem({ verse, parallelVerses, isPlaying, isSelected, highli
 
   const highlightCls = highlightColor && HIGHLIGHT_BG[highlightColor] ? HIGHLIGHT_BG[highlightColor] : "";
 
+  const sectionTitle = sectionHeading
+    ? (language === "ko" ? sectionHeading.title_ko : sectionHeading.title_en) ?? sectionHeading.title_en
+    : null;
+
+  // Add top margin for paragraph breaks (but not for verse 1 to avoid double spacing)
+  const paragraphMargin = isParagraphStart && verse.verse > 1 && !sectionHeading;
+
   return (
-    <div
-      ref={verseRef}
-      onClick={handleVerseClick}
-      className={`rounded px-0.5 py-0.5 transition-colors cursor-pointer ${
-        isPlaying
-          ? "bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-200 dark:ring-blue-700"
-          : isSelected
-          ? "bg-blue-50/50 dark:bg-blue-900/20 ring-1 ring-blue-300/50 dark:ring-blue-600/50"
-          : highlightCls || ""
-      }`}
-      style={{ fontSize: `${fontSize}px`, lineHeight: 1.5, fontFamily: fontFamily || undefined }}
-    >
-      <div className="flex">
-        {showVerseNumbers && (
-          <span className="text-gray-400 dark:text-gray-500 font-medium mr-2 shrink-0 select-none" style={{ fontSize: '0.8em', minWidth: '1.5em', textAlign: 'right', paddingTop: '2px' }}>{verse.verse}</span>
-        )}
-        <span className="flex-1">{verse.text}</span>
-      </div>
-      {parallelVerses && parallelVerses.length > 0 && (
-        <div className="ml-6 mt-0.5 space-y-0.5">
-          {parallelVerses.map((pv) => (
-            <div key={pv.translationId} className="flex items-baseline gap-1.5" style={{ fontSize: `${Math.max(12, fontSize - 2)}px`, lineHeight: 1.35 }}>
-              <span className="text-blue-500 dark:text-blue-400 font-medium shrink-0 text-[0.7em] uppercase">{pv.translationId}</span>
-              {renderText(pv.text, pv.translationId, true)}
-            </div>
-          ))}
+    <>
+      {sectionTitle && (
+        <div className={`${verse.verse > 1 ? "mt-5" : ""} mb-2 px-0.5`}>
+          <h3
+            className="text-gray-600 dark:text-gray-300 font-semibold"
+            style={{ fontSize: `${fontSize - 1}px` }}
+          >
+            {sectionTitle}
+          </h3>
         </div>
       )}
-    </div>
+      {paragraphMargin && <div className="mt-3" />}
+      <div
+        ref={verseRef}
+        onClick={handleVerseClick}
+        className={`rounded px-0.5 pr-2 py-1.5 transition-colors cursor-pointer ${
+          isPlaying
+            ? "bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-200 dark:ring-blue-700"
+            : isSelected
+            ? "bg-blue-50/50 dark:bg-blue-900/20 ring-1 ring-blue-300/50 dark:ring-blue-600/50"
+            : highlightCls || ""
+        }`}
+        style={{ fontSize: `${fontSize}px`, lineHeight: 1.5, fontFamily: fontFamily || undefined }}
+      >
+        <div className="flex">
+          {showVerseNumbers && (
+            <sup className="text-gray-400 dark:text-gray-500 font-medium mx-1 shrink-0 select-none" style={{ fontSize: '0.55em', top: '-0.4em' }}>{verse.verse}</sup>
+          )}
+          <span className="flex-1">{verse.text}</span>
+        </div>
+        {parallelVerses && parallelVerses.length > 0 && (
+          <div className="ml-6 mt-0.5 space-y-0.5">
+            {parallelVerses.map((pv) => (
+              <div key={pv.translationId} className="flex items-baseline gap-1.5" style={{ fontSize: `${Math.max(12, fontSize - 2)}px`, lineHeight: 1.35 }}>
+                <span className="text-blue-500 dark:text-blue-400 font-medium shrink-0 text-[0.7em] uppercase">{pv.translationId}</span>
+                {renderText(pv.text, pv.translationId, true)}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

@@ -74,7 +74,8 @@
     "confirmDelete": "\u00bfEst\u00e1 seguro de que desea eliminar esta traducci\u00f3n? Puede volver a descargarla m\u00e1s tarde.",
     "size": "{{size}} MB",
     "completeToast": "{{name}} descarga completada",
-    "errorToast": "{{name}} descarga fallida"
+    "errorToast": "{{name}} descarga fallida",
+    "preparing": "Próximamente"
   },
   "tts": {
     "title": "Texto a voz",

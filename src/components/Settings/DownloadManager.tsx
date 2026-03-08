@@ -402,13 +402,14 @@ function CommentaryDownloadList({
         const key = commentaryDownloadKey(c.language);
         const dl = downloads[key];
         const isDownloaded = downloadedLangs.has(c.language);
+        const isReady = c.ready !== false;
         const isDownloading = dl && dl.status !== "done" && dl.status !== "error";
         const isError = dl?.status === "error";
         const isDone = isDownloaded || dl?.status === "done";
         const isDeletingThis = deletingLang === c.language;
 
         return (
-          <div key={c.language} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+          <div key={c.language} className={`flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0 ${!isReady ? "opacity-50" : ""}`}>
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="text-sm font-medium text-gray-800 dark:text-gray-200 leading-none">{c.name}</span>
               <span className="text-[11px] text-gray-400 leading-none">{t("download.size", { size: c.sizeMb })}</span>
@@ -417,7 +418,9 @@ function CommentaryDownloadList({
               )}
             </div>
             <div>
-              {isDownloading ? (
+              {!isReady ? (
+                <span className="text-xs text-gray-400 font-medium">{t("download.preparing")}</span>
+              ) : isDownloading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div

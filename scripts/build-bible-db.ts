@@ -18,7 +18,7 @@ import Database from "better-sqlite3";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR = join(__dirname, "data", "output");
 
-const CORE_TRANSLATIONS = new Set(["kjv", "ai-ko"]);
+const CORE_TRANSLATIONS = new Set(["kjv", "sav-ko"]);
 const buildCore = process.argv.includes("--core");
 const DB_FILENAME = buildCore ? "bible-core.db" : "bible.db";
 const DB_PATH = join(OUTPUT_DIR, DB_FILENAME);
@@ -132,7 +132,7 @@ const translationData: [string, string, string, string, number, number, number, 
   ['rv1909','Reina-Valera','es','Reina-Valera - Dominio Público',0,0,0,1.5],
   ['korrv','개역한글','ko','개역한글판 (1961)',0,0,0,2.0],
   ['nkrv','개역개정','ko','개역개정판 (1998)',0,0,0,2.0],
-  ['ai-ko','AI 한국어 번역','ko','원문 기반 AI 번역',0,1,1,2.0],
+  ['sav-ko','SAV 한국어','ko','Selah AI Version - 원문 기반 AI 번역',0,1,1,2.0],
   ['hebrew','Westminster Leningrad Codex','he','Hebrew Old Testament (WLC)',1,0,0,2.0],
   ['greek','Open Greek New Testament','el','Greek New Testament (OpenGNT)',1,0,0,1.0],
   ['japkougo','口語訳聖書','ja','口語訳聖書 (1955)',0,0,0,1.5],
@@ -223,6 +223,49 @@ if (commentaryFiles.length > 0) {
     console.log(`  Inserted ${entries.length} commentary entries`);
   }
   console.log(`Total commentary: ${totalCommentary}`);
+}
+
+// Import paragraph breaks
+const PARAGRAPH_FILE = join(OUTPUT_DIR, "paragraph_breaks.json");
+if (existsSync(PARAGRAPH_FILE)) {
+  console.log("Loading paragraph breaks...");
+  db.exec(`CREATE TABLE IF NOT EXISTS paragraph_breaks (
+    book_id INTEGER NOT NULL, chapter INTEGER NOT NULL, verse INTEGER NOT NULL,
+    PRIMARY KEY (book_id, chapter, verse)
+  )`);
+  const insertParagraph = db.prepare(
+    "INSERT OR IGNORE INTO paragraph_breaks (book_id, chapter, verse) VALUES (?, ?, ?)"
+  );
+  const paragraphs = JSON.parse(readFileSync(PARAGRAPH_FILE, "utf-8"));
+  const insertManyParagraphs = db.transaction(
+    (items: { book_id: number; chapter: number; verse: number }[]) => {
+      for (const p of items) insertParagraph.run(p.book_id, p.chapter, p.verse);
+    }
+  );
+  insertManyParagraphs(paragraphs);
+  console.log(`  Inserted ${paragraphs.length} paragraph breaks`);
+}
+
+// Import section headings
+const SECTIONS_FILE = join(OUTPUT_DIR, "section_headings.json");
+if (existsSync(SECTIONS_FILE)) {
+  console.log("Loading section headings...");
+  db.exec(`CREATE TABLE IF NOT EXISTS section_headings (
+    book_id INTEGER NOT NULL, chapter INTEGER NOT NULL, verse INTEGER NOT NULL,
+    title_ko TEXT, title_en TEXT,
+    PRIMARY KEY (book_id, chapter, verse)
+  )`);
+  const insertSection = db.prepare(
+    "INSERT OR IGNORE INTO section_headings (book_id, chapter, verse, title_ko, title_en) VALUES (?, ?, ?, ?, ?)"
+  );
+  const sections = JSON.parse(readFileSync(SECTIONS_FILE, "utf-8"));
+  const insertManySections = db.transaction(
+    (items: { book_id: number; chapter: number; verse: number; title_ko: string; title_en: string }[]) => {
+      for (const s of items) insertSection.run(s.book_id, s.chapter, s.verse, s.title_ko, s.title_en);
+    }
+  );
+  insertManySections(sections);
+  console.log(`  Inserted ${sections.length} section headings`);
 }
 
 // Create FTS index

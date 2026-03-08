@@ -13,7 +13,7 @@ import { useTTS } from "../../hooks/useTTS";
 import type { Book, Verse } from "../../types/bible";
 
 const TRANSLATION_LANG: Record<string, string> = {
-  "ai-ko": "ko",
+  "sav-ko": "ko",
   korrv: "ko",
   nkrv: "ko",
   kjv: "en",

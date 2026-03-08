@@ -77,7 +77,8 @@
     "confirmDelete": "Are you sure you want to delete this translation? You can re-download it later.",
     "size": "{{size}} MB",
     "completeToast": "{{name}} download complete",
-    "errorToast": "{{name}} download failed"
+    "errorToast": "{{name}} download failed",
+    "preparing": "Coming soon"
   },
   "tts": {
     "title": "Text-to-Speech",

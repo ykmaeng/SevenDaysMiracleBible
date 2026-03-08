@@ -36,6 +36,12 @@ pub fn run() {
             sql: include_str!("../migrations/005_bookmark_translation_id.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 6,
+            description: "paragraph breaks and section headings",
+            sql: include_str!("../migrations/006_paragraph_and_sections.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     let mut builder = tauri::Builder::default()

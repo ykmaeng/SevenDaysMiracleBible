@@ -40,7 +40,7 @@ interface SettingsActions {
 }
 
 export const DEFAULT_TRANSLATION_BY_LANG: Record<string, string> = {
-  ko: "ai-ko",
+  ko: "sav-ko",
   en: "kjv",
   zh: "cuv",
   es: "rv1909",

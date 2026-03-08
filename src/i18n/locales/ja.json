@@ -74,7 +74,8 @@
     "confirmDelete": "この翻訳を削除しますか？後で再ダウンロードできます。",
     "size": "{{size}} MB",
     "completeToast": "{{name}} ダウンロード完了",
-    "errorToast": "{{name}} ダウンロード失敗"
+    "errorToast": "{{name}} ダウンロード失敗",
+    "preparing": "準備中"
   },
   "tts": {
     "title": "音声読み上げ",

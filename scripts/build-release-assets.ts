@@ -16,7 +16,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR = join(__dirname, "data", "output");
 const RELEASE_DIR = join(__dirname, "..", "dist", "release-assets");
 
-const CORE_TRANSLATIONS = new Set(["kjv", "ai-ko"]);
+const CORE_TRANSLATIONS = new Set(["kjv", "sav-ko"]);
 const CORE_COMMENTARY_LANGUAGES = new Set(["ko"]);
 
 // Create release assets directory

@@ -81,7 +81,10 @@ export function LanguageSettings() {
   const [dragActiveIdx, setDragActiveIdx] = useState<number | null>(null);
 
   useEffect(() => {
-    getDownloadedTranslations().then(setAvailableTranslations);
+    const load = () => getDownloadedTranslations().then(setAvailableTranslations);
+    load();
+    window.addEventListener("translations-changed", load);
+    return () => window.removeEventListener("translations-changed", load);
   }, []);
 
   // Preload Google Fonts when font section opens

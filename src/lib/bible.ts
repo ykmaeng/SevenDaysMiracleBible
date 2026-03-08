@@ -1,4 +1,5 @@
-import { query } from "./db";
+import { query, queryTranslation } from "./db";
+import { CORE_TRANSLATIONS } from "./downloadConfig";
 import type {
   Book,
   BookName,
@@ -9,6 +10,13 @@ import type {
   Translation,
   ParallelVerse,
 } from "../types/bible";
+
+function queryVerses<T>(translationId: string, sql: string, bindValues?: unknown[]): Promise<T[]> {
+  if (CORE_TRANSLATIONS.has(translationId)) {
+    return query<T>(sql, bindValues);
+  }
+  return queryTranslation<T>(translationId, sql, bindValues);
+}
 
 export async function getTranslations(): Promise<Translation[]> {
   return query<Translation>("SELECT * FROM translations ORDER BY language, name");
@@ -36,7 +44,8 @@ export async function getChapter(
   bookId: number,
   chapter: number
 ): Promise<Verse[]> {
-  return query<Verse>(
+  return queryVerses<Verse>(
+    translationId,
     "SELECT * FROM verses WHERE translation_id = $1 AND book_id = $2 AND chapter = $3 ORDER BY verse",
     [translationId, bookId, chapter]
   );
@@ -48,7 +57,8 @@ export async function getVerse(
   chapter: number,
   verse: number
 ): Promise<Verse | null> {
-  const results = await query<Verse>(
+  const results = await queryVerses<Verse>(
+    translationId,
     "SELECT * FROM verses WHERE translation_id = $1 AND book_id = $2 AND chapter = $3 AND verse = $4",
     [translationId, bookId, chapter, verse]
   );
@@ -159,16 +169,61 @@ export async function isCommentaryAvailable(language: string): Promise<boolean> 
   return (result[0]?.c ?? 0) > 0;
 }
 
+export interface ParagraphBreak {
+  book_id: number;
+  chapter: number;
+  verse: number;
+}
+
+export interface SectionHeading {
+  book_id: number;
+  chapter: number;
+  verse: number;
+  title_ko: string | null;
+  title_en: string | null;
+}
+
+export async function getParagraphBreaks(
+  bookId: number,
+  chapter: number
+): Promise<ParagraphBreak[]> {
+  return query<ParagraphBreak>(
+    "SELECT * FROM paragraph_breaks WHERE book_id = $1 AND chapter = $2 ORDER BY verse",
+    [bookId, chapter]
+  );
+}
+
+export async function getSectionHeadings(
+  bookId: number,
+  chapter: number
+): Promise<SectionHeading[]> {
+  return query<SectionHeading>(
+    "SELECT * FROM section_headings WHERE book_id = $1 AND chapter = $2 ORDER BY verse",
+    [bookId, chapter]
+  );
+}
+
 export async function searchVerses(
   translationId: string,
   searchText: string,
   limit = 50
 ): Promise<Verse[]> {
-  return query<Verse>(
+  if (CORE_TRANSLATIONS.has(translationId)) {
+    return query<Verse>(
+      `SELECT v.* FROM verses v
+       JOIN verses_fts fts ON v.id = fts.rowid
+       WHERE fts.text MATCH $1 AND v.translation_id = $2
+       LIMIT $3`,
+      [searchText, translationId, limit]
+    );
+  }
+  // Separate DB: use FTS in that DB
+  return queryTranslation<Verse>(
+    translationId,
     `SELECT v.* FROM verses v
-     JOIN verses_fts fts ON v.id = fts.rowid
-     WHERE fts.text MATCH $1 AND v.translation_id = $2
-     LIMIT $3`,
-    [searchText, translationId, limit]
+     JOIN verses_fts fts ON v.rowid = fts.rowid
+     WHERE fts.text MATCH $1
+     LIMIT $2`,
+    [searchText, limit]
   );
 }

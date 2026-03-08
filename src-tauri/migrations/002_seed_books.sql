@@ -21,7 +21,7 @@ INSERT OR IGNORE INTO translations (id, name, language, description, is_original
 ('asv', 'American Standard Version', 'en', 'American Standard Version (1901)', 0, 0, 0, 6.0),
 ('web', 'World English Bible', 'en', 'World English Bible - Public Domain', 0, 0, 0, 6.2),
 ('bbe', 'Bible in Basic English', 'en', 'Bible in Basic English (1965)', 0, 0, 0, 6.1),
-('ai-ko', 'AI 한국어 번역', 'ko', '원문 기반 AI 번역 (히브리어/그리스어)', 0, 1, 1, 7.3),
+('sav-ko', 'SAV 한국어', 'ko', 'Selah AI Version - 원문 기반 AI 번역', 0, 1, 1, 7.3),
 ('cuv', '和合本', 'zh', 'Chinese Union Version (1919)', 0, 0, 0, 5.4),
 ('rv1909', 'Reina-Valera 1909', 'es', 'Reina-Valera 1909 - Dominio Público', 0, 0, 0, 5.9),
 ('hebrew', 'Westminster Leningrad Codex', 'he', 'Hebrew Old Testament (WLC)', 1, 0, 0, 7.6),

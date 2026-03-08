@@ -74,7 +74,8 @@
     "confirmDelete": "确定要删除此译本吗？您可以稍后重新下载。",
     "size": "{{size}} MB",
     "completeToast": "{{name}} 下载完成",
-    "errorToast": "{{name}} 下载失败"
+    "errorToast": "{{name}} 下载失败",
+    "preparing": "即将推出"
   },
   "tts": {
     "title": "语音朗读",

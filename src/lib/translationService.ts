@@ -1,17 +1,10 @@
 import { fetch } from "@tauri-apps/plugin-http";
+import { writeFile, remove, exists, BaseDirectory } from "@tauri-apps/plugin-fs";
 import i18n from "../i18n";
-import { execute, query } from "./db";
+import { execute, closeTranslationDb } from "./db";
 import { getTranslationDownloadUrl, CORE_TRANSLATIONS } from "./downloadConfig";
 import { useDownloadStore } from "../stores/downloadStore";
 import { useToastStore } from "../stores/toastStore";
-
-interface VerseRow {
-  translation_id: string;
-  book_id: number;
-  chapter: number;
-  verse: number;
-  text: string;
-}
 
 function toErrorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -25,58 +18,44 @@ export async function downloadTranslation(translationId: string): Promise<void> 
   if (existing && (existing.status === "downloading" || existing.status === "importing")) return;
   store.startDownload(translationId);
 
+  const dbFileName = `${translationId}.db`;
+
   try {
-    // 1. Fetch JSON from GitHub Releases
+    // 1. Download .db file from GitHub Releases
     const url = getTranslationDownloadUrl(translationId);
-    console.log(`[download] Fetching ${url}`);
     const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error(`Download failed: ${response.status} ${response.statusText}`);
     }
 
-    store.updateProgress(translationId, 30);
-
-    // 2. Parse JSON
-    const verses: VerseRow[] = await response.json();
-    console.log(`[download] Parsed ${verses.length} verses`);
     store.updateProgress(translationId, 50);
-    store.setStatus(translationId, "importing");
 
-    // 3. Delete existing data for idempotency
-    await execute("DELETE FROM verses WHERE translation_id = $1", [translationId]);
-
-    // 4. Insert verses in batches
-    const batchSize = 500;
-    for (let i = 0; i < verses.length; i += batchSize) {
-      const batch = verses.slice(i, i + batchSize);
-      for (const v of batch) {
-        await execute(
-          "INSERT OR IGNORE INTO verses (translation_id, book_id, chapter, verse, text) VALUES ($1, $2, $3, $4, $5)",
-          [v.translation_id, v.book_id, v.chapter, v.verse, v.text]
-        );
-      }
-      const progress = 50 + Math.round((i / verses.length) * 40);
-      store.updateProgress(translationId, Math.min(progress, 90));
+    // 2. Save .db file to app data directory
+    const buffer = await response.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    const magic = new TextDecoder().decode(bytes.slice(0, 15));
+    if (magic !== "SQLite format 3") {
+      throw new Error(`Invalid DB file`);
     }
 
-    // 5. Rebuild FTS index
-    store.updateProgress(translationId, 95);
-    await execute("INSERT INTO verses_fts(verses_fts) VALUES('rebuild')");
+    await writeFile(dbFileName, bytes, { baseDir: BaseDirectory.AppData });
+    store.updateProgress(translationId, 90);
 
-    // 6. Mark as downloaded
+    // 3. Mark as downloaded in main DB
     await execute("UPDATE translations SET downloaded = 1 WHERE id = $1", [translationId]);
 
-    // 7. Done
+    // 4. Done
     store.setStatus(translationId, "done");
     window.dispatchEvent(new Event("translations-changed"));
-    console.log(`[download] ${translationId} complete`);
     useToastStore.getState().showToast(
       i18n.t("download.completeToast", { name: translationId }),
       "success"
     );
   } catch (err) {
     console.error("[download] Error:", err);
+    // Clean up on error
+    await remove(dbFileName, { baseDir: BaseDirectory.AppData }).catch(() => {});
     const message = toErrorMessage(err);
     store.setStatus(translationId, "error", message);
     useToastStore.getState().showToast(
@@ -93,8 +72,11 @@ export async function deleteTranslation(translationId: string): Promise<void> {
   }
 
   try {
-    await execute("DELETE FROM verses WHERE translation_id = $1", [translationId]);
-    await execute("INSERT INTO verses_fts(verses_fts) VALUES('rebuild')");
+    // Close DB connection if open
+    await closeTranslationDb(translationId);
+    // Delete .db file
+    await remove(`${translationId}.db`, { baseDir: BaseDirectory.AppData });
+    // Mark as not downloaded
     await execute("UPDATE translations SET downloaded = 0 WHERE id = $1", [translationId]);
   } catch (err) {
     console.error("[delete] Error:", err);
@@ -105,9 +87,6 @@ export async function deleteTranslation(translationId: string): Promise<void> {
 }
 
 export async function isTranslationDownloaded(translationId: string): Promise<boolean> {
-  const result = await query<{ downloaded: number }>(
-    "SELECT downloaded FROM translations WHERE id = $1",
-    [translationId]
-  );
-  return result[0]?.downloaded === 1;
+  if (CORE_TRANSLATIONS.has(translationId)) return true;
+  return exists(`${translationId}.db`, { baseDir: BaseDirectory.AppData });
 }

@@ -74,7 +74,8 @@
     "confirmDelete": "Möchten Sie diese Übersetzung wirklich löschen? Sie können sie später erneut herunterladen.",
     "size": "{{size}} MB",
     "completeToast": "{{name}} Download abgeschlossen",
-    "errorToast": "{{name}} Download fehlgeschlagen"
+    "errorToast": "{{name}} Download fehlgeschlagen",
+    "preparing": "Demnächst"
   },
   "tts": {
     "title": "Sprachausgabe",
