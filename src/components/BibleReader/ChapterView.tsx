@@ -203,22 +203,43 @@ export function ChapterView({
     }
   }, [ttsVerseIndex, verses.length, virtualizer, verseToGroupIndex]);
 
-  // Scroll handler: track position + close popup
+  // Scroll handler: track position + close popup + immersive mode
+  const scrollState = useRef({ lastY: 0, accum: 0 });
+
   useEffect(() => {
     const el = parentRef.current;
     if (!el) return;
 
     const handler = () => {
-      onScrollPositionChange?.(el.scrollTop);
-      // Close dictionary on scroll
+      const top = el.scrollTop;
+      onScrollPositionChange?.(top);
+
       if (dictWord) {
         setDictWord(null);
         setDictPosition(null);
       }
+
+      const s = scrollState.current;
+      const delta = top - s.lastY;
+      s.lastY = top;
+
+      // Reset accumulator on direction change
+      if ((delta > 0 && s.accum < 0) || (delta < 0 && s.accum > 0)) {
+        s.accum = 0;
+      }
+      s.accum += delta;
+
+      if (s.accum > 60) {
+        window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: true }));
+        s.accum = 0;
+      } else if (s.accum < -60) {
+        window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: false }));
+        s.accum = 0;
+      }
     };
     el.addEventListener("scroll", handler, { passive: true });
     return () => el.removeEventListener("scroll", handler);
-  }, [onScrollPositionChange, dictWord]);
+  }, [onScrollPositionChange, dictWord, loading]);
 
   // Close popups when chapter changes
   useEffect(() => {

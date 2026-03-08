@@ -18,6 +18,7 @@ type View = "reader" | "settings" | "features" | "bookmarks" | "highlights";
 function App() {
   const { t } = useTranslation();
   const [view, setView] = useState<View>("reader");
+  const [immersive, setImmersive] = useState(false);
   const theme = useSettingsStore((s) => s.theme);
   const fontFamily = useSettingsStore((s) => s.fontFamily);
   const onboardingComplete = useSettingsStore((s) => s.onboardingComplete);
@@ -33,6 +34,20 @@ function App() {
     const handler = () => setView("settings");
     window.addEventListener("open-settings", handler);
     return () => window.removeEventListener("open-settings", handler);
+  }, []);
+
+  // Immersive reading mode
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const fullscreen = (e as CustomEvent).detail;
+      setImmersive(fullscreen);
+      try {
+        (window as unknown as { AndroidImmersive?: { setImmersive: (v: boolean) => void } })
+          .AndroidImmersive?.setImmersive(fullscreen);
+      } catch { /* not on Android */ }
+    };
+    window.addEventListener("reader-fullscreen", handler);
+    return () => window.removeEventListener("reader-fullscreen", handler);
   }, []);
 
   // Load selected Google Font on startup
@@ -70,11 +85,15 @@ function App() {
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-gray-100">
       {/* Tab bar */}
-      {view === "reader" && <TabBar />}
+      {view === "reader" && (
+        <div className={`transition-all duration-300 overflow-hidden ${immersive ? "max-h-0" : "max-h-20"}`}>
+          <TabBar />
+        </div>
+      )}
 
       {/* Main content */}
       <div className="flex-1 overflow-hidden">
-        {view === "reader" && <TabPanel />}
+        {view === "reader" && <TabPanel immersive={immersive} />}
         {view === "settings" && (
           <div className="h-full overflow-auto">
             <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
@@ -117,7 +136,7 @@ function App() {
       <ToastContainer />
 
       {/* Bottom navigation bar */}
-      <nav className="flex items-center justify-around border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-2 shrink-0">
+      <nav className={`flex items-center justify-around border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 transition-all duration-300 overflow-hidden ${immersive && view === "reader" ? "max-h-0 py-0" : "max-h-20 py-2"}`}>
         <button
           onClick={() => setView("reader")}
           className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
