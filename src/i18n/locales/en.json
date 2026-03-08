@@ -189,7 +189,15 @@
     "noBookmarks": "No bookmarks saved",
     "all": "All",
     "noHighlights": "No highlighted verses",
-    "goToVerse": "Go to verse"
+    "goToVerse": "Go to verse",
+    "noLabel": "No label",
+    "manageLabels": "Manage labels",
+    "newLabel": "New label",
+    "newLabelPlaceholder": "Enter label name",
+    "labelDeleted": "Label deleted",
+    "renameLabel": "Rename label",
+    "deleteLabel": "Delete label",
+    "deleteLabelConfirm": "Delete this label? Bookmarks will be kept."
   },
   "verseActions": {
     "copy": "Copy",
@@ -202,6 +210,8 @@
     "bookmarkRemoved": "Bookmark removed",
     "removeHighlight": "Remove",
     "notePrompt": "Enter your note",
-    "noteSaved": "Note saved"
+    "noteSaved": "Note saved",
+    "selectLabel": "Select label",
+    "noLabelShort": "None"
   }
 }

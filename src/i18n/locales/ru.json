@@ -184,7 +184,15 @@
     "noBookmarks": "Нет сохранённых закладок",
     "all": "Все",
     "noHighlights": "Нет выделенных стихов",
-    "goToVerse": "Перейти к стиху"
+    "goToVerse": "Перейти к стиху",
+    "noLabel": "Без метки",
+    "manageLabels": "Управление метками",
+    "newLabel": "Новая метка",
+    "newLabelPlaceholder": "Введите название метки",
+    "labelDeleted": "Метка удалена",
+    "renameLabel": "Переименовать метку",
+    "deleteLabel": "Удалить метку",
+    "deleteLabelConfirm": "Удалить эту метку? Закладки сохранятся."
   },
   "verseActions": {
     "copy": "Копировать",
@@ -197,6 +205,8 @@
     "bookmarkRemoved": "Закладка удалена",
     "removeHighlight": "Убрать",
     "notePrompt": "Введите заметку",
-    "noteSaved": "Заметка сохранена"
+    "noteSaved": "Заметка сохранена",
+    "selectLabel": "Выбрать метку",
+    "noLabelShort": "Нет"
   }
 }

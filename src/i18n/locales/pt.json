@@ -184,7 +184,15 @@
     "noBookmarks": "Nenhum favorito salvo",
     "all": "Todos",
     "noHighlights": "Nenhum versículo destacado",
-    "goToVerse": "Ir para o versículo"
+    "goToVerse": "Ir para o versículo",
+    "noLabel": "Sem rótulo",
+    "manageLabels": "Gerenciar rótulos",
+    "newLabel": "Novo rótulo",
+    "newLabelPlaceholder": "Nome do rótulo",
+    "labelDeleted": "Rótulo excluído",
+    "renameLabel": "Renomear rótulo",
+    "deleteLabel": "Excluir rótulo",
+    "deleteLabelConfirm": "Excluir este rótulo? Os favoritos serão mantidos."
   },
   "verseActions": {
     "copy": "Copiar",
@@ -197,6 +205,8 @@
     "bookmarkRemoved": "Favorito removido",
     "removeHighlight": "Remover",
     "notePrompt": "Digite sua nota",
-    "noteSaved": "Nota salva"
+    "noteSaved": "Nota salva",
+    "selectLabel": "Selecionar rótulo",
+    "noLabelShort": "Nenhum"
   }
 }

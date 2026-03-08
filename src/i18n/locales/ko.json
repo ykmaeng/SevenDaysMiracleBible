@@ -189,7 +189,15 @@
     "noBookmarks": "저장된 북마크가 없습니다",
     "all": "전체",
     "noHighlights": "하이라이트된 구절이 없습니다",
-    "goToVerse": "구절로 이동"
+    "goToVerse": "구절로 이동",
+    "noLabel": "라벨 없음",
+    "manageLabels": "라벨 관리",
+    "newLabel": "새 라벨",
+    "newLabelPlaceholder": "라벨 이름 입력",
+    "labelDeleted": "라벨 삭제됨",
+    "renameLabel": "라벨 이름 변경",
+    "deleteLabel": "라벨 삭제",
+    "deleteLabelConfirm": "이 라벨을 삭제하시겠습니까? 북마크는 유지됩니다."
   },
   "verseActions": {
     "copy": "복사",
@@ -202,6 +210,8 @@
     "bookmarkRemoved": "북마크 제거됨",
     "removeHighlight": "제거",
     "notePrompt": "메모를 입력하세요",
-    "noteSaved": "메모 저장됨"
+    "noteSaved": "메모 저장됨",
+    "selectLabel": "라벨 선택",
+    "noLabelShort": "없음"
   }
 }

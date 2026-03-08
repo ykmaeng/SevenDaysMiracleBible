@@ -184,7 +184,15 @@
     "noBookmarks": "Aucun signet enregistré",
     "all": "Tout",
     "noHighlights": "Aucun verset surligné",
-    "goToVerse": "Aller au verset"
+    "goToVerse": "Aller au verset",
+    "noLabel": "Sans étiquette",
+    "manageLabels": "Gérer les étiquettes",
+    "newLabel": "Nouvelle étiquette",
+    "newLabelPlaceholder": "Nom de l'étiquette",
+    "labelDeleted": "Étiquette supprimée",
+    "renameLabel": "Renommer l'étiquette",
+    "deleteLabel": "Supprimer l'étiquette",
+    "deleteLabelConfirm": "Supprimer cette étiquette ? Les signets seront conservés."
   },
   "verseActions": {
     "copy": "Copier",
@@ -197,6 +205,8 @@
     "bookmarkRemoved": "Signet supprimé",
     "removeHighlight": "Supprimer",
     "notePrompt": "Saisissez votre note",
-    "noteSaved": "Note enregistrée"
+    "noteSaved": "Note enregistrée",
+    "selectLabel": "Sélectionner étiquette",
+    "noLabelShort": "Aucune"
   }
 }

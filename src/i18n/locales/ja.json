@@ -184,7 +184,15 @@
     "noBookmarks": "保存されたブックマークはありません",
     "all": "すべて",
     "noHighlights": "ハイライトされた聖句はありません",
-    "goToVerse": "聖句に移動"
+    "goToVerse": "聖句に移動",
+    "noLabel": "ラベルなし",
+    "manageLabels": "ラベル管理",
+    "newLabel": "新しいラベル",
+    "newLabelPlaceholder": "ラベル名を入力",
+    "labelDeleted": "ラベルを削除しました",
+    "renameLabel": "ラベル名変更",
+    "deleteLabel": "ラベル削除",
+    "deleteLabelConfirm": "このラベルを削除しますか？ブックマークは保持されます。"
   },
   "verseActions": {
     "copy": "コピー",
@@ -197,6 +205,8 @@
     "bookmarkRemoved": "ブックマーク削除",
     "removeHighlight": "削除",
     "notePrompt": "メモを入力してください",
-    "noteSaved": "メモ保存済み"
+    "noteSaved": "メモ保存済み",
+    "selectLabel": "ラベルを選択",
+    "noLabelShort": "なし"
   }
 }

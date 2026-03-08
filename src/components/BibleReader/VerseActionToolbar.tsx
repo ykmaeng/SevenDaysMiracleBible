@@ -24,10 +24,13 @@ interface VerseActionToolbarProps {
 export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToolbarProps) {
   const { t } = useTranslation();
   const showToast = useToastStore((s) => s.showToast);
-  const { getBookmark, addBookmark, removeBookmark, updateColor, updateNote } = useBookmarkStore();
+  const { getBookmark, addBookmark, removeBookmark, updateColor, updateNote, updateLabel, labels, labelsLoaded, loadLabels, createLabel } = useBookmarkStore();
   const [showColors, setShowColors] = useState(false);
+  const [showLabelPicker, setShowLabelPicker] = useState(false);
+  const [newLabelName, setNewLabelName] = useState("");
   const [visible, setVisible] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const newLabelInputRef = useRef<HTMLInputElement>(null);
 
   const isBookmarksEnabled = useFeatureStore((s) => s.isEnabled("bookmarks"));
   const isHighlightsEnabled = useFeatureStore((s) => s.isEnabled("highlights"));
@@ -38,11 +41,17 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
     requestAnimationFrame(() => setVisible(true));
   }, []);
 
+  // Load labels when label picker opens
+  useEffect(() => {
+    if (showLabelPicker && !labelsLoaded) {
+      loadLabels().catch(() => {});
+    }
+  }, [showLabelPicker, labelsLoaded, loadLabels]);
+
   // Click outside to close (but not when clicking verses in the reader)
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (toolbarRef.current && !toolbarRef.current.contains(e.target as Node)) {
-        // Don't close if clicking inside the chapter reader (verse area)
         const target = e.target as HTMLElement;
         if (target.closest("[data-index]") || target.closest(".overflow-auto")) return;
         onClose();
@@ -95,18 +104,40 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
     onClose();
   }, [verseRef, fullText, showToast, t, onClose]);
 
-  const handleBookmarkToggle = useCallback(async () => {
+  const handleBookmarkToggle = useCallback(() => {
+    setShowLabelPicker((v) => !v);
+    setShowColors(false);
+  }, []);
+
+  const handleRemoveBookmarks = useCallback(async () => {
+    for (const v of verses) {
+      const bm = getBookmark(v.book_id, v.chapter, v.verse);
+      if (bm) await removeBookmark(v.book_id, v.chapter, v.verse);
+    }
+    showToast(t("verseActions.bookmarkRemoved"), "success");
+    onClose();
+  }, [verses, getBookmark, removeBookmark, showToast, t, onClose]);
+
+  const handleBookmarkWithLabel = useCallback(async (labelId: number | null) => {
     for (const v of verses) {
       const bm = getBookmark(v.book_id, v.chapter, v.verse);
       if (bm) {
-        await removeBookmark(v.book_id, v.chapter, v.verse);
+        await updateLabel(v.book_id, v.chapter, v.verse, labelId);
       } else {
-        await addBookmark(v.book_id, v.chapter, v.verse, undefined, undefined, v.translation_id);
+        await addBookmark(v.book_id, v.chapter, v.verse, undefined, undefined, v.translation_id, labelId ?? undefined);
       }
     }
-    showToast(t(verses.length === 1 ? "verseActions.bookmarkAdded" : "verseActions.bookmarkAdded"), "success");
+    showToast(t("verseActions.bookmarkAdded"), "success");
     onClose();
-  }, [verses, getBookmark, addBookmark, removeBookmark, showToast, t, onClose]);
+  }, [verses, getBookmark, addBookmark, updateLabel, showToast, t, onClose]);
+
+  const handleCreateAndAssignLabel = useCallback(async () => {
+    const name = newLabelName.trim();
+    if (!name) return;
+    const label = await createLabel(name);
+    setNewLabelName("");
+    await handleBookmarkWithLabel(label.id);
+  }, [newLabelName, createLabel, handleBookmarkWithLabel]);
 
   const handleColorSelect = useCallback(async (color: string) => {
     for (const v of verses) {
@@ -157,11 +188,66 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
   return (
     <div
       ref={toolbarRef}
+      data-toolbar
       className={`fixed bottom-0 left-0 right-0 z-[70] transition-transform duration-200 ease-out ${
         visible ? "translate-y-0" : "translate-y-full"
       }`}
     >
       <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-600 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+        {/* Label picker */}
+        {showLabelPicker && (
+          <div className="px-4 pt-3 pb-2 border-b border-gray-100 dark:border-gray-700">
+            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+              {t("verseActions.selectLabel")}
+            </div>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <button
+                onClick={() => handleBookmarkWithLabel(null)}
+                className="text-xs px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                {t("verseActions.noLabelShort")}
+              </button>
+              {anyBookmarked && (
+                <button
+                  onClick={handleRemoveBookmarks}
+                  className="text-xs px-3 py-1.5 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+                >
+                  {t("verseActions.bookmarkRemoved")}
+                </button>
+              )}
+              {labels.map((label) => (
+                <button
+                  key={label.id}
+                  onClick={() => handleBookmarkWithLabel(label.id)}
+                  className="text-xs px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                >
+                  {label.name}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newLabelName}
+                onChange={(e) => setNewLabelName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreateAndAssignLabel();
+                }}
+                placeholder={t("features.newLabelPlaceholder")}
+                className="flex-1 text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:border-blue-400"
+              />
+              {newLabelName.trim() && (
+                <button
+                  onClick={handleCreateAndAssignLabel}
+                  className="text-xs px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors shrink-0"
+                >
+                  {t("features.newLabel")}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Action buttons */}
         <div className="flex items-center justify-around px-4 pt-2 py-2">
           <ToolbarButton icon={<CopyIcon />} label={t("verseActions.copy")} onClick={handleCopy} />
@@ -171,14 +257,14 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
               icon={<BookmarkIcon filled={anyBookmarked} />}
               label={t("verseActions.bookmark")}
               onClick={handleBookmarkToggle}
-              active={anyBookmarked}
+              active={anyBookmarked || showLabelPicker}
             />
           )}
           {isHighlightsEnabled && (
             <ToolbarButton
               icon={<HighlightIcon />}
               label={t("verseActions.highlight")}
-              onClick={() => setShowColors((v) => !v)}
+              onClick={() => { setShowColors((v) => !v); setShowLabelPicker(false); }}
               active={showColors || anyHighlighted}
             />
           )}

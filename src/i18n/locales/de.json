@@ -184,7 +184,15 @@
     "noBookmarks": "Keine Lesezeichen gespeichert",
     "all": "Alle",
     "noHighlights": "Keine markierten Verse",
-    "goToVerse": "Zum Vers gehen"
+    "goToVerse": "Zum Vers gehen",
+    "noLabel": "Kein Label",
+    "manageLabels": "Labels verwalten",
+    "newLabel": "Neues Label",
+    "newLabelPlaceholder": "Label-Name eingeben",
+    "labelDeleted": "Label gelöscht",
+    "renameLabel": "Label umbenennen",
+    "deleteLabel": "Label löschen",
+    "deleteLabelConfirm": "Dieses Label löschen? Lesezeichen bleiben erhalten."
   },
   "verseActions": {
     "copy": "Kopieren",
@@ -197,6 +205,8 @@
     "bookmarkRemoved": "Lesezeichen entfernt",
     "removeHighlight": "Entfernen",
     "notePrompt": "Notiz eingeben",
-    "noteSaved": "Notiz gespeichert"
+    "noteSaved": "Notiz gespeichert",
+    "selectLabel": "Label auswählen",
+    "noLabelShort": "Keine"
   }
 }

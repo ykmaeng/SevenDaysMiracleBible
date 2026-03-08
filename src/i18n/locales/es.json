@@ -185,7 +185,15 @@
     "noBookmarks": "No hay marcadores guardados",
     "all": "Todo",
     "noHighlights": "No hay versículos resaltados",
-    "goToVerse": "Ir al versículo"
+    "goToVerse": "Ir al versículo",
+    "noLabel": "Sin etiqueta",
+    "manageLabels": "Gestionar etiquetas",
+    "newLabel": "Nueva etiqueta",
+    "newLabelPlaceholder": "Nombre de la etiqueta",
+    "labelDeleted": "Etiqueta eliminada",
+    "renameLabel": "Renombrar etiqueta",
+    "deleteLabel": "Eliminar etiqueta",
+    "deleteLabelConfirm": "¿Eliminar esta etiqueta? Los marcadores se conservarán."
   },
   "verseActions": {
     "copy": "Copiar",
@@ -198,6 +206,8 @@
     "bookmarkRemoved": "Marcador eliminado",
     "removeHighlight": "Quitar",
     "notePrompt": "Escribe tu nota",
-    "noteSaved": "Nota guardada"
+    "noteSaved": "Nota guardada",
+    "selectLabel": "Seleccionar etiqueta",
+    "noLabelShort": "Ninguna"
   }
 }

@@ -74,6 +74,13 @@ export interface Bookmark {
   note: string | null;
   color: string | null;
   translation_id: string | null;
+  label_id: number | null;
+  created_at: string;
+}
+
+export interface BookmarkLabel {
+  id: number;
+  name: string;
   created_at: string;
 }
 

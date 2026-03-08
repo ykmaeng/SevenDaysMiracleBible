@@ -185,7 +185,15 @@
     "noBookmarks": "暂无书签",
     "all": "全部",
     "noHighlights": "没有高亮的经文",
-    "goToVerse": "跳转到经文"
+    "goToVerse": "跳转到经文",
+    "noLabel": "无标签",
+    "manageLabels": "管理标签",
+    "newLabel": "新标签",
+    "newLabelPlaceholder": "输入标签名称",
+    "labelDeleted": "标签已删除",
+    "renameLabel": "重命名标签",
+    "deleteLabel": "删除标签",
+    "deleteLabelConfirm": "删除此标签？书签将保留。"
   },
   "verseActions": {
     "copy": "复制",
@@ -198,6 +206,8 @@
     "bookmarkRemoved": "已移除书签",
     "removeHighlight": "移除",
     "notePrompt": "请输入笔记",
-    "noteSaved": "笔记已保存"
+    "noteSaved": "笔记已保存",
+    "selectLabel": "选择标签",
+    "noLabelShort": "无"
   }
 }

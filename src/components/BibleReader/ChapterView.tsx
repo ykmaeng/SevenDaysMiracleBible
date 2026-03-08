@@ -278,11 +278,10 @@ export function ChapterView({
   }, []);
 
   const handleBackgroundClick = useCallback((e: React.MouseEvent) => {
-    // Only clear if clicking the background, not a verse span
+    // Only clear if clicking the background, not a verse span or toolbar
     const target = e.target as HTMLElement;
-    if (!target.closest(".cursor-pointer")) {
-      setSelectedVerses(new Map());
-    }
+    if (target.closest("[data-toolbar]") || target.closest(".cursor-pointer")) return;
+    setSelectedVerses(new Map());
   }, []);
 
   const closeDictPopup = useCallback(() => {
