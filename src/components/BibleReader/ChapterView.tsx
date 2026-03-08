@@ -205,6 +205,8 @@ export function ChapterView({
 
   // Scroll handler: track position + close popup + immersive mode
   const scrollState = useRef({ lastY: 0, accum: 0 });
+  const ttsActiveRef = useRef(ttsVerseIndex != null);
+  ttsActiveRef.current = ttsVerseIndex != null;
 
   useEffect(() => {
     const el = parentRef.current;
@@ -212,7 +214,9 @@ export function ChapterView({
 
     const handler = () => {
       const top = el.scrollTop;
-      onScrollPositionChange?.(top);
+      if (!ttsActiveRef.current) {
+        onScrollPositionChange?.(top);
+      }
 
       if (dictWord) {
         setDictWord(null);
@@ -222,6 +226,9 @@ export function ChapterView({
       const s = scrollState.current;
       const delta = top - s.lastY;
       s.lastY = top;
+
+      // Skip immersive mode logic during TTS auto-scroll
+      if (ttsActiveRef.current) return;
 
       // Skip if near bottom (prevent flickering from layout shifts)
       const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
