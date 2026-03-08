@@ -5,11 +5,11 @@ import type { SectionHeading } from "../../lib/bible";
 import type { VerseClickInfo } from "./VerseItem";
 
 const HIGHLIGHT_BG: Record<string, string> = {
-  yellow: "bg-yellow-100/60 dark:bg-yellow-900/30",
-  green: "bg-green-100/60 dark:bg-green-900/30",
-  blue: "bg-blue-100/60 dark:bg-blue-900/30",
-  red: "bg-red-100/60 dark:bg-red-900/30",
-  purple: "bg-purple-100/60 dark:bg-purple-900/30",
+  yellow: "bg-yellow-100/60 dark:bg-yellow-800/50",
+  green: "bg-green-100/60 dark:bg-green-800/50",
+  blue: "bg-blue-100/60 dark:bg-blue-800/50",
+  red: "bg-red-100/60 dark:bg-red-800/50",
+  purple: "bg-purple-100/60 dark:bg-purple-800/50",
 };
 
 interface ParallelVerseData {
@@ -74,7 +74,7 @@ export function ParagraphGroup({
     <div ref={groupRef}>
       {chapterHeader && isFirstParagraph && (
         <div className="text-center pt-8 pb-8" style={{ fontFamily: fontFamily || undefined }}>
-          <span className="text-3xl font-black text-gray-800 dark:text-gray-100">
+          <span className="text-3xl font-bold text-gray-800 dark:text-gray-100">
             {chapterHeader.bookName}
           </span>
           <span className="text-3xl font-black text-gray-800 dark:text-gray-100 ml-2">
@@ -111,7 +111,7 @@ export function ParagraphGroup({
                   isPlaying
                     ? "bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-200 dark:ring-blue-700"
                     : isSelected
-                    ? "bg-blue-50/50 dark:bg-blue-900/20 ring-1 ring-blue-300/50 dark:ring-blue-600/50"
+                    ? "bg-blue-100/70 dark:bg-blue-800/50"
                     : hlCls
                 }`}
               >
@@ -124,7 +124,7 @@ export function ParagraphGroup({
               </span>
               {/* Parallel translations — each on new line */}
               {hasParallel && (
-                <div className="ml-2 mt-2 mb-2 space-y-2" style={{ fontSize: `${Math.max(12, fontSize - 2)}px`, lineHeight: 1.5 }}>
+                <div className="ml-2 mt-2 mb-2 space-y-2" style={{ fontSize: `${fontSize}px`, lineHeight: 1.5 }}>
                   {parallelIds!.map((tid) => {
                     const pv = parallelData!.get(tid)?.get(verse.verse);
                     if (!pv) return null;

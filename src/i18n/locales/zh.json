@@ -75,6 +75,7 @@
     "size": "{{size}} MB",
     "completeToast": "{{name}} 下载完成",
     "errorToast": "{{name}} 下载失败",
+    "deleted": "已删除",
     "preparing": "即将推出"
   },
   "tts": {

@@ -78,6 +78,7 @@
     "size": "{{size}} MB",
     "completeToast": "{{name}} 다운로드 완료",
     "errorToast": "{{name}} 다운로드 실패",
+    "deleted": "삭제 완료",
     "preparing": "준비중"
   },
   "tts": {

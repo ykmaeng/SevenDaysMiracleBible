@@ -78,6 +78,7 @@
     "size": "{{size}} MB",
     "completeToast": "{{name}} download complete",
     "errorToast": "{{name}} download failed",
+    "deleted": "Deleted",
     "preparing": "Coming soon"
   },
   "tts": {

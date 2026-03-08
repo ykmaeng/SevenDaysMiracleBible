@@ -12,13 +12,32 @@ export async function getDb(): Promise<Database> {
 }
 
 export async function query<T>(sql: string, bindValues?: unknown[]): Promise<T[]> {
-  const database = await getDb();
-  return database.select<T[]>(sql, bindValues);
+  try {
+    const database = await getDb();
+    return await database.select<T[]>(sql, bindValues);
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("closed pool")) {
+      db = null;
+      const database = await getDb();
+      return database.select<T[]>(sql, bindValues);
+    }
+    throw err;
+  }
 }
 
 export async function execute(sql: string, bindValues?: unknown[]) {
-  const database = await getDb();
-  return database.execute(sql, bindValues);
+  try {
+    const database = await getDb();
+    return await database.execute(sql, bindValues);
+  } catch (err) {
+    // Reconnect if pool was closed
+    if (err instanceof Error && err.message.includes("closed pool")) {
+      db = null;
+      const database = await getDb();
+      return database.execute(sql, bindValues);
+    }
+    throw err;
+  }
 }
 
 // Translation DB connections (separate .db files per translation)
@@ -46,8 +65,12 @@ export async function getTranslationDb(translationId: string): Promise<Database>
 export async function closeTranslationDb(translationId: string): Promise<void> {
   const tdb = translationDbs.get(translationId);
   if (tdb) {
-    await tdb.close();
     translationDbs.delete(translationId);
+    try {
+      await tdb.close();
+    } catch {
+      // Ignore close errors — file will be deleted anyway
+    }
   }
 }
 

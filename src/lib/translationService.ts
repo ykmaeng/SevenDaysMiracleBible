@@ -71,18 +71,26 @@ export async function deleteTranslation(translationId: string): Promise<void> {
     throw new Error("Cannot delete core translation");
   }
 
+  // Close DB connection if open
   try {
-    // Close DB connection if open
     await closeTranslationDb(translationId);
-    // Delete .db file
-    await remove(`${translationId}.db`, { baseDir: BaseDirectory.AppData });
-    // Mark as not downloaded
-    await execute("UPDATE translations SET downloaded = 0 WHERE id = $1", [translationId]);
   } catch (err) {
-    console.error("[delete] Error:", err);
-    throw err;
+    console.warn("[delete] closeDb warning:", err);
   }
 
+  // Delete .db file (may not exist if download was partial)
+  const dbFileName = `${translationId}.db`;
+  try {
+    const fileExists = await exists(dbFileName, { baseDir: BaseDirectory.AppData });
+    if (fileExists) {
+      await remove(dbFileName, { baseDir: BaseDirectory.AppData });
+    }
+  } catch (err) {
+    console.warn("[delete] remove file warning:", err);
+  }
+
+  // Mark as not downloaded in main DB
+  await execute("UPDATE translations SET downloaded = 0 WHERE id = $1", [translationId]);
   window.dispatchEvent(new Event("translations-changed"));
 }
 

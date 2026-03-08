@@ -6,6 +6,7 @@ import { downloadCommentary, deleteCommentary, commentaryDownloadKey } from "../
 import { downloadDictionary, deleteDictionary, isDictionaryDownloaded, DICTIONARY_DOWNLOAD_KEY } from "../../lib/dictionaryService";
 import { CORE_TRANSLATIONS, COMMENTARY_LANGUAGES } from "../../lib/downloadConfig";
 import { useDownloadStore } from "../../stores/downloadStore";
+import { useToastStore } from "../../stores/toastStore";
 import type { Translation } from "../../types/bible";
 
 export function DownloadManager() {
@@ -54,10 +55,15 @@ export function DownloadManager() {
     setDeleting(id);
     try {
       await deleteTranslation(id);
-      await refresh();
-    } catch {
-      // ignore
+      useToastStore.getState().showToast(t("download.deleted"), "success");
+    } catch (err) {
+      console.error("[delete] Failed:", err);
+      useToastStore.getState().showToast(
+        `Delete failed: ${err instanceof Error ? err.message : String(err)}`,
+        "error"
+      );
     } finally {
+      await refresh();
       setDeleting(null);
     }
   };

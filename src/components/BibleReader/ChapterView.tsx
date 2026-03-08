@@ -246,6 +246,14 @@ export function ChapterView({
     setSelectedVerses(new Map());
   }, []);
 
+  const handleBackgroundClick = useCallback((e: React.MouseEvent) => {
+    // Only clear if clicking the background, not a verse span
+    const target = e.target as HTMLElement;
+    if (!target.closest(".cursor-pointer")) {
+      setSelectedVerses(new Map());
+    }
+  }, []);
+
   const closeDictPopup = useCallback(() => {
     setDictWord(null);
     setDictPosition(null);
@@ -301,7 +309,7 @@ export function ChapterView({
   }
 
   return (
-    <div ref={parentRef} className="h-full overflow-auto pl-0 pr-1 py-2 relative">
+    <div ref={parentRef} className="h-full overflow-auto pl-0 pr-1 py-2 relative" onClick={handleBackgroundClick}>
       <div
         style={{
           height: `${virtualizer.getTotalSize()}px`,
@@ -328,6 +336,7 @@ export function ChapterView({
                 verses={group.verses}
                 sectionHeading={group.sectionHeading}
                 isFirstParagraph={group.isFirst}
+                chapterHeader={group.isFirst ? { bookName: bookName ?? "", chapter } : undefined}
                 ttsVerseNumber={ttsVerseNumber}
                 selectedVerses={selectedVerseNumbers}
                 highlightColors={highlightColorMap}
