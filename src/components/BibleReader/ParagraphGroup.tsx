@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { useSettingsStore } from "../../stores/settingsStore";
 import type { Verse, InterlinearWord } from "../../types/bible";
 import type { SectionHeading } from "../../lib/bible";
@@ -31,6 +31,8 @@ interface ParagraphGroupProps {
   parallelData?: Map<string, Map<number, ParallelVerseData>>;
   parallelIds?: string[];
   interlinearData?: Map<number, InterlinearWord[]>;
+  expandedWordKey?: string | null;
+  onExpandWord?: (key: string | null) => void;
 }
 
 export function ParagraphGroup({
@@ -45,6 +47,8 @@ export function ParagraphGroup({
   parallelData,
   parallelIds,
   interlinearData,
+  expandedWordKey,
+  onExpandWord,
 }: ParagraphGroupProps) {
   const showVerseNumbers = useSettingsStore((s) => s.showVerseNumbers);
   const fontSize = useSettingsStore((s) => s.fontSize);
@@ -144,7 +148,7 @@ export function ParagraphGroup({
               )}
               {/* Interlinear Greek words */}
               {interlinearData?.has(verse.verse) && (
-                <InlineInterlinear words={interlinearData.get(verse.verse)!} fontSize={fontSize} />
+                <InlineInterlinear words={interlinearData.get(verse.verse)!} fontSize={fontSize} verseNum={verse.verse} expandedKey={expandedWordKey ?? null} setExpandedKey={onExpandWord ?? (() => {})} />
               )}
               {!hasParallel && !interlinearData?.has(verse.verse) && " "}
             </span>
@@ -156,20 +160,19 @@ export function ParagraphGroup({
 }
 
 /** Compact inline interlinear word display */
-function InlineInterlinear({ words, fontSize }: { words: InterlinearWord[]; fontSize: number }) {
-  const [expanded, setExpanded] = useState<number | null>(null);
-
+function InlineInterlinear({ words, fontSize, verseNum, expandedKey, setExpandedKey }: { words: InterlinearWord[]; fontSize: number; verseNum: number; expandedKey: string | null; setExpandedKey: (k: string | null) => void }) {
   return (
     <div className="ml-2 mt-1.5 mb-2">
       <div className="flex flex-wrap gap-0.5">
         {words.map((w) => {
-          const isExpanded = expanded === w.word_pos;
+          const key = `${verseNum}:${w.word_pos}`;
+          const isExpanded = expandedKey === key;
           return (
             <button
               key={w.word_pos}
               onClick={(e) => {
                 e.stopPropagation();
-                setExpanded(isExpanded ? null : w.word_pos);
+                setExpandedKey(isExpanded ? null : key);
               }}
               className={`inline-flex flex-col items-center px-1 py-0.5 rounded transition-all ${
                 isExpanded
@@ -187,8 +190,9 @@ function InlineInterlinear({ words, fontSize }: { words: InterlinearWord[]; font
           );
         })}
       </div>
-      {expanded != null && (() => {
-        const w = words.find((w) => w.word_pos === expanded);
+      {expandedKey?.startsWith(`${verseNum}:`) && (() => {
+        const wp = parseInt(expandedKey.split(":")[1]);
+        const w = words.find((w) => w.word_pos === wp);
         if (!w) return null;
         const morph = decodeMorphology(w.morphology);
         return (

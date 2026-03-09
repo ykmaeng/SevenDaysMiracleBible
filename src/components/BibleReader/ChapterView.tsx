@@ -51,6 +51,7 @@ export function ChapterView({
     Map<string, Map<number, { translationId: string; translationName: string; text: string }>>
   >(new Map());
   const [interlinearData, setInterlinearData] = useState<Map<number, InterlinearWord[]>>(new Map());
+  const [expandedWordKey, setExpandedWordKey] = useState<string | null>(null);
   const parentRef = useRef<HTMLDivElement>(null);
 
   // Dictionary popup state
@@ -274,6 +275,7 @@ export function ChapterView({
     setDictWord(null);
     setDictPosition(null);
     setSelectedVerses(new Map());
+    setExpandedWordKey(null);
   }, [bookId, chapter]);
 
   const handleVerseClick = useCallback((info: VerseClickInfo) => {
@@ -392,6 +394,8 @@ export function ChapterView({
                 parallelData={hasParallel ? parallelData : undefined}
                 parallelIds={hasParallel ? activeParallelIds : undefined}
                 interlinearData={showInterlinear && interlinearData.size > 0 ? interlinearData : undefined}
+                expandedWordKey={expandedWordKey}
+                onExpandWord={setExpandedWordKey}
               />
             </div>
           );
