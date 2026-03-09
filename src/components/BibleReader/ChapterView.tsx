@@ -223,6 +223,8 @@ export function ChapterView({
   const scrollState = useRef({ lastY: 0, accum: 0 });
   const ttsActiveRef = useRef(ttsVerseIndex != null);
   ttsActiveRef.current = ttsVerseIndex != null;
+  const interlinearActiveRef = useRef(showInterlinear ?? false);
+  interlinearActiveRef.current = showInterlinear ?? false;
 
   useEffect(() => {
     const el = parentRef.current;
@@ -243,8 +245,8 @@ export function ChapterView({
       const delta = top - s.lastY;
       s.lastY = top;
 
-      // Skip immersive mode logic during TTS auto-scroll
-      if (ttsActiveRef.current) return;
+      // Skip immersive mode logic during TTS or interlinear (layout shifts cause false triggers)
+      if (ttsActiveRef.current || interlinearActiveRef.current) return;
 
       // Skip if near bottom (prevent flickering from layout shifts)
       const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
