@@ -38,7 +38,7 @@ export const FEATURE_REGISTRY: FeatureConfig[] = [
     instructionKey: "features.notesInstruction",
     showInTabBar: false,
     showInFloating: true,
-    showInReaderSettings: false,
+    showInReaderSettings: true,
   },
   {
     id: "commentary",

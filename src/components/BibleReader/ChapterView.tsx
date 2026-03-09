@@ -61,6 +61,7 @@ export function ChapterView({
 
   // Verse selection state (multi-select)
   const [selectedVerses, setSelectedVerses] = useState<Map<number, Verse>>(new Map());
+  const [noteInputOpen, setNoteInputOpen] = useState(false);
 
   // Bookmark store
   const bookmarks = useBookmarkStore((s) => s.bookmarks);
@@ -68,7 +69,11 @@ export function ChapterView({
 
   const showParallelInline = useSettingsStore((s) => s.showParallelInline);
   const parallelTranslations = useSettingsStore((s) => s.parallelTranslations);
+  const showNotes = useSettingsStore((s) => s.showNotes);
   const isHighlightsEnabled = useFeatureStore((s) => s.isEnabled("highlights"));
+  const isNotesEnabled = useFeatureStore((s) => s.isEnabled("notes"));
+  const updateNote = useBookmarkStore((s) => s.updateNote);
+  const addBookmark = useBookmarkStore((s) => s.addBookmark);
 
   const activeParallelIds = useMemo(
     () => parallelTranslations.filter((id) => id !== translationId),
@@ -276,11 +281,20 @@ export function ChapterView({
     setDictPosition(null);
     setSelectedVerses(new Map());
     setExpandedWordKey(null);
+    setNoteInputOpen(false);
   }, [bookId, chapter]);
+
+  // Listen for note input focus request
+  useEffect(() => {
+    const handler = () => setNoteInputOpen(true);
+    window.addEventListener("focus-note-input", handler);
+    return () => window.removeEventListener("focus-note-input", handler);
+  }, []);
 
   const handleVerseClick = useCallback((info: VerseClickInfo) => {
     setDictWord(null);
     setDictPosition(null);
+    setNoteInputOpen(false);
     // Toggle verse selection
     setSelectedVerses((prev) => {
       const next = new Map(prev);
@@ -295,6 +309,7 @@ export function ChapterView({
 
   const closeToolbar = useCallback(() => {
     setSelectedVerses(new Map());
+    setNoteInputOpen(false);
   }, []);
 
   const handleBackgroundClick = useCallback((e: React.MouseEvent) => {
@@ -318,6 +333,16 @@ export function ChapterView({
     }
     return map;
   }, [bookmarks, isHighlightsEnabled]);
+
+  // Notes map for inline display
+  const noteMap = useMemo(() => {
+    if (!isNotesEnabled || !showNotes) return undefined;
+    const map: Record<string, string> = {};
+    for (const [key, bm] of Object.entries(bookmarks)) {
+      if (bm?.note) map[key] = bm.note;
+    }
+    return Object.keys(map).length > 0 ? map : undefined;
+  }, [bookmarks, isNotesEnabled, showNotes]);
 
   // Selected verse numbers set for ParagraphGroup
   const selectedVerseNumbers = useMemo(() => new Set(selectedVerses.keys()), [selectedVerses]);
@@ -396,6 +421,7 @@ export function ChapterView({
                 interlinearData={showInterlinear && interlinearData.size > 0 ? interlinearData : undefined}
                 expandedWordKey={expandedWordKey}
                 onExpandWord={setExpandedWordKey}
+                noteMap={noteMap}
               />
             </div>
           );
@@ -421,6 +447,93 @@ export function ChapterView({
           onClose={closeToolbar}
         />
       )}
+
+      {/* Note input bar */}
+      {isNotesEnabled && showNotes && noteInputOpen && sortedSelectedVerses.length === 1 && (
+        <NoteInputBar
+          verse={sortedSelectedVerses[0]}
+          existingNote={bookmarks[`${sortedSelectedVerses[0].book_id}:${sortedSelectedVerses[0].chapter}:${sortedSelectedVerses[0].verse}`]?.note ?? null}
+          onSave={async (note) => {
+            const v = sortedSelectedVerses[0];
+            const bm = bookmarks[`${v.book_id}:${v.chapter}:${v.verse}`];
+            if (bm) {
+              await updateNote(v.book_id, v.chapter, v.verse, note || null);
+            } else if (note) {
+              await addBookmark(v.book_id, v.chapter, v.verse, undefined, note, v.translation_id);
+            }
+            loadChapterBookmarks(v.book_id, v.chapter);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function NoteInputBar({
+  verse,
+  existingNote,
+  onSave,
+}: {
+  verse: Verse;
+  existingNote: string | null;
+  onSave: (note: string) => Promise<void>;
+}) {
+  const { t } = useTranslation();
+  const [text, setText] = useState(existingNote ?? "");
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const noteBarRef = useRef<HTMLDivElement>(null);
+
+  // Sync when verse or existing note changes
+  useEffect(() => {
+    setText(existingNote ?? "");
+  }, [verse.book_id, verse.chapter, verse.verse, existingNote]);
+
+  // Position above VerseActionToolbar + auto-focus
+  useEffect(() => {
+    const el = noteBarRef.current;
+    if (!el) return;
+    const toolbar = document.querySelector<HTMLElement>("[data-toolbar]");
+    el.style.bottom = toolbar ? toolbar.offsetHeight + "px" : "0px";
+    inputRef.current?.focus();
+  }, []);
+
+  const handleSave = async () => {
+    if (saving) return;
+    setSaving(true);
+    await onSave(text.trim());
+    setSaving(false);
+  };
+
+  return (
+    <div className="fixed left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 rounded-t-xl shadow-[0_-2px_10px_rgba(0,0,0,0.08)] px-3 py-2 z-[80]" ref={noteBarRef}>
+      <div className="flex items-center gap-1 mb-1">
+        <span className="text-[10px] text-gray-400 dark:text-gray-500">
+          {verse.verse}{t("nav.verse")} {t("verseActions.note")}
+        </span>
+      </div>
+      <div className="flex items-end gap-2">
+        <textarea
+          ref={inputRef}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={t("features.notePlaceholder")}
+          rows={1}
+          className="flex-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 resize-none outline-none focus:ring-1 focus:ring-blue-400"
+          onInput={(e) => {
+            const el = e.currentTarget;
+            el.style.height = "auto";
+            el.style.height = Math.min(el.scrollHeight, 120) + "px";
+          }}
+        />
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="shrink-0 px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
+        >
+          {t("features.noteSave")}
+        </button>
+      </div>
     </div>
   );
 }

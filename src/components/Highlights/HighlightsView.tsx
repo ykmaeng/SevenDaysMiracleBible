@@ -27,12 +27,6 @@ interface HighlightsViewProps {
   onNavigate: (bookId: number, chapter: number, verse: number) => void;
 }
 
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  const y = String(d.getFullYear()).slice(2);
-  return `${y}.${d.getMonth() + 1}.${d.getDate()}`;
-}
-
 export function HighlightsView({ onClose, onNavigate }: HighlightsViewProps) {
   const { t } = useTranslation();
   const defaultTranslation = useSettingsStore((s) => s.defaultTranslation);
@@ -42,6 +36,7 @@ export function HighlightsView({ onClose, onNavigate }: HighlightsViewProps) {
   const [loading, setLoading] = useState(true);
   const [activeColor, setActiveColor] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandAll, setExpandAll] = useState(false);
 
   useEffect(() => {
     getAllHighlights(defaultTranslation).then((data) => {
@@ -88,14 +83,32 @@ export function HighlightsView({ onClose, onNavigate }: HighlightsViewProps) {
       <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 z-10">
         <div className="px-4 py-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t("features.highlights")}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setExpandAll(!expandAll); setExpandedId(null); }}
+              className={`p-1.5 rounded-md transition-colors ${
+                expandAll
+                  ? "text-blue-500 bg-blue-50 dark:bg-blue-900/30"
+                  : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              }`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                {expandAll ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                )}
+              </svg>
+            </button>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Color tabs */}
@@ -140,15 +153,15 @@ export function HighlightsView({ onClose, onNavigate }: HighlightsViewProps) {
           {t("features.noHighlights")}
         </div>
       ) : (
-        <div className="p-4 space-y-5">
+        <div className="p-4 space-y-3">
           {groups.map((group) => (
             <div key={group.bookId}>
               <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
                 {t(`books.${group.bookId}`)}
               </div>
-              <div className="space-y-1">
+              <div className="space-y-0">
                 {group.items.map((h) => {
-                  const expanded = expandedId === h.id;
+                  const expanded = expandAll || expandedId === h.id;
                   return (
                     <div key={h.id} className="rounded-lg overflow-hidden">
                       <button
@@ -160,20 +173,22 @@ export function HighlightsView({ onClose, onNavigate }: HighlightsViewProps) {
                           {h.chapter}:{h.verse}
                         </span>
                         {h.text && (
-                          <span className={`text-xs text-gray-500 dark:text-gray-400 min-w-0 ${expanded ? "" : "truncate"}`}>
+                          <span className={`text-sm text-gray-600 dark:text-gray-300 min-w-0 ${expanded ? "" : "truncate"}`}>
                             {h.text}
                           </span>
                         )}
                       </button>
                       {expanded && (
-                        <div className="flex items-center gap-2 px-3 pb-2">
-                          <span className="text-[10px] text-gray-400 dark:text-gray-500">
-                            {formatDate(h.created_at)}
-                          </span>
+                        <div className="flex items-center gap-2 px-3 pb-2 flex-wrap">
                           {h.translation_id && (
                             <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 uppercase">
                               {h.translation_id}
                             </span>
+                          )}
+                          {h.note && (
+                            <p className="text-xs text-gray-400 dark:text-gray-500 italic flex-1 min-w-0 truncate">
+                              {h.note}
+                            </p>
                           )}
                           <div className="flex items-center gap-1 ml-auto shrink-0">
                             <button

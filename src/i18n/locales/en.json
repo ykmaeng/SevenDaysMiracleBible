@@ -184,6 +184,8 @@
     "notes": "Notes",
     "notesDesc": "Add notes to verses",
     "notesInstruction": "Tap a verse, then press the note button to write a note.",
+    "notePlaceholder": "Write a note...",
+    "noteSave": "Save",
     "tabBar": "Bottom Menu",
     "floatingMenu": "Verse Menu",
     "readerSettings": "Reader Settings",

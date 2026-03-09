@@ -33,6 +33,8 @@ export function ReaderSettingsDropdown({
   const setCommentaryPosition = useSettingsStore((s) => s.setCommentaryPosition);
   const showDictionary = useSettingsStore((s) => s.showDictionary);
   const setShowDictionary = useSettingsStore((s) => s.setShowDictionary);
+  const showNotes = useSettingsStore((s) => s.showNotes);
+  const setShowNotes = useSettingsStore((s) => s.setShowNotes);
   const ttsVoiceName = useSettingsStore((s) => s.ttsVoiceName);
   const setTtsVoiceName = useSettingsStore((s) => s.setTtsVoiceName);
   const ttsSpeed = useSettingsStore((s) => s.ttsSpeed);
@@ -40,6 +42,7 @@ export function ReaderSettingsDropdown({
   const isCommentaryEnabled = useFeatureStore((s) => s.isEnabled("commentary"));
   const isInterlinearEnabled = useFeatureStore((s) => s.isEnabled("interlinear"));
   const isDictionaryEnabled = useFeatureStore((s) => s.isEnabled("dictionary"));
+  const isNotesEnabled = useFeatureStore((s) => s.isEnabled("notes"));
 
   const groupedVoices = useMemo(() => {
     const map = new Map<string, TTSVoice[]>();
@@ -151,6 +154,15 @@ export function ReaderSettingsDropdown({
               label={t("reader.showDictionary")}
               checked={showDictionary}
               onChange={setShowDictionary}
+            />
+          )}
+
+          {/* Notes toggle */}
+          {isNotesEnabled && (
+            <ToggleItem
+              label={t("verseActions.note")}
+              checked={showNotes}
+              onChange={setShowNotes}
             />
           )}
 

@@ -33,6 +33,7 @@ interface ParagraphGroupProps {
   interlinearData?: Map<number, InterlinearWord[]>;
   expandedWordKey?: string | null;
   onExpandWord?: (key: string | null) => void;
+  noteMap?: Record<string, string>;
 }
 
 export function ParagraphGroup({
@@ -49,6 +50,7 @@ export function ParagraphGroup({
   interlinearData,
   expandedWordKey,
   onExpandWord,
+  noteMap,
 }: ParagraphGroupProps) {
   const showVerseNumbers = useSettingsStore((s) => s.showVerseNumbers);
   const fontSize = useSettingsStore((s) => s.fontSize);
@@ -150,7 +152,15 @@ export function ParagraphGroup({
               {interlinearData?.has(verse.verse) && (
                 <InlineInterlinear words={interlinearData.get(verse.verse)!} fontSize={fontSize} verseNum={verse.verse} expandedKey={expandedWordKey ?? null} setExpandedKey={onExpandWord ?? (() => {})} />
               )}
-              {!hasParallel && !interlinearData?.has(verse.verse) && " "}
+              {/* Inline note */}
+              {noteMap?.[`${verse.book_id}:${verse.chapter}:${verse.verse}`] && (
+                <div className="ml-2 mt-1 mb-1.5 pl-2 border-l-2 border-amber-300 dark:border-amber-600">
+                  <p className="text-xs text-amber-700 dark:text-amber-400 italic whitespace-pre-wrap">
+                    {noteMap[`${verse.book_id}:${verse.chapter}:${verse.verse}`]}
+                  </p>
+                </div>
+              )}
+              {!hasParallel && !interlinearData?.has(verse.verse) && !noteMap?.[`${verse.book_id}:${verse.chapter}:${verse.verse}`] && " "}
             </span>
           );
         })}

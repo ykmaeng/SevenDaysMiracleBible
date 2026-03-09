@@ -184,6 +184,8 @@
     "notes": "메모",
     "notesDesc": "구절에 메모를 추가합니다",
     "notesInstruction": "구절을 탭한 후 메모 버튼을 눌러 메모를 작성하세요.",
+    "notePlaceholder": "메모를 입력하세요...",
+    "noteSave": "저장",
     "tabBar": "하단 메뉴",
     "floatingMenu": "구절 메뉴",
     "readerSettings": "보기 옵션",

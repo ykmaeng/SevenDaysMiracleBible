@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useBookmarkStore } from "../../stores/bookmarkStore";
 import { useFeatureStore } from "../../stores/featureStore";
+import { useSettingsStore } from "../../stores/settingsStore";
 import { useToastStore } from "../../stores/toastStore";
 import type { Verse } from "../../types/bible";
 
@@ -24,7 +25,7 @@ interface VerseActionToolbarProps {
 export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToolbarProps) {
   const { t } = useTranslation();
   const showToast = useToastStore((s) => s.showToast);
-  const { getBookmark, addBookmark, removeBookmark, updateColor, updateNote, updateLabel, labels, labelsLoaded, loadLabels, createLabel } = useBookmarkStore();
+  const { getBookmark, addBookmark, removeBookmark, updateColor, updateLabel, labels, labelsLoaded, loadLabels, createLabel } = useBookmarkStore();
   const [showColors, setShowColors] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [newLabelName, setNewLabelName] = useState("");
@@ -33,6 +34,7 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
   const isBookmarksEnabled = useFeatureStore((s) => s.isEnabled("bookmarks"));
   const isHighlightsEnabled = useFeatureStore((s) => s.isEnabled("highlights"));
   const isNotesEnabled = useFeatureStore((s) => s.isEnabled("notes"));
+  const showNotes = useSettingsStore((s) => s.showNotes);
 
   // Slide-in animation
   useEffect(() => {
@@ -163,21 +165,13 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
     onClose();
   }, [verses, getBookmark, updateColor, removeBookmark, onClose]);
 
-  const handleNote = useCallback(async () => {
+  const setShowNotes = useSettingsStore((s) => s.setShowNotes);
+
+  const handleNote = useCallback(() => {
     if (verses.length !== 1) return;
-    const v = verses[0];
-    const bm = getBookmark(v.book_id, v.chapter, v.verse);
-    const currentNote = bm?.note ?? "";
-    const note = prompt(t("verseActions.notePrompt"), currentNote);
-    if (note === null) return;
-    if (bm) {
-      await updateNote(v.book_id, v.chapter, v.verse, note || null);
-    } else {
-      await addBookmark(v.book_id, v.chapter, v.verse, undefined, note || undefined, v.translation_id);
-    }
-    if (note) showToast(t("verseActions.noteSaved"), "success");
-    onClose();
-  }, [verses, getBookmark, addBookmark, updateNote, showToast, t, onClose]);
+    if (!showNotes) setShowNotes(true);
+    window.dispatchEvent(new CustomEvent("focus-note-input"));
+  }, [verses, showNotes, setShowNotes]);
 
   // Check if any selected verse has a bookmark/highlight
   const anyBookmarked = verses.some((v) => !!getBookmark(v.book_id, v.chapter, v.verse));
