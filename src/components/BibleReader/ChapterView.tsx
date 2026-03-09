@@ -123,7 +123,7 @@ export function ChapterView({
 
   // Load interlinear data for NT chapters
   useEffect(() => {
-    if (!showInterlinear || bookId < 40 || bookId > 66) {
+    if (!showInterlinear) {
       setInterlinearData(new Map());
       return;
     }

@@ -8,7 +8,6 @@ interface ReaderSettingsDropdownProps {
   onToggleCommentary: () => void;
   showInterlinear: boolean;
   onToggleInterlinear: () => void;
-  isNTBook: boolean;
   voices: TTSVoice[];
 }
 
@@ -17,7 +16,6 @@ export function ReaderSettingsDropdown({
   onToggleCommentary,
   showInterlinear,
   onToggleInterlinear,
-  isNTBook,
   voices: ttsVoices,
 }: ReaderSettingsDropdownProps) {
   const { t } = useTranslation();
@@ -132,14 +130,12 @@ export function ReaderSettingsDropdown({
             </div>
           )}
 
-          {/* Interlinear toggle (NT only) */}
-          {isNTBook && (
-            <ToggleItem
-              label={t("interlinear.title")}
-              checked={showInterlinear}
-              onChange={onToggleInterlinear}
-            />
-          )}
+          {/* Interlinear toggle */}
+          <ToggleItem
+            label={t("interlinear.title")}
+            checked={showInterlinear}
+            onChange={onToggleInterlinear}
+          />
 
           {/* Dictionary toggle */}
           <ToggleItem

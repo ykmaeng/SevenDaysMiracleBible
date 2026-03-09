@@ -221,7 +221,6 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
               setShowInterlinear(!showInterlinear);
               if (!showInterlinear) setShowCommentary(false); // close commentary when opening interlinear
             }}
-            isNTBook={activeTab.bookId >= 40 && activeTab.bookId <= 66}
             voices={tts.voices}
           />
         </div>

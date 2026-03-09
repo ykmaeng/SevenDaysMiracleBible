@@ -21,14 +21,8 @@ export function InterlinearPanel({ bookId, chapter, bookName, onClose }: Interli
   useEffect(() => {
     setLoading(true);
     getChapterInterlinear(bookId, chapter)
-      .then((result) => {
-        console.log("[Interlinear] loaded", result.size, "verses for", bookId, chapter);
-        setData(result);
-      })
-      .catch((err) => {
-        console.error("[Interlinear] error:", err);
-        setData(new Map());
-      })
+      .then((result) => setData(result))
+      .catch(() => setData(new Map()))
       .finally(() => setLoading(false));
   }, [bookId, chapter]);
 
@@ -42,8 +36,6 @@ export function InterlinearPanel({ bookId, chapter, bookName, onClose }: Interli
     estimateSize: () => 120,
     overscan: 5,
   });
-
-  const isNT = bookId >= 40 && bookId <= 66;
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-gray-900">
@@ -68,11 +60,7 @@ export function InterlinearPanel({ bookId, chapter, bookName, onClose }: Interli
       </div>
 
       {/* Content */}
-      {!isNT ? (
-        <div className="flex flex-col items-center justify-center flex-1 text-gray-400 text-sm px-6 text-center">
-          <p>{t("interlinear.otNotAvailable")}</p>
-        </div>
-      ) : loading ? (
+      {loading ? (
         <div className="flex items-center justify-center flex-1 text-gray-400">
           <div className="animate-pulse">Loading...</div>
         </div>
