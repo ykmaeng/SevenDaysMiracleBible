@@ -163,7 +163,7 @@ function App() {
         ))}
 
         <button
-          onClick={() => setView("features")}
+          onClick={() => setView(view === "features" ? "reader" : "features")}
           className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
             view === "features" ? "text-blue-600" : "text-gray-400"
           }`}
