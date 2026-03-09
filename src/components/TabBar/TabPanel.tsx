@@ -50,6 +50,13 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
   const tts = useTTS();
 
   useEffect(() => { getBooks().then(setBooks); }, []);
+
+  // Close commentary panel when commentary DB is deleted
+  useEffect(() => {
+    const handler = () => setShowCommentary(false);
+    window.addEventListener("commentary-deleted", handler);
+    return () => window.removeEventListener("commentary-deleted", handler);
+  }, []);
   const versesRef = useRef<Verse[]>([]);
   const ttsSpeed = useSettingsStore((s) => s.ttsSpeed);
   const setTtsSpeed = useSettingsStore((s) => s.setTtsSpeed);

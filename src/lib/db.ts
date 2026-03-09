@@ -1,5 +1,6 @@
 import Database from "@tauri-apps/plugin-sql";
 import { appDataDir } from "@tauri-apps/api/path";
+import { exists, BaseDirectory } from "@tauri-apps/plugin-fs";
 
 // Main DB (core translations, bookmarks, commentary, etc.)
 let db: Database | null = null;
@@ -85,26 +86,26 @@ const commentaryDbs = new Map<string, Database>();
 export async function getCommentaryDb(language: string): Promise<Database> {
   let cdb = commentaryDbs.get(language);
   if (!cdb) {
-    const dataDir = await getDataDir();
-    cdb = await Database.load(`sqlite:${dataDir}commentary-${language}.db`);
+    // Check file exists before opening (Database.load creates empty file if missing)
+    const fileExists = await exists(`commentary-${language}.db`, { baseDir: BaseDirectory.AppData });
+    if (!fileExists) {
+      throw new Error(`Commentary DB not found: commentary-${language}.db`);
+    }
+    cdb = await Database.load(`sqlite:commentary-${language}.db`);
     commentaryDbs.set(language, cdb);
   }
   return cdb;
 }
 
-export async function closeCommentaryDb(language: string): Promise<void> {
-  const cdb = commentaryDbs.get(language);
-  if (cdb) {
-    commentaryDbs.delete(language);
-    try {
-      await cdb.close();
-    } catch {
-      // Ignore close errors
-    }
-  }
+export function clearCommentaryDbCache(language: string): void {
+  commentaryDbs.delete(language);
 }
 
 export async function queryCommentary<T>(language: string, sql: string, bindValues?: unknown[]): Promise<T[]> {
-  const cdb = await getCommentaryDb(language);
-  return cdb.select<T[]>(sql, bindValues);
+  try {
+    const cdb = await getCommentaryDb(language);
+    return await cdb.select<T[]>(sql, bindValues);
+  } catch {
+    return [];
+  }
 }

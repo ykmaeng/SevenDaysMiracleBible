@@ -102,6 +102,8 @@ export function ChapterView({
         setLoading(false);
         onVersesLoadedRef.current?.(data);
       }
+    }).catch(() => {
+      if (!cancelled) setLoading(false);
     });
 
     return () => {

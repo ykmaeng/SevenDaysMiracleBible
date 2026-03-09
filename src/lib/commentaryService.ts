@@ -1,7 +1,7 @@
 import { fetch } from "@tauri-apps/plugin-http";
 import { writeFile, remove, exists, BaseDirectory } from "@tauri-apps/plugin-fs";
 import i18n from "../i18n";
-import { closeCommentaryDb } from "./db";
+import { clearCommentaryDbCache } from "./db";
 import { getCommentaryDownloadUrl, COMMENTARY_LANGUAGES } from "./downloadConfig";
 import { useDownloadStore } from "../stores/downloadStore";
 import { useToastStore } from "../stores/toastStore";
@@ -73,12 +73,8 @@ export async function downloadCommentary(language: string): Promise<void> {
 }
 
 export async function deleteCommentary(language: string): Promise<void> {
-  // Close DB connection if open
-  try {
-    await closeCommentaryDb(language);
-  } catch (err) {
-    console.warn("[commentary] closeDb warning:", err);
-  }
+  // Clear cached connection (don't close — may affect SQL plugin pool)
+  clearCommentaryDbCache(language);
 
   const dbFileName = commentaryDbFileName(language);
   try {
@@ -90,7 +86,7 @@ export async function deleteCommentary(language: string): Promise<void> {
     console.warn("[commentary] remove file warning:", err);
   }
 
-  window.dispatchEvent(new Event("commentary-changed"));
+  window.dispatchEvent(new Event("commentary-deleted"));
 }
 
 export async function isCommentaryDbDownloaded(language: string): Promise<boolean> {
