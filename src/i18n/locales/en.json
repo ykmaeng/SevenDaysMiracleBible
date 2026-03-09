@@ -186,6 +186,7 @@
     "notesInstruction": "Tap a verse, then press the note button to write a note.",
     "tabBar": "Bottom Menu",
     "floatingMenu": "Verse Menu",
+    "readerSettings": "Reader Settings",
     "noBookmarks": "No bookmarks saved",
     "all": "All",
     "noHighlights": "No highlighted verses",
@@ -197,7 +198,16 @@
     "labelDeleted": "Label deleted",
     "renameLabel": "Rename label",
     "deleteLabel": "Delete label",
-    "deleteLabelConfirm": "Delete this label? Bookmarks will be kept."
+    "deleteLabelConfirm": "Delete this label? Bookmarks will be kept.",
+    "commentary": "AI Commentary",
+    "commentaryDesc": "View AI-generated Bible commentary",
+    "commentaryInstruction": "Enable AI Commentary in the reader settings to display commentary alongside the Bible text. Position can be set to left, right, or bottom.",
+    "interlinear": "Interlinear",
+    "interlinearDesc": "Word-by-word Greek/Hebrew analysis",
+    "interlinearInstruction": "Enable Interlinear in the reader settings to show original language words, transliteration, and glosses below each verse. Tap a word for details.",
+    "dictionary": "Dictionary",
+    "dictionaryDesc": "Quick word lookup",
+    "dictionaryInstruction": "Enable Dictionary in the reader settings to look up word definitions by tapping on text."
   },
   "interlinear": {
     "title": "Interlinear",

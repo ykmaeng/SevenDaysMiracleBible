@@ -193,7 +193,16 @@
     "labelDeleted": "Etiqueta eliminada",
     "renameLabel": "Renombrar etiqueta",
     "deleteLabel": "Eliminar etiqueta",
-    "deleteLabelConfirm": "¿Eliminar esta etiqueta? Los marcadores se conservarán."
+    "deleteLabelConfirm": "¿Eliminar esta etiqueta? Los marcadores se conservarán.",
+    "commentary": "Comentario IA",
+    "commentaryDesc": "Ver comentarios bíblicos generados por IA",
+    "commentaryInstruction": "Active el Comentario IA en los ajustes del lector para mostrar comentarios junto al texto bíblico. La posición se puede ajustar a izquierda, derecha o abajo.",
+    "interlinear": "Interlineal",
+    "interlinearDesc": "Análisis palabra por palabra en griego/hebreo",
+    "interlinearInstruction": "Active Interlineal en los ajustes del lector para mostrar palabras originales, transliteración y significado debajo de cada versículo. Toque una palabra para ver detalles.",
+    "dictionary": "Diccionario",
+    "dictionaryDesc": "Búsqueda rápida de palabras",
+    "dictionaryInstruction": "Active el Diccionario en los ajustes del lector para buscar definiciones tocando el texto."
   },
   "interlinear": {
     "title": "Interlinear",

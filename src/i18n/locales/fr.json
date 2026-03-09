@@ -192,7 +192,16 @@
     "labelDeleted": "Étiquette supprimée",
     "renameLabel": "Renommer l'étiquette",
     "deleteLabel": "Supprimer l'étiquette",
-    "deleteLabelConfirm": "Supprimer cette étiquette ? Les signets seront conservés."
+    "deleteLabelConfirm": "Supprimer cette étiquette ? Les signets seront conservés.",
+    "commentary": "Commentaire IA",
+    "commentaryDesc": "Voir les commentaires bibliques générés par l'IA",
+    "commentaryInstruction": "Activez le Commentaire IA dans les paramètres de lecture pour afficher les commentaires à côté du texte biblique. La position peut être réglée à gauche, droite ou en bas.",
+    "interlinear": "Interlinéaire",
+    "interlinearDesc": "Analyse mot à mot grec/hébreu",
+    "interlinearInstruction": "Activez l'Interlinéaire dans les paramètres de lecture pour afficher les mots originaux, la translittération et le sens sous chaque verset. Appuyez sur un mot pour les détails.",
+    "dictionary": "Dictionnaire",
+    "dictionaryDesc": "Recherche rapide de mots",
+    "dictionaryInstruction": "Activez le Dictionnaire dans les paramètres de lecture pour chercher des définitions en appuyant sur le texte."
   },
   "interlinear": {
     "title": "Interlinear",

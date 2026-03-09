@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore, type CommentaryPosition } from "../../stores/settingsStore";
+import { useFeatureStore } from "../../stores/featureStore";
 import type { TTSVoice } from "../../hooks/useTTS";
 
 interface ReaderSettingsDropdownProps {
@@ -36,6 +37,9 @@ export function ReaderSettingsDropdown({
   const setTtsVoiceName = useSettingsStore((s) => s.setTtsVoiceName);
   const ttsSpeed = useSettingsStore((s) => s.ttsSpeed);
   const setTtsSpeed = useSettingsStore((s) => s.setTtsSpeed);
+  const isCommentaryEnabled = useFeatureStore((s) => s.isEnabled("commentary"));
+  const isInterlinearEnabled = useFeatureStore((s) => s.isEnabled("interlinear"));
+  const isDictionaryEnabled = useFeatureStore((s) => s.isEnabled("dictionary"));
 
   const groupedVoices = useMemo(() => {
     const map = new Map<string, TTSVoice[]>();
@@ -84,14 +88,16 @@ export function ReaderSettingsDropdown({
           />
 
           {/* AI Commentary toggle */}
-          <ToggleItem
-            label={t("commentary.title")}
-            checked={showCommentary}
-            onChange={onToggleCommentary}
-          />
+          {isCommentaryEnabled && (
+            <ToggleItem
+              label={t("commentary.title")}
+              checked={showCommentary}
+              onChange={onToggleCommentary}
+            />
+          )}
 
           {/* Commentary position selector (submenu, visible when commentary is on) */}
-          {showCommentary && (
+          {isCommentaryEnabled && showCommentary && (
             <div className="flex items-center justify-between pl-7 pr-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700">
               <span className="text-xs text-gray-500 dark:text-gray-400">{t("commentary.position")}</span>
               <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-gray-700 rounded p-0.5">
@@ -131,18 +137,22 @@ export function ReaderSettingsDropdown({
           )}
 
           {/* Interlinear toggle */}
-          <ToggleItem
-            label={t("interlinear.title")}
-            checked={showInterlinear}
-            onChange={onToggleInterlinear}
-          />
+          {isInterlinearEnabled && (
+            <ToggleItem
+              label={t("interlinear.title")}
+              checked={showInterlinear}
+              onChange={onToggleInterlinear}
+            />
+          )}
 
           {/* Dictionary toggle */}
-          <ToggleItem
-            label={t("reader.showDictionary")}
-            checked={showDictionary}
-            onChange={setShowDictionary}
-          />
+          {isDictionaryEnabled && (
+            <ToggleItem
+              label={t("reader.showDictionary")}
+              checked={showDictionary}
+              onChange={setShowDictionary}
+            />
+          )}
 
           {/* Verse Numbers toggle */}
           <ToggleItem

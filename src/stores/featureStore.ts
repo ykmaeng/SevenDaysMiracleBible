@@ -9,6 +9,7 @@ export interface FeatureConfig {
   instructionKey: string;
   showInTabBar: boolean;
   showInFloating: boolean;
+  showInReaderSettings: boolean;
 }
 
 export const FEATURE_REGISTRY: FeatureConfig[] = [
@@ -19,6 +20,7 @@ export const FEATURE_REGISTRY: FeatureConfig[] = [
     instructionKey: "features.bookmarksInstruction",
     showInTabBar: true,
     showInFloating: true,
+    showInReaderSettings: false,
   },
   {
     id: "highlights",
@@ -27,6 +29,7 @@ export const FEATURE_REGISTRY: FeatureConfig[] = [
     instructionKey: "features.highlightsInstruction",
     showInTabBar: true,
     showInFloating: true,
+    showInReaderSettings: false,
   },
   {
     id: "notes",
@@ -35,6 +38,34 @@ export const FEATURE_REGISTRY: FeatureConfig[] = [
     instructionKey: "features.notesInstruction",
     showInTabBar: false,
     showInFloating: true,
+    showInReaderSettings: false,
+  },
+  {
+    id: "commentary",
+    labelKey: "features.commentary",
+    descKey: "features.commentaryDesc",
+    instructionKey: "features.commentaryInstruction",
+    showInTabBar: false,
+    showInFloating: false,
+    showInReaderSettings: true,
+  },
+  {
+    id: "interlinear",
+    labelKey: "features.interlinear",
+    descKey: "features.interlinearDesc",
+    instructionKey: "features.interlinearInstruction",
+    showInTabBar: false,
+    showInFloating: false,
+    showInReaderSettings: true,
+  },
+  {
+    id: "dictionary",
+    labelKey: "features.dictionary",
+    descKey: "features.dictionaryDesc",
+    instructionKey: "features.dictionaryInstruction",
+    showInTabBar: false,
+    showInFloating: false,
+    showInReaderSettings: true,
   },
 ];
 

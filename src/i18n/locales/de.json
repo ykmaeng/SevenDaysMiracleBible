@@ -192,7 +192,16 @@
     "labelDeleted": "Label gelöscht",
     "renameLabel": "Label umbenennen",
     "deleteLabel": "Label löschen",
-    "deleteLabelConfirm": "Dieses Label löschen? Lesezeichen bleiben erhalten."
+    "deleteLabelConfirm": "Dieses Label löschen? Lesezeichen bleiben erhalten.",
+    "commentary": "KI-Kommentar",
+    "commentaryDesc": "KI-generierte Bibelkommentare anzeigen",
+    "commentaryInstruction": "Aktivieren Sie den KI-Kommentar in den Leseeinstellungen, um Kommentare neben dem Bibeltext anzuzeigen. Die Position kann auf links, rechts oder unten eingestellt werden.",
+    "interlinear": "Interlinear",
+    "interlinearDesc": "Wort-für-Wort Griechisch/Hebräisch-Analyse",
+    "interlinearInstruction": "Aktivieren Sie Interlinear in den Leseeinstellungen, um Originalwörter, Transliteration und Bedeutung unter jedem Vers anzuzeigen. Tippen Sie auf ein Wort für Details.",
+    "dictionary": "Wörterbuch",
+    "dictionaryDesc": "Schnelle Wortsuche",
+    "dictionaryInstruction": "Aktivieren Sie das Wörterbuch in den Leseeinstellungen, um Definitionen durch Antippen des Textes nachzuschlagen."
   },
   "interlinear": {
     "title": "Interlinear",

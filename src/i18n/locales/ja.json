@@ -181,6 +181,7 @@
     "notesInstruction": "聖句をタップしてメモボタンを押し、メモを入力してください。",
     "tabBar": "下部メニュー",
     "floatingMenu": "聖句メニュー",
+    "readerSettings": "閲覧設定",
     "noBookmarks": "保存されたブックマークはありません",
     "all": "すべて",
     "noHighlights": "ハイライトされた聖句はありません",
@@ -192,7 +193,16 @@
     "labelDeleted": "ラベルを削除しました",
     "renameLabel": "ラベル名変更",
     "deleteLabel": "ラベル削除",
-    "deleteLabelConfirm": "このラベルを削除しますか？ブックマークは保持されます。"
+    "deleteLabelConfirm": "このラベルを削除しますか？ブックマークは保持されます。",
+    "commentary": "AI解説",
+    "commentaryDesc": "AIが生成した聖書解説を表示します",
+    "commentaryInstruction": "閲覧設定でAI解説を有効にすると、聖書本文の横に解説が表示されます。位置は左・右・下に設定できます。",
+    "interlinear": "原語分析",
+    "interlinearDesc": "ギリシャ語/ヘブライ語の逐語分析",
+    "interlinearInstruction": "閲覧設定で原語分析を有効にすると、各節の下に原語の単語・音訳・意味が表示されます。単語をタップすると詳細が見られます。",
+    "dictionary": "辞書",
+    "dictionaryDesc": "単語の意味をすばやく検索",
+    "dictionaryInstruction": "閲覧設定で辞書を有効にすると、テキストをタップして意味を調べることができます。"
   },
   "interlinear": {
     "title": "原語分解",

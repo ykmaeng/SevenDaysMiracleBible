@@ -182,6 +182,7 @@
     "notesInstruction": "点击经文后按笔记按钮撰写笔记。",
     "tabBar": "底部菜单",
     "floatingMenu": "经文菜单",
+    "readerSettings": "阅读设置",
     "noBookmarks": "暂无书签",
     "all": "全部",
     "noHighlights": "没有高亮的经文",
@@ -193,7 +194,16 @@
     "labelDeleted": "标签已删除",
     "renameLabel": "重命名标签",
     "deleteLabel": "删除标签",
-    "deleteLabelConfirm": "删除此标签？书签将保留。"
+    "deleteLabelConfirm": "删除此标签？书签将保留。",
+    "commentary": "AI解经",
+    "commentaryDesc": "查看AI生成的圣经注释",
+    "commentaryInstruction": "在阅读设置中启用AI解经，可在经文旁显示注释。位置可设为左、右或下方。",
+    "interlinear": "原文解析",
+    "interlinearDesc": "希腊语/希伯来语逐词分析",
+    "interlinearInstruction": "在阅读设置中启用原文解析，每节经文下方将显示原文单词、音译和释义。点击单词可查看详情。",
+    "dictionary": "词典",
+    "dictionaryDesc": "快速查询词义",
+    "dictionaryInstruction": "在阅读设置中启用词典，点击文本即可查询词义。"
   },
   "interlinear": {
     "title": "原文逐字",
