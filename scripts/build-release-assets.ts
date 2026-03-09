@@ -2,22 +2,22 @@
  * Build Release Assets
  *
  * Copies non-core translation JSON files to dist/release-assets/
- * for uploading to GitHub Releases.
+ * and builds per-language commentary .db files for uploading to GitHub Releases.
  *
  * Usage:
  *   npx tsx scripts/build-release-assets.ts
  */
 
-import { existsSync, mkdirSync, copyFileSync, readdirSync } from "fs";
+import { existsSync, mkdirSync, copyFileSync, readdirSync, readFileSync, unlinkSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import Database from "better-sqlite3";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR = join(__dirname, "data", "output");
 const RELEASE_DIR = join(__dirname, "..", "dist", "release-assets");
 
 const CORE_TRANSLATIONS = new Set(["kjv", "sav-ko"]);
-const CORE_COMMENTARY_LANGUAGES = new Set(["ko"]);
 
 // Create release assets directory
 if (!existsSync(RELEASE_DIR)) {
@@ -41,7 +41,7 @@ for (const file of jsonFiles) {
   copied++;
 }
 
-// Copy commentary JSON files (excluding core language)
+// Build commentary .db files from JSON
 const COMMENTARY_DIR = join(OUTPUT_DIR, "commentary");
 if (existsSync(COMMENTARY_DIR)) {
   const commentaryFiles = readdirSync(COMMENTARY_DIR).filter(
@@ -50,14 +50,46 @@ if (existsSync(COMMENTARY_DIR)) {
 
   for (const file of commentaryFiles) {
     const lang = file.replace("commentary-", "").replace(".json", "");
-    if (CORE_COMMENTARY_LANGUAGES.has(lang)) continue;
+    const dbPath = join(RELEASE_DIR, `commentary-${lang}.db`);
 
-    const src = join(COMMENTARY_DIR, file);
-    const dest = join(RELEASE_DIR, file);
-    copyFileSync(src, dest);
-    console.log(`Copied commentary: ${file}`);
+    if (existsSync(dbPath)) unlinkSync(dbPath);
+
+    console.log(`Building commentary-${lang}.db...`);
+    const db = new Database(dbPath);
+    db.pragma("journal_mode = WAL");
+
+    db.exec(`CREATE TABLE IF NOT EXISTS commentary (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      book_id INTEGER NOT NULL,
+      chapter INTEGER NOT NULL,
+      verse INTEGER,
+      language TEXT NOT NULL,
+      content TEXT NOT NULL,
+      model_version TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE (book_id, chapter, verse, language)
+    )`);
+    db.exec("CREATE INDEX IF NOT EXISTS idx_commentary_lookup ON commentary(book_id, chapter, language)");
+
+    const entries = JSON.parse(readFileSync(join(COMMENTARY_DIR, file), "utf-8"));
+    const insert = db.prepare(
+      "INSERT OR IGNORE INTO commentary (book_id, chapter, verse, language, content, model_version) VALUES (?, ?, ?, ?, ?, ?)"
+    );
+    const insertMany = db.transaction(
+      (rows: { book_id: number; chapter: number; language: string; content: string; model_version: string }[]) => {
+        for (const e of rows) {
+          insert.run(e.book_id, e.chapter, null, e.language, e.content, e.model_version);
+        }
+      }
+    );
+    insertMany(entries);
+
+    db.pragma("journal_mode = DELETE");
+    const count = db.prepare("SELECT COUNT(*) as c FROM commentary").get() as { c: number };
+    console.log(`  ${count.c} entries`);
+    db.close();
     copied++;
   }
 }
 
-console.log(`\n${copied} release assets copied to ${RELEASE_DIR}`);
+console.log(`\n${copied} release assets built in ${RELEASE_DIR}`);

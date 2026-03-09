@@ -1,4 +1,4 @@
-import { query, queryTranslation } from "./db";
+import { query, queryTranslation, queryCommentary } from "./db";
 import { CORE_TRANSLATIONS } from "./downloadConfig";
 import type {
   Book,
@@ -106,11 +106,16 @@ export async function getChapterCommentary(
   chapter: number,
   language: string
 ): Promise<Commentary | null> {
-  const results = await query<Commentary>(
-    "SELECT * FROM commentary WHERE book_id = $1 AND chapter = $2 AND verse IS NULL AND language = $3",
-    [bookId, chapter, language]
-  );
-  return results[0] ?? null;
+  try {
+    const results = await queryCommentary<Commentary>(
+      language,
+      "SELECT * FROM commentary WHERE book_id = $1 AND chapter = $2 AND verse IS NULL AND language = $3",
+      [bookId, chapter, language]
+    );
+    return results[0] ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function getVerseCommentary(
@@ -119,11 +124,16 @@ export async function getVerseCommentary(
   verse: number,
   language: string
 ): Promise<Commentary | null> {
-  const results = await query<Commentary>(
-    "SELECT * FROM commentary WHERE book_id = $1 AND chapter = $2 AND verse = $3 AND language = $4",
-    [bookId, chapter, verse, language]
-  );
-  return results[0] ?? null;
+  try {
+    const results = await queryCommentary<Commentary>(
+      language,
+      "SELECT * FROM commentary WHERE book_id = $1 AND chapter = $2 AND verse = $3 AND language = $4",
+      [bookId, chapter, verse, language]
+    );
+    return results[0] ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function getCrossReferences(
@@ -163,11 +173,16 @@ export async function getParallelChapter(
 }
 
 export async function isCommentaryAvailable(language: string): Promise<boolean> {
-  const result = await query<{ c: number }>(
-    "SELECT COUNT(*) as c FROM commentary WHERE language = $1 AND verse IS NULL",
-    [language]
-  );
-  return (result[0]?.c ?? 0) > 0;
+  try {
+    const result = await queryCommentary<{ c: number }>(
+      language,
+      "SELECT COUNT(*) as c FROM commentary WHERE language = $1 AND verse IS NULL",
+      [language]
+    );
+    return (result[0]?.c ?? 0) > 0;
+  } catch {
+    return false;
+  }
 }
 
 export interface ParagraphBreak {

@@ -190,40 +190,9 @@ for (const file of jsonFiles) {
   console.log(`  Inserted ${verses.length} verses`);
 }
 
-// Import commentary data
-const COMMENTARY_DIR = join(OUTPUT_DIR, "commentary");
-let commentaryFiles = existsSync(COMMENTARY_DIR)
-  ? readdirSync(COMMENTARY_DIR).filter((f) => f.startsWith("commentary-") && f.endsWith(".json"))
-  : [];
-
-if (buildCore) {
-  commentaryFiles = commentaryFiles.filter((f) => f === "commentary-ko.json");
-  console.log(`Core mode: loading only commentary ${commentaryFiles.join(", ") || "(none)"}`);
-}
-
-if (commentaryFiles.length > 0) {
-  const insertCommentary = db.prepare(
-    "INSERT OR IGNORE INTO commentary (book_id, chapter, verse, language, content, model_version) VALUES (?, ?, ?, ?, ?, ?)"
-  );
-  const insertManyCommentary = db.transaction(
-    (entries: { book_id: number; chapter: number; language: string; content: string; model_version: string }[]) => {
-      for (const e of entries) {
-        insertCommentary.run(e.book_id, e.chapter, null, e.language, e.content, e.model_version);
-      }
-    }
-  );
-
-  let totalCommentary = 0;
-  for (const file of commentaryFiles) {
-    const filePath = join(COMMENTARY_DIR, file);
-    console.log(`Loading commentary: ${file}...`);
-    const entries = JSON.parse(readFileSync(filePath, "utf-8"));
-    insertManyCommentary(entries);
-    totalCommentary += entries.length;
-    console.log(`  Inserted ${entries.length} commentary entries`);
-  }
-  console.log(`Total commentary: ${totalCommentary}`);
-}
+// Commentary is now distributed as separate per-language .db files
+// Use scripts/build-commentary-db.ts to build them
+console.log("Commentary: skipped (separate DB files)");
 
 // Import paragraph breaks
 const PARAGRAPH_FILE = join(OUTPUT_DIR, "paragraph_breaks.json");

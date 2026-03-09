@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getTranslations, isCommentaryAvailable } from "../../lib/bible";
+import { getTranslations } from "../../lib/bible";
 import { downloadTranslation, deleteTranslation } from "../../lib/translationService";
-import { downloadCommentary, deleteCommentary, commentaryDownloadKey } from "../../lib/commentaryService";
+import { downloadCommentary, deleteCommentary, commentaryDownloadKey, isCommentaryDbDownloaded } from "../../lib/commentaryService";
 import { downloadDictionary, deleteDictionary, isDictionaryDownloaded, DICTIONARY_DOWNLOAD_KEY } from "../../lib/dictionaryService";
 import { CORE_TRANSLATIONS, COMMENTARY_LANGUAGES } from "../../lib/downloadConfig";
 import { useDownloadStore } from "../../stores/downloadStore";
@@ -356,8 +356,8 @@ function CommentaryDownloadList({
   const refresh = () => {
     Promise.all(
       COMMENTARY_LANGUAGES.map(async (c) => {
-        const avail = await isCommentaryAvailable(c.language);
-        return avail ? c.language : null;
+        const downloaded = await isCommentaryDbDownloaded(c.language);
+        return downloaded ? c.language : null;
       })
     ).then((results) => {
       setDownloadedLangs(new Set(results.filter((r): r is string => r !== null)));

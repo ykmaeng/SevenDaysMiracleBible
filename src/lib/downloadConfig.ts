@@ -1,7 +1,7 @@
 export const DOWNLOAD_CONFIG = {
   baseUrl: "https://github.com/ykmaeng/selah-bible/releases/download",
   tag: "translations-v2",
-  commentaryTag: "commentary-v1",
+  commentaryTag: "commentary-v2",
 };
 
 export function getTranslationDownloadUrl(translationId: string): string {
@@ -9,13 +9,13 @@ export function getTranslationDownloadUrl(translationId: string): string {
 }
 
 export function getCommentaryDownloadUrl(language: string): string {
-  return `${DOWNLOAD_CONFIG.baseUrl}/${DOWNLOAD_CONFIG.commentaryTag}/commentary-${language}.json`;
+  return `${DOWNLOAD_CONFIG.baseUrl}/${DOWNLOAD_CONFIG.commentaryTag}/commentary-${language}.db`;
 }
 
 export const CORE_TRANSLATIONS = new Set(["kjv", "sav-ko"]);
-export const CORE_COMMENTARY_LANGUAGES = new Set(["ko"]);
 
 export const COMMENTARY_LANGUAGES: { language: string; name: string; sizeMb: number; ready?: boolean }[] = [
+  { language: "ko", name: "한국어", sizeMb: 14, ready: true },
   { language: "en", name: "English", sizeMb: 3.5, ready: false },
   { language: "zh", name: "中文", sizeMb: 4.0, ready: false },
   { language: "es", name: "Español", sizeMb: 3.5, ready: false },

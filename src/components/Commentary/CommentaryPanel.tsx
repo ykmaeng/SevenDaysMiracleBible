@@ -1,9 +1,8 @@
 import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown, { type Components } from "react-markdown";
-import { getChapterCommentary, isCommentaryAvailable } from "../../lib/bible";
-import { downloadCommentary, commentaryDownloadKey } from "../../lib/commentaryService";
-import { CORE_COMMENTARY_LANGUAGES } from "../../lib/downloadConfig";
+import { getChapterCommentary } from "../../lib/bible";
+import { downloadCommentary, commentaryDownloadKey, isCommentaryDbDownloaded } from "../../lib/commentaryService";
 import { useDownloadStore } from "../../stores/downloadStore";
 import { useSettingsStore } from "../../stores/settingsStore";
 import type { Commentary } from "../../types/bible";
@@ -45,7 +44,7 @@ export function CommentaryPanel({ bookId, chapter, onClose }: CommentaryPanelPro
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const [commentary, setCommentary] = useState<Commentary | null>(null);
-  const [available, setAvailable] = useState<boolean | null>(null);
+  const [dbExists, setDbExists] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const dlKey = commentaryDownloadKey(language);
   const dl = useDownloadStore((s) => s.downloads[dlKey]);
@@ -57,11 +56,11 @@ export function CommentaryPanel({ bookId, chapter, onClose }: CommentaryPanelPro
 
     Promise.all([
       getChapterCommentary(bookId, chapter, language),
-      isCommentaryAvailable(language),
-    ]).then(([data, avail]) => {
+      isCommentaryDbDownloaded(language),
+    ]).then(([data, downloaded]) => {
       if (!cancelled) {
         setCommentary(data);
-        setAvailable(avail);
+        setDbExists(downloaded);
         setLoading(false);
       }
     });
@@ -94,13 +93,11 @@ export function CommentaryPanel({ bookId, chapter, onClose }: CommentaryPanelPro
   }
 
   if (!commentary) {
-    const isCore = CORE_COMMENTARY_LANGUAGES.has(language);
     const isDownloading = dl && dl.status !== "done" && dl.status !== "error";
     const isError = dl?.status === "error";
 
-    // Core language (ko): commentary not generated yet for this chapter
-    // Non-core language without data: offer download
-    if (!isCore && !available) {
+    // DB not downloaded: offer download
+    if (!dbExists) {
       return (
         <div className="flex flex-col items-center justify-center h-full text-gray-400 px-4 gap-3">
           <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -78,3 +78,33 @@ export async function queryTranslation<T>(translationId: string, sql: string, bi
   const tdb = await getTranslationDb(translationId);
   return tdb.select<T[]>(sql, bindValues);
 }
+
+// Commentary DB connections (separate .db files per language)
+const commentaryDbs = new Map<string, Database>();
+
+export async function getCommentaryDb(language: string): Promise<Database> {
+  let cdb = commentaryDbs.get(language);
+  if (!cdb) {
+    const dataDir = await getDataDir();
+    cdb = await Database.load(`sqlite:${dataDir}commentary-${language}.db`);
+    commentaryDbs.set(language, cdb);
+  }
+  return cdb;
+}
+
+export async function closeCommentaryDb(language: string): Promise<void> {
+  const cdb = commentaryDbs.get(language);
+  if (cdb) {
+    commentaryDbs.delete(language);
+    try {
+      await cdb.close();
+    } catch {
+      // Ignore close errors
+    }
+  }
+}
+
+export async function queryCommentary<T>(language: string, sql: string, bindValues?: unknown[]): Promise<T[]> {
+  const cdb = await getCommentaryDb(language);
+  return cdb.select<T[]>(sql, bindValues);
+}
