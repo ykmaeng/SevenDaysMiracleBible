@@ -9,6 +9,7 @@ import type {
   CrossReference,
   Translation,
   ParallelVerse,
+  InterlinearWord,
 } from "../types/bible";
 
 function queryVerses<T>(translationId: string, sql: string, bindValues?: unknown[]): Promise<T[]> {
@@ -201,6 +202,55 @@ export async function getSectionHeadings(
     "SELECT * FROM section_headings WHERE book_id = $1 AND chapter = $2 ORDER BY verse",
     [bookId, chapter]
   );
+}
+
+export async function getInterlinearWords(
+  bookId: number,
+  chapter: number,
+  verse: number
+): Promise<InterlinearWord[]> {
+  return query<InterlinearWord>(
+    "SELECT * FROM interlinear_words WHERE book_id = $1 AND chapter = $2 AND verse = $3 ORDER BY word_pos",
+    [bookId, chapter, verse]
+  );
+}
+
+export async function getChapterInterlinear(
+  bookId: number,
+  chapter: number
+): Promise<Map<number, InterlinearWord[]>> {
+  // Debug: check if table exists and has data
+  const check = await query<{ c: number }>(
+    "SELECT COUNT(*) as c FROM interlinear_words WHERE book_id = $1 AND chapter = $2",
+    [bookId, chapter]
+  );
+  console.log("[Interlinear] DB count check:", check);
+
+  const rows = await query<InterlinearWord>(
+    "SELECT * FROM interlinear_words WHERE book_id = $1 AND chapter = $2 ORDER BY verse, word_pos",
+    [bookId, chapter]
+  );
+  console.log("[Interlinear] raw rows:", rows.length, rows.slice(0, 2));
+  const map = new Map<number, InterlinearWord[]>();
+  for (const row of rows) {
+    let arr = map.get(row.verse);
+    if (!arr) {
+      arr = [];
+      map.set(row.verse, arr);
+    }
+    arr.push(row);
+  }
+  return map;
+}
+
+export async function isInterlinearAvailable(bookId: number): Promise<boolean> {
+  // NT books only (40-66)
+  if (bookId < 40 || bookId > 66) return false;
+  const result = await query<{ c: number }>(
+    "SELECT COUNT(*) as c FROM interlinear_words WHERE book_id = $1 LIMIT 1",
+    [bookId]
+  ).catch(() => [{ c: 0 }]);
+  return (result[0]?.c ?? 0) > 0;
 }
 
 export async function searchVerses(

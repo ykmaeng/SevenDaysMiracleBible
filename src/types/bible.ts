@@ -102,6 +102,20 @@ export interface BibleLocation {
   verse?: number;
 }
 
+export interface InterlinearWord {
+  id: number;
+  book_id: number;
+  chapter: number;
+  verse: number;
+  word_pos: number;
+  greek_word: string;
+  lexeme: string;
+  transliteration: string;
+  morphology: string;
+  strongs: string;
+  gloss: string;
+}
+
 export interface ParallelVerse {
   original: OriginalText | null;
   translations: {

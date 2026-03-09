@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useTranslation } from "react-i18next";
-import { getChapter, getParallelChapter, getParagraphBreaks, getSectionHeadings } from "../../lib/bible";
+import { getChapter, getParallelChapter, getParagraphBreaks, getSectionHeadings, getChapterInterlinear } from "../../lib/bible";
 import type { SectionHeading } from "../../lib/bible";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useBookmarkStore } from "../../stores/bookmarkStore";
@@ -11,7 +11,7 @@ import { ParagraphGroup } from "./ParagraphGroup";
 import { DictionaryPopup } from "./DictionaryPopup";
 import { VerseActionToolbar } from "./VerseActionToolbar";
 import type { VerseClickInfo } from "./VerseItem";
-import type { Verse } from "../../types/bible";
+import type { Verse, InterlinearWord } from "../../types/bible";
 
 interface ParagraphData {
   verses: Verse[];
@@ -28,6 +28,7 @@ interface ChapterViewProps {
   initialScrollPosition?: number;
   ttsVerseIndex?: number;
   onVersesLoaded?: (verses: Verse[]) => void;
+  showInterlinear?: boolean;
 }
 
 export function ChapterView({
@@ -39,6 +40,7 @@ export function ChapterView({
   initialScrollPosition,
   ttsVerseIndex,
   onVersesLoaded,
+  showInterlinear,
 }: ChapterViewProps) {
   const { t } = useTranslation();
   const [verses, setVerses] = useState<Verse[]>([]);
@@ -48,6 +50,7 @@ export function ChapterView({
   const [parallelData, setParallelData] = useState<
     Map<string, Map<number, { translationId: string; translationName: string; text: string }>>
   >(new Map());
+  const [interlinearData, setInterlinearData] = useState<Map<number, InterlinearWord[]>>(new Map());
   const parentRef = useRef<HTMLDivElement>(null);
 
   // Dictionary popup state
@@ -117,6 +120,19 @@ export function ChapterView({
       cancelled = true;
     };
   }, [showParallelInline, activeParallelIds, bookId, chapter]);
+
+  // Load interlinear data for NT chapters
+  useEffect(() => {
+    if (!showInterlinear || bookId < 40 || bookId > 66) {
+      setInterlinearData(new Map());
+      return;
+    }
+    let cancelled = false;
+    getChapterInterlinear(bookId, chapter).then((data) => {
+      if (!cancelled) setInterlinearData(data);
+    }).catch(() => setInterlinearData(new Map()));
+    return () => { cancelled = true; };
+  }, [showInterlinear, bookId, chapter]);
 
   // Load bookmarks for current chapter
   useEffect(() => {
@@ -373,6 +389,7 @@ export function ChapterView({
                 onVerseClick={handleVerseClick}
                 parallelData={hasParallel ? parallelData : undefined}
                 parallelIds={hasParallel ? activeParallelIds : undefined}
+                interlinearData={showInterlinear && interlinearData.size > 0 ? interlinearData : undefined}
               />
             </div>
           );

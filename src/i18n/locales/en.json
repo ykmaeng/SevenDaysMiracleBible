@@ -199,6 +199,16 @@
     "deleteLabel": "Delete label",
     "deleteLabelConfirm": "Delete this label? Bookmarks will be kept."
   },
+  "interlinear": {
+    "title": "Interlinear",
+    "otNotAvailable": "Old Testament Hebrew interlinear is coming soon.\nCurrently only New Testament Greek is available.",
+    "noData": "No interlinear data for this chapter.\nIt may need to be downloaded.",
+    "showInterlinear": "Show Interlinear",
+    "lexeme": "Lexeme",
+    "morphology": "Morphology",
+    "strongs": "Strong's Number",
+    "gloss": "Gloss"
+  },
   "verseActions": {
     "copy": "Copy",
     "share": "Share",

@@ -195,6 +195,16 @@
     "deleteLabel": "删除标签",
     "deleteLabelConfirm": "删除此标签？书签将保留。"
   },
+  "interlinear": {
+    "title": "原文逐字",
+    "otNotAvailable": "旧约希伯来文逐字分析即将推出。\n目前仅支持新约希腊文。",
+    "noData": "本章暂无原文数据。\n可能需要下载。",
+    "showInterlinear": "显示原文逐字",
+    "lexeme": "词根",
+    "morphology": "词形",
+    "strongs": "史特朗编号",
+    "gloss": "释义"
+  },
   "verseActions": {
     "copy": "复制",
     "share": "分享",

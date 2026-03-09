@@ -30,8 +30,6 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
   const [newLabelName, setNewLabelName] = useState("");
   const [visible, setVisible] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
-  const newLabelInputRef = useRef<HTMLInputElement>(null);
-
   const isBookmarksEnabled = useFeatureStore((s) => s.isEnabled("bookmarks"));
   const isHighlightsEnabled = useFeatureStore((s) => s.isEnabled("highlights"));
   const isNotesEnabled = useFeatureStore((s) => s.isEnabled("notes"));

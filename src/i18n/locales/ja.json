@@ -194,6 +194,16 @@
     "deleteLabel": "ラベル削除",
     "deleteLabelConfirm": "このラベルを削除しますか？ブックマークは保持されます。"
   },
+  "interlinear": {
+    "title": "原語分解",
+    "otNotAvailable": "旧約ヘブライ語の原語分解は準備中です。\n現在は新約ギリシャ語のみ対応しています。",
+    "noData": "この章の原語データがありません。\nダウンロードが必要な場合があります。",
+    "showInterlinear": "原語分解を表示",
+    "lexeme": "語根",
+    "morphology": "形態論",
+    "strongs": "ストロング番号",
+    "gloss": "意味"
+  },
   "verseActions": {
     "copy": "コピー",
     "share": "共有",

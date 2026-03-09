@@ -199,6 +199,16 @@
     "deleteLabel": "라벨 삭제",
     "deleteLabelConfirm": "이 라벨을 삭제하시겠습니까? 북마크는 유지됩니다."
   },
+  "interlinear": {
+    "title": "원어분해",
+    "otNotAvailable": "구약 히브리어 원어분해는 준비 중입니다.\n현재 신약 헬라어만 지원합니다.",
+    "noData": "이 장의 원어 데이터가 없습니다.\n다운로드가 필요할 수 있습니다.",
+    "showInterlinear": "원어분해 보기",
+    "lexeme": "어근",
+    "morphology": "형태론",
+    "strongs": "스트롱 번호",
+    "gloss": "뜻"
+  },
   "verseActions": {
     "copy": "복사",
     "share": "공유",

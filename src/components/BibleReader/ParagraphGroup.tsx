@@ -1,8 +1,9 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useSettingsStore } from "../../stores/settingsStore";
-import type { Verse } from "../../types/bible";
+import type { Verse, InterlinearWord } from "../../types/bible";
 import type { SectionHeading } from "../../lib/bible";
 import type { VerseClickInfo } from "./VerseItem";
+import { decodeMorphology } from "../../lib/morphology";
 
 const HIGHLIGHT_BG: Record<string, string> = {
   yellow: "bg-yellow-100/60 dark:bg-yellow-800/50",
@@ -29,6 +30,7 @@ interface ParagraphGroupProps {
   onVerseClick?: (info: VerseClickInfo) => void;
   parallelData?: Map<string, Map<number, ParallelVerseData>>;
   parallelIds?: string[];
+  interlinearData?: Map<number, InterlinearWord[]>;
 }
 
 export function ParagraphGroup({
@@ -42,6 +44,7 @@ export function ParagraphGroup({
   onVerseClick,
   parallelData,
   parallelIds,
+  interlinearData,
 }: ParagraphGroupProps) {
   const showVerseNumbers = useSettingsStore((s) => s.showVerseNumbers);
   const fontSize = useSettingsStore((s) => s.fontSize);
@@ -139,11 +142,76 @@ export function ParagraphGroup({
                   })}
                 </div>
               )}
-              {!hasParallel && " "}
+              {/* Interlinear Greek words */}
+              {interlinearData?.has(verse.verse) && (
+                <InlineInterlinear words={interlinearData.get(verse.verse)!} fontSize={fontSize} />
+              )}
+              {!hasParallel && !interlinearData?.has(verse.verse) && " "}
             </span>
           );
         })}
       </div>
     </div>
   );
+}
+
+/** Compact inline interlinear word display */
+function InlineInterlinear({ words, fontSize }: { words: InterlinearWord[]; fontSize: number }) {
+  const [expanded, setExpanded] = useState<number | null>(null);
+
+  return (
+    <div className="ml-2 mt-1.5 mb-2">
+      <div className="flex flex-wrap gap-0.5">
+        {words.map((w) => {
+          const isExpanded = expanded === w.word_pos;
+          return (
+            <button
+              key={w.word_pos}
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded(isExpanded ? null : w.word_pos);
+              }}
+              className={`inline-flex flex-col items-center px-1 py-0.5 rounded transition-all ${
+                isExpanded
+                  ? "bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-300 dark:ring-blue-600"
+                  : "hover:bg-gray-50 dark:hover:bg-gray-800"
+              }`}
+            >
+              <span className="text-gray-800 dark:text-gray-200 font-serif" style={{ fontSize: `${fontSize - 1}px` }}>
+                {w.greek_word}
+              </span>
+              <span className="text-blue-600 dark:text-blue-400 leading-tight" style={{ fontSize: '9px' }}>
+                {cleanGloss(w.gloss)}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {expanded != null && (() => {
+        const w = words.find((w) => w.word_pos === expanded);
+        if (!w) return null;
+        const morph = decodeMorphology(w.morphology);
+        return (
+          <div className="mt-1.5 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 text-xs space-y-1">
+            <div className="flex items-baseline gap-2">
+              <span className="text-base font-serif text-gray-900 dark:text-gray-100">{w.greek_word}</span>
+              <span className="text-gray-400 italic">{w.transliteration}</span>
+              <span className="text-blue-600 dark:text-blue-400 font-mono text-[10px]">{w.strongs}</span>
+            </div>
+            <div className="text-gray-500 dark:text-gray-400">
+              <span className="text-gray-400 mr-1">어근</span> {w.lexeme}
+              <span className="text-gray-400 ml-3 mr-1">형태</span> {morph.details}
+            </div>
+            <div className="text-gray-700 dark:text-gray-300 font-medium">
+              {cleanGloss(w.gloss)}
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
+function cleanGloss(gloss: string): string {
+  return gloss.replace(/\[([^\]]*)\]/g, "$1").trim();
 }

@@ -45,6 +45,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
   const [showBookPicker, setShowBookPicker] = useState(false);
   const [showChapterPicker, setShowChapterPicker] = useState(false);
   const [showCommentary, setShowCommentary] = useState(false);
+  const [showInterlinear, setShowInterlinear] = useState(false);
   const [books, setBooks] = useState<Book[]>([]);
   const tts = useTTS();
 
@@ -215,6 +216,12 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
           <ReaderSettingsDropdown
             showCommentary={showCommentary}
             onToggleCommentary={() => setShowCommentary(!showCommentary)}
+            showInterlinear={showInterlinear}
+            onToggleInterlinear={() => {
+              setShowInterlinear(!showInterlinear);
+              if (!showInterlinear) setShowCommentary(false); // close commentary when opening interlinear
+            }}
+            isNTBook={activeTab.bookId >= 40 && activeTab.bookId <= 66}
             voices={tts.voices}
           />
         </div>
@@ -252,6 +259,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
             initialScrollPosition={activeTab.scrollPosition}
             ttsVerseIndex={tts.isPlaying ? tts.currentVerseIndex : undefined}
             onVersesLoaded={handleVersesLoaded}
+            showInterlinear={showInterlinear}
           />
         </div>
         {showCommentary && commentaryPosition === "right" && (

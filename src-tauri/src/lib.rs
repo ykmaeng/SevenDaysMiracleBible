@@ -48,6 +48,12 @@ pub fn run() {
             sql: include_str!("../migrations/007_bookmark_labels.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 8,
+            description: "interlinear words",
+            sql: include_str!("../migrations/008_interlinear_words.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     let mut builder = tauri::Builder::default()
