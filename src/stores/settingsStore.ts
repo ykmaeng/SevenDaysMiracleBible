@@ -19,6 +19,7 @@ interface SettingsState {
   ttsSpeed: number;
   showDictionary: boolean;
   showNotes: boolean;
+  showCommentary: boolean;
   onboardingComplete: boolean;
 }
 
@@ -38,6 +39,7 @@ interface SettingsActions {
   setTtsSpeed: (speed: number) => void;
   setShowDictionary: (show: boolean) => void;
   setShowNotes: (show: boolean) => void;
+  setShowCommentary: (show: boolean) => void;
   completeOnboarding: () => void;
 }
 
@@ -70,6 +72,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       ttsSpeed: 1.0,
       showDictionary: true,
       showNotes: false,
+      showCommentary: false,
       onboardingComplete: false,
 
       setLanguage: (lang) =>
@@ -152,6 +155,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setShowNotes: (show) =>
         set((state) => {
           state.showNotes = show;
+        }),
+
+      setShowCommentary: (show) =>
+        set((state) => {
+          state.showCommentary = show;
         }),
 
       completeOnboarding: () =>

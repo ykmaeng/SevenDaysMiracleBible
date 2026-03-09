@@ -4,6 +4,7 @@ import i18n from "../i18n";
 import { clearCommentaryDbCache } from "./db";
 import { getCommentaryDownloadUrl, COMMENTARY_LANGUAGES } from "./downloadConfig";
 import { useDownloadStore } from "../stores/downloadStore";
+import { useSettingsStore } from "../stores/settingsStore";
 import { useToastStore } from "../stores/toastStore";
 
 function toErrorMessage(err: unknown): string {
@@ -86,7 +87,7 @@ export async function deleteCommentary(language: string): Promise<void> {
     console.warn("[commentary] remove file warning:", err);
   }
 
-  window.dispatchEvent(new Event("commentary-deleted"));
+  useSettingsStore.getState().setShowCommentary(false);
 }
 
 export async function isCommentaryDbDownloaded(language: string): Promise<boolean> {
