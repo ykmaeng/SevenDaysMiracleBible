@@ -5,7 +5,7 @@ import { downloadTranslation, deleteTranslation } from "../../lib/translationSer
 import { downloadCommentary, deleteCommentary, commentaryDownloadKey, isCommentaryDbDownloaded } from "../../lib/commentaryService";
 import { downloadDictionary, deleteDictionary, isDictionaryDownloaded, DICTIONARY_DOWNLOAD_KEY } from "../../lib/dictionaryService";
 import { downloadInterlinear, deleteInterlinear, isInterlinearDbDownloaded, interlinearDownloadKey } from "../../lib/interlinearService";
-import { CORE_TRANSLATIONS, COMMENTARY_LANGUAGES } from "../../lib/downloadConfig";
+import { BUNDLED_TRANSLATIONS, COMMENTARY_LANGUAGES } from "../../lib/downloadConfig";
 import { useDownloadStore } from "../../stores/downloadStore";
 import { useToastStore } from "../../stores/toastStore";
 import type { Translation } from "../../types/bible";
@@ -87,7 +87,7 @@ export function DownloadManager() {
     const isDownloading = dl && dl.status !== "done" && dl.status !== "error";
     const isError = dl?.status === "error";
     const isDone = tr.downloaded || dl?.status === "done";
-    const isCore = CORE_TRANSLATIONS.has(tr.id);
+    const isBundled = BUNDLED_TRANSLATIONS.has(tr.id);
     const isDeletingThis = deleting === tr.id;
 
     return (
@@ -133,7 +133,7 @@ export function DownloadManager() {
               <span className="text-xs text-green-600 font-medium">
                 {t("download.downloaded")}
               </span>
-              {!isCore && (
+              {!isBundled && (
                 confirmId === tr.id ? (
                   <div className="flex items-center gap-1">
                     <button

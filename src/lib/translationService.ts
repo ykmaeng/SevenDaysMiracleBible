@@ -2,7 +2,7 @@ import { fetch } from "@tauri-apps/plugin-http";
 import { writeFile, remove, exists, BaseDirectory } from "@tauri-apps/plugin-fs";
 import i18n from "../i18n";
 import { execute, clearTranslationDbCache } from "./db";
-import { getTranslationDownloadUrl, CORE_TRANSLATIONS } from "./downloadConfig";
+import { getTranslationDownloadUrl, BUNDLED_TRANSLATIONS } from "./downloadConfig";
 import { useDownloadStore } from "../stores/downloadStore";
 import { useToastStore } from "../stores/toastStore";
 
@@ -67,8 +67,8 @@ export async function downloadTranslation(translationId: string): Promise<void> 
 }
 
 export async function deleteTranslation(translationId: string): Promise<void> {
-  if (CORE_TRANSLATIONS.has(translationId)) {
-    throw new Error("Cannot delete core translation");
+  if (BUNDLED_TRANSLATIONS.has(translationId)) {
+    throw new Error("Cannot delete bundled translation");
   }
 
   // Clear cached DB connection
@@ -91,6 +91,5 @@ export async function deleteTranslation(translationId: string): Promise<void> {
 }
 
 export async function isTranslationDownloaded(translationId: string): Promise<boolean> {
-  if (CORE_TRANSLATIONS.has(translationId)) return true;
   return exists(`${translationId}.db`, { baseDir: BaseDirectory.AppData });
 }

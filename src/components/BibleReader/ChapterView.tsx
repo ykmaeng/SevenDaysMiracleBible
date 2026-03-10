@@ -6,7 +6,7 @@ import type { SectionHeading } from "../../lib/bible";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useBookmarkStore } from "../../stores/bookmarkStore";
 import { useFeatureStore } from "../../stores/featureStore";
-import { CORE_TRANSLATIONS } from "../../lib/downloadConfig";
+import { BUNDLED_TRANSLATIONS } from "../../lib/downloadConfig";
 import { ParagraphGroup } from "./ParagraphGroup";
 import { DictionaryPopup } from "./DictionaryPopup";
 import { VerseActionToolbar } from "./VerseActionToolbar";
@@ -371,7 +371,7 @@ export function ChapterView({
   }
 
   if (verses.length === 0) {
-    const needsDownload = !CORE_TRANSLATIONS.has(translationId);
+    const needsDownload = !BUNDLED_TRANSLATIONS.has(translationId);
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 px-6 text-center">
         <p className="text-gray-400">{t("reader.noContent")}</p>

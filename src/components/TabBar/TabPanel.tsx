@@ -19,20 +19,9 @@ const TRANSLATION_LANG: Record<string, string> = {
   korrv: "ko",
   nkrv: "ko",
   kjv: "en",
-  asv: "en",
   web: "en",
-  bbe: "en",
-  ylt: "en",
-  darby: "en",
-  cuv: "zh",
-  rv1909: "es",
   hebrew: "he",
   greek: "el",
-  japkougo: "ja",
-  gerelb: "de",
-  frecrampon: "fr",
-  russynodal: "ru",
-  porblivre: "pt",
 };
 
 function translationToLang(translationId: string): string {

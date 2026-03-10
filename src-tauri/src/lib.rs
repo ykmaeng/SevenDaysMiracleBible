@@ -5,53 +5,16 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 
 mod tts_plugin;
 
-// Minimum size (bytes) for a valid bible.db with actual verse data.
-// An empty schema-only DB is ~115KB; the real core DB is ~17MB.
-const MIN_VALID_DB_SIZE: u64 = 1_000_000;
+/// Bundled translation DB files to copy on first run.
+const BUNDLED_TRANSLATION_DBS: &[&str] = &["kjv.db", "sav-ko.db"];
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let migrations = vec![
         Migration {
             version: 1,
-            description: "create schema",
-            sql: include_str!("../migrations/001_create_schema.sql"),
-            kind: MigrationKind::Up,
-        },
-        Migration {
-            version: 2,
-            description: "seed books",
-            sql: include_str!("../migrations/002_seed_books.sql"),
-            kind: MigrationKind::Up,
-        },
-        Migration {
-            version: 3,
-            description: "update download sizes",
-            sql: include_str!("../migrations/003_update_download_sizes.sql"),
-            kind: MigrationKind::Up,
-        },
-        Migration {
-            version: 5,
-            description: "add translation_id to bookmarks",
-            sql: include_str!("../migrations/005_bookmark_translation_id.sql"),
-            kind: MigrationKind::Up,
-        },
-        Migration {
-            version: 6,
-            description: "paragraph breaks and section headings",
-            sql: include_str!("../migrations/006_paragraph_and_sections.sql"),
-            kind: MigrationKind::Up,
-        },
-        Migration {
-            version: 7,
-            description: "bookmark labels",
-            sql: include_str!("../migrations/007_bookmark_labels.sql"),
-            kind: MigrationKind::Up,
-        },
-        Migration {
-            version: 8,
-            description: "interlinear words",
-            sql: include_str!("../migrations/008_interlinear_words.sql"),
+            description: "init",
+            sql: include_str!("../migrations/001_init.sql"),
             kind: MigrationKind::Up,
         },
     ];
@@ -77,29 +40,28 @@ pub fn run() {
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir()?;
             fs::create_dir_all(&app_data_dir)?;
-            let db_path = app_data_dir.join("bible.db");
 
-            // Check if DB is missing or just an empty schema (< 1MB)
-            let needs_copy = if db_path.exists() {
-                match fs::metadata(&db_path) {
-                    Ok(meta) => meta.len() < MIN_VALID_DB_SIZE,
-                    Err(_) => true,
+            // Copy bundled resource files to app data dir if missing
+            let files_to_copy: Vec<(&str, &str)> = std::iter::once(("bible-core.db", "bible.db"))
+                .chain(BUNDLED_TRANSLATION_DBS.iter().map(|f| (*f, *f)))
+                .collect();
+
+            for (resource_name, dest_name) in &files_to_copy {
+                let dest_path = app_data_dir.join(dest_name);
+                if dest_path.exists() {
+                    continue;
                 }
-            } else {
-                true
-            };
 
-            if needs_copy {
                 // Try platform-native fs::copy first (works on desktop)
                 let resource_path = app
                     .path()
                     .resource_dir()
                     .ok()
-                    .map(|d| d.join("resources").join("bible-core.db"));
+                    .map(|d| d.join("resources").join(resource_name));
 
                 let copied = if let Some(ref rp) = resource_path {
                     if rp.exists() {
-                        fs::copy(rp, &db_path).is_ok()
+                        fs::copy(rp, &dest_path).is_ok()
                     } else {
                         false
                     }
@@ -111,20 +73,23 @@ pub fn run() {
                 if !copied {
                     let resource_file = app
                         .path()
-                        .resolve("resources/bible-core.db", tauri::path::BaseDirectory::Resource)
+                        .resolve(
+                            &format!("resources/{resource_name}"),
+                            tauri::path::BaseDirectory::Resource,
+                        )
                         .ok();
 
                     if let Some(ref rf) = resource_file {
                         match app.fs().read(rf) {
                             Ok(bytes) => {
-                                if let Err(e) = fs::write(&db_path, &bytes) {
-                                    eprintln!("Failed to write bible.db: {e}");
+                                if let Err(e) = fs::write(&dest_path, &bytes) {
+                                    eprintln!("Failed to write {dest_name}: {e}");
                                 } else {
-                                    println!("Copied bible-core.db via Tauri fs ({} bytes)", bytes.len());
+                                    println!("Copied {resource_name} -> {dest_name} ({} bytes)", bytes.len());
                                 }
                             }
                             Err(e) => {
-                                eprintln!("Failed to read bundled bible-core.db: {e}");
+                                eprintln!("Failed to read bundled {resource_name}: {e}");
                             }
                         }
                     }

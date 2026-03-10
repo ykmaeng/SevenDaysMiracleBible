@@ -32,7 +32,9 @@
       "icons/icon.ico"
     ],
     "resources": [
-      "resources/bible-core.db"
+      "resources/bible-core.db",
+      "resources/kjv.db",
+      "resources/sav-ko.db"
     ]
   }
 }
