@@ -34,6 +34,7 @@ interface ParagraphGroupProps {
   expandedWordKey?: string | null;
   onExpandWord?: (key: string | null) => void;
   noteMap?: Record<string, string>;
+  translationLang?: string;
 }
 
 export function ParagraphGroup({
@@ -51,11 +52,13 @@ export function ParagraphGroup({
   expandedWordKey,
   onExpandWord,
   noteMap,
+  translationLang,
 }: ParagraphGroupProps) {
   const showVerseNumbers = useSettingsStore((s) => s.showVerseNumbers);
   const fontSize = useSettingsStore((s) => s.fontSize);
   const fontFamily = useSettingsStore((s) => s.fontFamily);
-  const language = useSettingsStore((s) => s.language);
+  const appLanguage = useSettingsStore((s) => s.language);
+  const lang = translationLang ?? appLanguage;
 
   const groupRef = useRef<HTMLDivElement>(null);
   const hasParallel = parallelIds && parallelIds.length > 0 && parallelData;
@@ -76,7 +79,7 @@ export function ParagraphGroup({
   );
 
   const sectionTitle = sectionHeading
-    ? (language === "ko" ? sectionHeading.title_ko : sectionHeading.title_en) ?? sectionHeading.title_en
+    ? (lang === "ko" ? sectionHeading.title_ko : sectionHeading.title_en) ?? sectionHeading.title_en
     : null;
 
   return (

@@ -211,13 +211,13 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
             onClick={() => setShowBookPicker(true)}
             className="text-sm font-semibold px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
           >
-            {t(`books.${activeTab.bookId}`)}
+            {t(`books.${activeTab.bookId}`, { lng: translationToLang(activeTab.translationId) })}
           </button>
           <button
             onClick={() => setShowChapterPicker(true)}
             className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
           >
-            {activeTab.chapter}{t("nav.chapterSuffix")}
+            {activeTab.chapter}
           </button>
         </div>
         <div className="flex items-center gap-1">
@@ -294,7 +294,8 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
             translationId={activeTab.translationId}
             bookId={activeTab.bookId}
             chapter={activeTab.chapter}
-            bookName={t(`books.${activeTab.bookId}`)}
+            bookName={t(`books.${activeTab.bookId}`, { lng: translationToLang(activeTab.translationId) })}
+            translationLang={translationToLang(activeTab.translationId)}
             onScrollPositionChange={handleScrollChange}
             initialScrollPosition={activeTab.scrollPosition}
             ttsVerseIndex={tts.isPlaying ? tts.currentVerseIndex : undefined}

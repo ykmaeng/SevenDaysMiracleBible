@@ -29,6 +29,7 @@ interface ChapterViewProps {
   ttsVerseIndex?: number;
   onVersesLoaded?: (verses: Verse[]) => void;
   showInterlinear?: boolean;
+  translationLang?: string;
   onSwipePrev?: () => void;
   onSwipeNext?: () => void;
 }
@@ -43,6 +44,7 @@ export function ChapterView({
   ttsVerseIndex,
   onVersesLoaded,
   showInterlinear,
+  translationLang,
   onSwipePrev,
   onSwipeNext,
 }: ChapterViewProps) {
@@ -457,6 +459,7 @@ export function ChapterView({
                 expandedWordKey={expandedWordKey}
                 onExpandWord={setExpandedWordKey}
                 noteMap={noteMap}
+                translationLang={translationLang}
               />
             </div>
           );
