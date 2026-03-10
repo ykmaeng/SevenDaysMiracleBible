@@ -1,7 +1,7 @@
 import { fetch } from "@tauri-apps/plugin-http";
 import { writeFile, remove, exists, BaseDirectory } from "@tauri-apps/plugin-fs";
 import i18n from "../i18n";
-import { execute, closeTranslationDb } from "./db";
+import { execute, clearTranslationDbCache } from "./db";
 import { getTranslationDownloadUrl, CORE_TRANSLATIONS } from "./downloadConfig";
 import { useDownloadStore } from "../stores/downloadStore";
 import { useToastStore } from "../stores/toastStore";
@@ -71,12 +71,8 @@ export async function deleteTranslation(translationId: string): Promise<void> {
     throw new Error("Cannot delete core translation");
   }
 
-  // Close DB connection if open
-  try {
-    await closeTranslationDb(translationId);
-  } catch (err) {
-    console.warn("[delete] closeDb warning:", err);
-  }
+  // Clear cached DB connection
+  clearTranslationDbCache(translationId);
 
   // Delete .db file (may not exist if download was partial)
   const dbFileName = `${translationId}.db`;

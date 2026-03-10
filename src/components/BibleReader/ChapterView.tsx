@@ -122,6 +122,8 @@ export function ChapterView({
       if (!cancelled) {
         setParallelData(data);
       }
+    }).catch(() => {
+      if (!cancelled) setParallelData(new Map());
     });
 
     return () => {

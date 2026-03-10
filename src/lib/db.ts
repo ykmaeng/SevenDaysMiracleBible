@@ -1,5 +1,4 @@
 import Database from "@tauri-apps/plugin-sql";
-import { appDataDir } from "@tauri-apps/api/path";
 import { exists, BaseDirectory } from "@tauri-apps/plugin-fs";
 
 // Main DB (core translations, bookmarks, commentary, etc.)
@@ -43,41 +42,31 @@ export async function execute(sql: string, bindValues?: unknown[]) {
 
 // Translation DB connections (separate .db files per translation)
 const translationDbs = new Map<string, Database>();
-let dataDirCache: string | null = null;
-
-async function getDataDir(): Promise<string> {
-  if (!dataDirCache) {
-    dataDirCache = await appDataDir();
-    if (!dataDirCache.endsWith("/")) dataDirCache += "/";
-  }
-  return dataDirCache;
-}
 
 export async function getTranslationDb(translationId: string): Promise<Database> {
   let tdb = translationDbs.get(translationId);
   if (!tdb) {
-    const dataDir = await getDataDir();
-    tdb = await Database.load(`sqlite:${dataDir}${translationId}.db`);
+    const fileExists = await exists(`${translationId}.db`, { baseDir: BaseDirectory.AppData });
+    if (!fileExists) {
+      throw new Error(`Translation DB not found: ${translationId}.db`);
+    }
+    tdb = await Database.load(`sqlite:${translationId}.db`);
     translationDbs.set(translationId, tdb);
   }
   return tdb;
 }
 
-export async function closeTranslationDb(translationId: string): Promise<void> {
-  const tdb = translationDbs.get(translationId);
-  if (tdb) {
-    translationDbs.delete(translationId);
-    try {
-      await tdb.close();
-    } catch {
-      // Ignore close errors — file will be deleted anyway
-    }
-  }
+export function clearTranslationDbCache(translationId: string): void {
+  translationDbs.delete(translationId);
 }
 
 export async function queryTranslation<T>(translationId: string, sql: string, bindValues?: unknown[]): Promise<T[]> {
-  const tdb = await getTranslationDb(translationId);
-  return tdb.select<T[]>(sql, bindValues);
+  try {
+    const tdb = await getTranslationDb(translationId);
+    return await tdb.select<T[]>(sql, bindValues);
+  } catch {
+    return [];
+  }
 }
 
 // Commentary DB connections (separate .db files per language)
