@@ -29,6 +29,8 @@ interface ChapterViewProps {
   ttsVerseIndex?: number;
   onVersesLoaded?: (verses: Verse[]) => void;
   showInterlinear?: boolean;
+  onSwipePrev?: () => void;
+  onSwipeNext?: () => void;
 }
 
 export function ChapterView({
@@ -41,6 +43,8 @@ export function ChapterView({
   ttsVerseIndex,
   onVersesLoaded,
   showInterlinear,
+  onSwipePrev,
+  onSwipeNext,
 }: ChapterViewProps) {
   const { t } = useTranslation();
   const [verses, setVerses] = useState<Verse[]>([]);
@@ -333,6 +337,26 @@ export function ChapterView({
     setDictPosition(null);
   }, []);
 
+  // Swipe gesture for chapter navigation
+  const touchRef = useRef<{ startX: number; startY: number; startTime: number } | null>(null);
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchRef.current = { startX: touch.clientX, startY: touch.clientY, startTime: Date.now() };
+  }, []);
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchRef.current) return;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchRef.current.startX;
+    const dy = touch.clientY - touchRef.current.startY;
+    const dt = Date.now() - touchRef.current.startTime;
+    touchRef.current = null;
+    // Require: horizontal > 80px, more horizontal than vertical, within 500ms
+    if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.5 && dt < 500) {
+      if (dx > 0) onSwipePrev?.();
+      else onSwipeNext?.();
+    }
+  }, [onSwipePrev, onSwipeNext]);
+
   // Get highlight colors map for paragraph mode
   const highlightColorMap = useMemo(() => {
     if (!isHighlightsEnabled) return {};
@@ -393,7 +417,7 @@ export function ChapterView({
   }
 
   return (
-    <div ref={parentRef} className="h-full overflow-auto pl-0 pr-1 py-2 relative" onClick={handleBackgroundClick}>
+    <div ref={parentRef} className="h-full overflow-auto pl-0 pr-1 py-2 relative" onClick={handleBackgroundClick} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <div
         style={{
           height: `${virtualizer.getTotalSize()}px`,

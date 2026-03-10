@@ -7,6 +7,7 @@
     "oldTestament": "Old Testament",
     "newTestament": "New Testament",
     "chapter": "Chapter {{num}}",
+    "chapterSuffix": "",
     "verse": "Verse"
   },
   "tabs": {

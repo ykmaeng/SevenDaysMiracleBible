@@ -7,6 +7,7 @@
     "oldTestament": "구약",
     "newTestament": "신약",
     "chapter": "{{num}} 장",
+    "chapterSuffix": "장",
     "verse": "절"
   },
   "tabs": {

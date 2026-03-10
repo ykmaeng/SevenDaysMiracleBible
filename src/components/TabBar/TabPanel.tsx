@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useTabStore, type Tab } from "../../stores/tabStore";
 import { useSettingsStore } from "../../stores/settingsStore";
-import { getBooks } from "../../lib/bible";
+import { getBooks, getDownloadedTranslations } from "../../lib/bible";
 import { ChapterView } from "../BibleReader/ChapterView";
 import { ReaderSettingsDropdown } from "../BibleReader/ReaderSettingsDropdown";
 import { TTSControlBar } from "../BibleReader/TTSControlBar";
@@ -12,7 +12,7 @@ import { CommentaryPanel } from "../Commentary/CommentaryPanel";
 import { useTTS } from "../../hooks/useTTS";
 import { isInterlinearDbDownloaded, downloadInterlinear, interlinearDownloadKey } from "../../lib/interlinearService";
 import { useDownloadStore } from "../../stores/downloadStore";
-import type { Book, Verse } from "../../types/bible";
+import type { Book, Verse, Translation } from "../../types/bible";
 
 const TRANSLATION_LANG: Record<string, string> = {
   "sav-ko": "ko",
@@ -42,9 +42,17 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
   const interlinearDl = useDownloadStore((s) => s.downloads[interlinearDownloadKey()]);
   const clearDownload = useDownloadStore((s) => s.clearDownload);
   const [books, setBooks] = useState<Book[]>([]);
+  const [translations, setTranslations] = useState<Translation[]>([]);
+  const [showTranslationPicker, setShowTranslationPicker] = useState(false);
   const tts = useTTS();
 
   useEffect(() => { getBooks().then(setBooks); }, []);
+  useEffect(() => {
+    const load = () => getDownloadedTranslations().then(setTranslations);
+    load();
+    window.addEventListener("translations-changed", load);
+    return () => window.removeEventListener("translations-changed", load);
+  }, []);
 
   const versesRef = useRef<Verse[]>([]);
   const ttsSpeed = useSettingsStore((s) => s.ttsSpeed);
@@ -166,36 +174,50 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
     <div className="flex flex-col h-full">
       {/* Navigation header */}
       <div className={`flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 transition-all duration-150 ease-out ${immersive ? "max-h-0 overflow-hidden opacity-0" : "max-h-14"}`}>
-        <button
-          onClick={() => setShowBookPicker(true)}
-          className="text-sm font-semibold text-gray-800 dark:text-gray-200 hover:text-blue-600"
-        >
-          {t(`books.${activeTab.bookId}`)}
-        </button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <div className="relative">
+            <button
+              onClick={() => setShowTranslationPicker(!showTranslationPicker)}
+              className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-blue-100 dark:hover:bg-blue-900/40 hover:text-blue-600 dark:hover:text-blue-400 transition-colors uppercase"
+            >
+              {activeTab.translationId}
+            </button>
+            {showTranslationPicker && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowTranslationPicker(false)} />
+                <div className="absolute left-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 min-w-[200px] py-1">
+                  {translations.map((tr) => (
+                    <button
+                      key={tr.id}
+                      onClick={() => {
+                        updateTab(activeTabId, { translationId: tr.id, scrollPosition: 0 });
+                        setShowTranslationPicker(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between ${
+                        activeTab.translationId === tr.id
+                          ? "text-blue-600 font-medium bg-blue-50 dark:bg-blue-900/30"
+                          : "text-gray-700 dark:text-gray-300"
+                      }`}
+                    >
+                      <span>{tr.name}</span>
+                      <span className="text-xs text-gray-400 uppercase">{tr.language}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <button
-            onClick={handlePrevChapter}
-            disabled={activeTab.chapter <= 1}
-            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-30"
+            onClick={() => setShowBookPicker(true)}
+            className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+            {t(`books.${activeTab.bookId}`)}
           </button>
           <button
             onClick={() => setShowChapterPicker(true)}
-            className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 min-w-[60px] text-center"
+            className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
           >
-            {t("nav.chapter", { num: activeTab.chapter })}
-          </button>
-          <button
-            onClick={handleNextChapter}
-            disabled={activeTab.chapter >= maxChapter}
-            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-30"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            {activeTab.chapter}{t("nav.chapterSuffix")}
           </button>
         </div>
         <div className="flex items-center gap-1">
@@ -278,6 +300,8 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
             ttsVerseIndex={tts.isPlaying ? tts.currentVerseIndex : undefined}
             onVersesLoaded={handleVersesLoaded}
             showInterlinear={showInterlinear}
+            onSwipePrev={handlePrevChapter}
+            onSwipeNext={handleNextChapter}
           />
         </div>
         {showCommentary && commentaryPosition === "right" && (
@@ -329,6 +353,10 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
           bookId={activeTab.bookId}
           onSelect={handleChapterSelect}
           onClose={() => setShowChapterPicker(false)}
+          onChangeBook={() => {
+            setShowChapterPicker(false);
+            setShowBookPicker(true);
+          }}
         />
       )}
     </div>

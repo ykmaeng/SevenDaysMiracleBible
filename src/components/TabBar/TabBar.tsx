@@ -6,8 +6,7 @@ import type { Translation } from "../../types/bible";
 
 export function TabBar() {
   const { t } = useTranslation();
-  const { tabs, activeTabId, addTab, closeTab, setActiveTab, updateTab, togglePin, reorderTab } = useTabStore();
-  const [showTranslationPicker, setShowTranslationPicker] = useState(false);
+  const { tabs, activeTabId, addTab, closeTab, setActiveTab, togglePin, reorderTab } = useTabStore();
   const [translations, setTranslations] = useState<Translation[]>([]);
 
   // DnD state (long-press + pointer-based)
@@ -21,7 +20,6 @@ export function TabBar() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const activeTab = tabs.find((tab) => tab.id === activeTabId);
 
   useEffect(() => {
     const load = () => getDownloadedTranslations().then(setTranslations);
@@ -166,42 +164,6 @@ export function TabBar() {
           </button>
       </div>
 
-      {/* Translation selector */}
-      <div className="relative shrink-0">
-        <button
-          onClick={() => setShowTranslationPicker(!showTranslationPicker)}
-          className="px-3 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-blue-600 hover:bg-gray-50 dark:hover:bg-gray-700 uppercase"
-        >
-          {activeTab?.translationId ?? "kjv"}
-        </button>
-        {showTranslationPicker && (
-          <>
-            <div
-              className="fixed inset-0 z-10"
-              onClick={() => setShowTranslationPicker(false)}
-            />
-            <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 min-w-[220px] py-1">
-              {translations.map((tr) => (
-                <button
-                  key={tr.id}
-                  onClick={() => {
-                    updateTab(activeTabId, { translationId: tr.id, scrollPosition: 0 });
-                    setShowTranslationPicker(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between ${
-                    activeTab?.translationId === tr.id
-                      ? "text-blue-600 font-medium bg-blue-50 dark:bg-blue-900/30"
-                      : "text-gray-700 dark:text-gray-300"
-                  }`}
-                >
-                  <span>{tr.name}</span>
-                  <span className="text-xs text-gray-400 uppercase">{tr.language}</span>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
     </div>
   );
 }

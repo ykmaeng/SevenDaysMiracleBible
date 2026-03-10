@@ -7,9 +7,10 @@ interface ChapterPickerProps {
   bookId: number;
   onSelect: (chapter: number) => void;
   onClose: () => void;
+  onChangeBook?: () => void;
 }
 
-export function ChapterPicker({ bookId, onSelect, onClose }: ChapterPickerProps) {
+export function ChapterPicker({ bookId, onSelect, onClose, onChangeBook }: ChapterPickerProps) {
   const { t } = useTranslation();
   const [book, setBook] = useState<Book | null>(null);
 
@@ -26,9 +27,18 @@ export function ChapterPicker({ bookId, onSelect, onClose }: ChapterPickerProps)
   return (
     <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 overflow-auto">
       <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">
-          {t(`books.${bookId}`)} - {t("reader.selectChapter")}
-        </h2>
+        <div className="flex items-center gap-2">
+          {onChangeBook && (
+            <button onClick={onChangeBook} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+          <h2 className="text-lg font-semibold">
+            {t(`books.${bookId}`)}
+          </h2>
+        </div>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
