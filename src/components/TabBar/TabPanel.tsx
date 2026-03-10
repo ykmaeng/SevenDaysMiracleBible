@@ -10,6 +10,8 @@ import { BookPicker } from "../Navigation/BookPicker";
 import { ChapterPicker } from "../Navigation/ChapterPicker";
 import { CommentaryPanel } from "../Commentary/CommentaryPanel";
 import { useTTS } from "../../hooks/useTTS";
+import { isInterlinearDbDownloaded, downloadInterlinear, interlinearDownloadKey } from "../../lib/interlinearService";
+import { useDownloadStore } from "../../stores/downloadStore";
 import type { Book, Verse } from "../../types/bible";
 
 const TRANSLATION_LANG: Record<string, string> = {
@@ -47,6 +49,9 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
   const showCommentary = useSettingsStore((s) => s.showCommentary);
   const setShowCommentary = useSettingsStore((s) => s.setShowCommentary);
   const [showInterlinear, setShowInterlinear] = useState(false);
+  const [interlinearDownloading, setInterlinearDownloading] = useState(false);
+  const interlinearDl = useDownloadStore((s) => s.downloads[interlinearDownloadKey()]);
+  const clearDownload = useDownloadStore((s) => s.clearDownload);
   const [books, setBooks] = useState<Book[]>([]);
   const tts = useTTS();
 
@@ -124,6 +129,17 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
       tts.play(versesRef.current, lang, idx);
     }
   };
+
+  // Enable interlinear after download completes
+  useEffect(() => {
+    if (interlinearDl?.status === "done" && interlinearDownloading) {
+      setInterlinearDownloading(false);
+      setShowInterlinear(true);
+      clearDownload(interlinearDownloadKey());
+    } else if (interlinearDl?.status === "error") {
+      setInterlinearDownloading(false);
+    }
+  }, [interlinearDl?.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Stop TTS when chapter/book changes
   useEffect(() => {
@@ -219,9 +235,21 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
             showCommentary={showCommentary}
             onToggleCommentary={() => setShowCommentary(!showCommentary)}
             showInterlinear={showInterlinear}
+            interlinearDownloading={interlinearDownloading}
             onToggleInterlinear={() => {
-              setShowInterlinear(!showInterlinear);
-              if (!showInterlinear) setShowCommentary(false); // close commentary when opening interlinear
+              if (!showInterlinear) {
+                isInterlinearDbDownloaded().then((exists) => {
+                  if (exists) {
+                    setShowInterlinear(true);
+                    setShowCommentary(false);
+                  } else {
+                    setInterlinearDownloading(true);
+                    downloadInterlinear().catch(() => {});
+                  }
+                });
+              } else {
+                setShowInterlinear(false);
+              }
             }}
             voices={tts.voices}
           />

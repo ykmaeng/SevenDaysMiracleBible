@@ -20,7 +20,6 @@ import Database from "better-sqlite3";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const OUTPUT_DIR = join(__dirname, "data", "output", "commentary");
-const DB_PATH = join(__dirname, "..", "src-tauri", "resources", "bible-core.db");
 
 const LANGUAGE_NAMES: Record<string, string> = {
   ko: "Korean",
@@ -57,40 +56,49 @@ const CHAPTER_COUNTS: Record<number, number> = {
   58:13,59:5,60:5,61:3,62:5,63:1,64:1,65:1,66:22,
 };
 
+const SECTION_HEADERS: Record<string, { background: string; exposition: string; theology: string; crossRef: string; application: string }> = {
+  ko: { background: "배경과 문맥", exposition: "본문 해설", theology: "핵심 신학 주제", crossRef: "교차 참조", application: "적용" },
+  en: { background: "Background and Context", exposition: "Exposition", theology: "Key Theological Themes", crossRef: "Cross-References", application: "Application" },
+  zh: { background: "背景与语境", exposition: "经文解析", theology: "核心神学主题", crossRef: "交叉引用", application: "应用" },
+  es: { background: "Contexto y Trasfondo", exposition: "Exposición del Texto", theology: "Temas Teológicos Clave", crossRef: "Referencias Cruzadas", application: "Aplicación" },
+};
+
 function buildCommentaryPrompt(
   languageName: string,
+  language: string,
   bookName: string,
   chapter: number,
 ): string {
-  return `You are a seasoned Bible scholar and pastor writing an in-depth chapter commentary (성경강해). Write in ${languageName}.
+  const h = SECTION_HEADERS[language] ?? SECTION_HEADERS.en;
+  return `You are a seasoned Bible scholar and pastor writing an in-depth chapter commentary. Write in ${languageName}.
 
 CHAPTER: ${bookName} Chapter ${chapter}
 
 Write a comprehensive, scholarly yet accessible commentary covering ALL of the following sections:
 
-## 배경과 문맥
+## ${h.background}
 - This chapter's position within the book and the broader biblical narrative
 - Historical setting: time period, author, audience, circumstances of writing
 - Literary genre and structure of this chapter (narrative, poetry, prophecy, epistle, etc.)
 - Connection to preceding and following chapters
 
-## 본문 해설
+## ${h.exposition}
 - Walk through the chapter's key passages in order
 - Explain difficult or significant words/phrases with reference to original Hebrew/Greek meaning where relevant
 - Highlight literary devices, parallelism, chiasm, or rhetorical structures
 - Note textual or translation issues where they significantly affect meaning
 
-## 핵심 신학 주제
+## ${h.theology}
 - Central theological message(s) of this chapter
 - How this chapter contributes to major biblical doctrines (God's character, salvation, covenant, kingdom, etc.)
 - Typology and foreshadowing — connections to Christ and the gospel (for OT passages)
 - How this passage fits into redemptive history (creation → fall → redemption → restoration)
 
-## 교차 참조
+## ${h.crossRef}
 - 3-5 most important cross-references with brief explanation of how they connect
 - Show how Scripture interprets Scripture on the themes found here
 
-## 적용
+## ${h.application}
 - What did this passage mean to the original audience?
 - What timeless principles emerge for believers today?
 - Specific, practical challenges or encouragements for modern life
@@ -98,9 +106,9 @@ Write a comprehensive, scholarly yet accessible commentary covering ALL of the f
 
 RULES:
 - Write entirely in ${languageName}
-- Length: 1,500-2,000 words (심도있는 강해)
-- Use markdown formatting with ## headers for each section exactly as shown above (Korean only, no English in parentheses)
-- Start directly with "## 배경과 문맥" — do NOT add a title line (no # or ## title before the first section)
+- Length: 1,500-2,000 words
+- Use markdown formatting with ## headers for each section exactly as shown above
+- Start directly with "## ${h.background}" — do NOT add a title line (no # or ## title before the first section)
 - Do NOT use horizontal rules (---)
 - Be theologically orthodox and balanced (evangelical perspective)
 - Avoid denominational bias
@@ -144,16 +152,28 @@ async function main() {
 
   mkdirSync(OUTPUT_DIR, { recursive: true });
 
-  // Open DB for direct writes
-  const db = existsSync(DB_PATH) ? new Database(DB_PATH) : null;
-  const insertDb = db?.prepare(
+  // Open per-language commentary DB for direct writes
+  const COMMENTARY_DB_DIR = join(__dirname, "data", "output", "commentary-dbs");
+  mkdirSync(COMMENTARY_DB_DIR, { recursive: true });
+  const commentaryDbPath = join(COMMENTARY_DB_DIR, `commentary-${language}.db`);
+  const db = new Database(commentaryDbPath);
+  db.pragma("journal_mode = WAL");
+  db.exec(`CREATE TABLE IF NOT EXISTS commentary (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    book_id INTEGER NOT NULL,
+    chapter INTEGER NOT NULL,
+    verse INTEGER,
+    language TEXT NOT NULL,
+    content TEXT NOT NULL,
+    model_version TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (book_id, chapter, verse, language)
+  )`);
+  db.exec("CREATE INDEX IF NOT EXISTS idx_commentary_lookup ON commentary(book_id, chapter, language)");
+  const insertDb = db.prepare(
     "INSERT OR REPLACE INTO commentary (book_id, chapter, verse, language, content, model_version) VALUES (?, ?, ?, ?, ?, ?)"
   );
-  if (db) {
-    console.log(`DB: ${DB_PATH}`);
-  } else {
-    console.log("Warning: bible-core.db not found, skipping DB writes.");
-  }
+  console.log(`DB: ${commentaryDbPath}`);
 
   // Load existing commentary data for resume support
   const outPath = join(OUTPUT_DIR, `commentary-${language}.json`);
@@ -170,13 +190,9 @@ async function main() {
 
   // --sync-db: bulk import existing JSON into DB and exit
   if (syncOnly) {
-    if (!db) {
-      console.error("Cannot sync: bible-core.db not found.");
-      process.exit(1);
-    }
     const bulkInsert = db.transaction(() => {
       for (const e of existing) {
-        insertDb!.run(e.book_id, e.chapter, null, e.language, e.content, e.model_version);
+        insertDb.run(e.book_id, e.chapter, null, e.language, e.content, e.model_version);
       }
     });
     bulkInsert();
@@ -230,7 +246,7 @@ async function main() {
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        const prompt = buildCommentaryPrompt(languageName, bookName, chapter);
+        const prompt = buildCommentaryPrompt(languageName, language, bookName, chapter);
         const content = callClaude(prompt, model);
 
         if (!content) {
@@ -252,7 +268,7 @@ async function main() {
 
         // Write to JSON + DB simultaneously
         writeFileSync(outPath, JSON.stringify(results, null, 2));
-        insertDb?.run(bookId, chapter, null, language, content, model);
+        insertDb.run(bookId, chapter, null, language, content, model);
         console.log(`done (${content.length} chars)`);
         success = true;
         // Wait between chapters to avoid rate limits
@@ -275,11 +291,10 @@ async function main() {
 
   const newCount = results.length - existing.length;
   console.log(`\nTotal: ${results.length} commentaries (${newCount} new) → ${outPath}`);
-  if (db) {
-    const dbCount = db.prepare("SELECT COUNT(*) as c FROM commentary").get() as { c: number };
-    console.log(`DB commentary entries: ${dbCount.c}`);
-    db.close();
-  }
+  db.pragma("journal_mode = DELETE");
+  const dbCount = db.prepare("SELECT COUNT(*) as c FROM commentary").get() as { c: number };
+  console.log(`DB commentary entries: ${dbCount.c} → ${commentaryDbPath}`);
+  db.close();
 }
 
 main().catch(console.error);

@@ -1,4 +1,4 @@
-import { query, queryTranslation, queryCommentary } from "./db";
+import { query, queryTranslation, queryCommentary, queryInterlinear } from "./db";
 import { CORE_TRANSLATIONS } from "./downloadConfig";
 import type {
   Book,
@@ -224,7 +224,7 @@ export async function getInterlinearWords(
   chapter: number,
   verse: number
 ): Promise<InterlinearWord[]> {
-  return query<InterlinearWord>(
+  return queryInterlinear<InterlinearWord>(
     "SELECT * FROM interlinear_words WHERE book_id = $1 AND chapter = $2 AND verse = $3 ORDER BY word_pos",
     [bookId, chapter, verse]
   );
@@ -234,7 +234,7 @@ export async function getChapterInterlinear(
   bookId: number,
   chapter: number
 ): Promise<Map<number, InterlinearWord[]>> {
-  const rows = await query<InterlinearWord>(
+  const rows = await queryInterlinear<InterlinearWord>(
     "SELECT * FROM interlinear_words WHERE book_id = $1 AND chapter = $2 ORDER BY verse, word_pos",
     [bookId, chapter]
   );
@@ -252,10 +252,10 @@ export async function getChapterInterlinear(
 
 export async function isInterlinearAvailable(bookId: number): Promise<boolean> {
   if (bookId < 1 || bookId > 66) return false;
-  const result = await query<{ c: number }>(
+  const result = await queryInterlinear<{ c: number }>(
     "SELECT COUNT(*) as c FROM interlinear_words WHERE book_id = $1 LIMIT 1",
     [bookId]
-  ).catch(() => [{ c: 0 }]);
+  );
   return (result[0]?.c ?? 0) > 0;
 }
 

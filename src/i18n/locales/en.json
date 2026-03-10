@@ -216,6 +216,7 @@
     "otNotAvailable": "Old Testament Hebrew interlinear is coming soon.\nCurrently only New Testament Greek is available.",
     "noData": "No interlinear data for this chapter.\nIt may need to be downloaded.",
     "showInterlinear": "Show Interlinear",
+    "download": "Interlinear (Greek/Hebrew)",
     "lexeme": "Lexeme",
     "morphology": "Morphology",
     "strongs": "Strong's Number",

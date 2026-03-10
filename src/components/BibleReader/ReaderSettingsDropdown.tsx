@@ -9,6 +9,7 @@ interface ReaderSettingsDropdownProps {
   onToggleCommentary: () => void;
   showInterlinear: boolean;
   onToggleInterlinear: () => void;
+  interlinearDownloading?: boolean;
   voices: TTSVoice[];
 }
 
@@ -17,6 +18,7 @@ export function ReaderSettingsDropdown({
   onToggleCommentary,
   showInterlinear,
   onToggleInterlinear,
+  interlinearDownloading,
   voices: ttsVoices,
 }: ReaderSettingsDropdownProps) {
   const { t } = useTranslation();
@@ -141,11 +143,23 @@ export function ReaderSettingsDropdown({
 
           {/* Interlinear toggle */}
           {isInterlinearEnabled && (
-            <ToggleItem
-              label={t("interlinear.title")}
-              checked={showInterlinear}
-              onChange={onToggleInterlinear}
-            />
+            interlinearDownloading ? (
+              <div className="flex items-center justify-between w-full px-3 py-2">
+                <span className="text-sm text-gray-700 dark:text-gray-300">{t("interlinear.title")}</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-600 rounded-full animate-pulse w-full" />
+                  </div>
+                  <span className="text-xs text-blue-600">{t("download.importing")}</span>
+                </div>
+              </div>
+            ) : (
+              <ToggleItem
+                label={t("interlinear.title")}
+                checked={showInterlinear}
+                onChange={onToggleInterlinear}
+              />
+            )
           )}
 
           {/* Dictionary toggle */}

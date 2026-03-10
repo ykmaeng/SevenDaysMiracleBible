@@ -109,3 +109,30 @@ export async function queryCommentary<T>(language: string, sql: string, bindValu
     return [];
   }
 }
+
+// Interlinear DB connection (single separate .db file)
+let interlinearDb: Database | null = null;
+
+export async function getInterlinearDb(): Promise<Database> {
+  if (!interlinearDb) {
+    const fileExists = await exists("interlinear.db", { baseDir: BaseDirectory.AppData });
+    if (!fileExists) {
+      throw new Error("Interlinear DB not found: interlinear.db");
+    }
+    interlinearDb = await Database.load("sqlite:interlinear.db");
+  }
+  return interlinearDb;
+}
+
+export function clearInterlinearDbCache(): void {
+  interlinearDb = null;
+}
+
+export async function queryInterlinear<T>(sql: string, bindValues?: unknown[]): Promise<T[]> {
+  try {
+    const idb = await getInterlinearDb();
+    return await idb.select<T[]>(sql, bindValues);
+  } catch {
+    return [];
+  }
+}
