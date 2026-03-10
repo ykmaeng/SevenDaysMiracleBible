@@ -6,13 +6,6 @@ import { useTabStore } from "../../stores/tabStore";
 const ONBOARDING_LANGUAGES = [
   { code: "ko", greeting: "안녕하세요", name: "한국어" },
   { code: "en", greeting: "Hello", name: "English" },
-  { code: "zh", greeting: "你好", name: "中文" },
-  { code: "es", greeting: "\u00A1Hola!", name: "Espa\u00F1ol" },
-  { code: "ja", greeting: "こんにちは", name: "日本語" },
-  { code: "de", greeting: "Hallo", name: "Deutsch" },
-  { code: "fr", greeting: "Bonjour", name: "Fran\u00E7ais" },
-  { code: "ru", greeting: "Здравствуйте", name: "Русский" },
-  { code: "pt", greeting: "Ol\u00E1", name: "Portugu\u00EAs" },
 ];
 
 export function LanguageOnboarding() {

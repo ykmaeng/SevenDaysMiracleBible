@@ -9,13 +9,6 @@ import type { Translation } from "../../types/bible";
 const LANGUAGES = [
   { code: "ko", name: "한국어" },
   { code: "en", name: "English" },
-  { code: "zh", name: "中文" },
-  { code: "es", name: "Español" },
-  { code: "ja", name: "日本語" },
-  { code: "de", name: "Deutsch" },
-  { code: "fr", name: "Français" },
-  { code: "ru", name: "Русский" },
-  { code: "pt", name: "Português" },
 ];
 
 interface FontOption {
@@ -42,18 +35,6 @@ const FONT_OPTIONS: Record<string, FontOption[]> = {
     { id: "'Inter', sans-serif", label: "Inter", googleFont: "Inter" },
     { id: "'Roboto', sans-serif", label: "Roboto", googleFont: "Roboto" },
     { id: "'Playfair Display', serif", label: "Playfair", googleFont: "Playfair Display" },
-  ],
-  zh: [
-    { id: "", label: "默认" },
-    { id: "'Noto Sans SC', sans-serif", label: "思源黑体", googleFont: "Noto Sans SC" },
-    { id: "'Noto Serif SC', serif", label: "思源宋体", googleFont: "Noto Serif SC" },
-    { id: "'ZCOOL XiaoWei', serif", label: "站酷小薇", googleFont: "ZCOOL XiaoWei" },
-  ],
-  ja: [
-    { id: "", label: "デフォルト" },
-    { id: "'Noto Sans JP', sans-serif", label: "Noto Sans", googleFont: "Noto Sans JP" },
-    { id: "'Noto Serif JP', serif", label: "Noto Serif", googleFont: "Noto Serif JP" },
-    { id: "'Zen Maru Gothic', sans-serif", label: "丸ゴシック", googleFont: "Zen Maru Gothic" },
   ],
   _default: [
     { id: "", label: "Default" },
