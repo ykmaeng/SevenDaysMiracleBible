@@ -72,6 +72,7 @@ export function ChapterView({
   const loadChapterBookmarks = useBookmarkStore((s) => s.loadChapterBookmarks);
 
   const showParallelInline = useSettingsStore((s) => s.showParallelInline);
+  const versePerLine = useSettingsStore((s) => s.versePerLine);
   const parallelTranslations = useSettingsStore((s) => s.parallelTranslations);
   const showNotes = useSettingsStore((s) => s.showNotes);
   const isHighlightsEnabled = useFeatureStore((s) => s.isEnabled("highlights"));
@@ -84,8 +85,9 @@ export function ChapterView({
     [parallelTranslations, translationId]
   );
 
-  // Inline paragraph mode when no parallel translations; per-verse groups otherwise
+  // Per-verse mode when verse-per-line is on OR parallel translations are active
   const hasParallel = showParallelInline && activeParallelIds.length > 0;
+  const perVerseMode = versePerLine || hasParallel;
 
   const onVersesLoadedRef = useRef(onVersesLoaded);
   onVersesLoadedRef.current = onVersesLoaded;
@@ -157,7 +159,7 @@ export function ChapterView({
   const paragraphGroups = useMemo(() => {
     if (verses.length === 0) return [];
 
-    if (hasParallel) {
+    if (perVerseMode) {
       // Per-verse groups: each verse is its own group
       return verses.map((verse, i) => ({
         verses: [verse],
@@ -201,7 +203,7 @@ export function ChapterView({
     }
 
     return groups;
-  }, [hasParallel, verses, paragraphVerses, sectionHeadings]);
+  }, [perVerseMode, verses, paragraphVerses, sectionHeadings]);
 
   // Map verse index to paragraph group index (for TTS scrolling)
   const verseToGroupIndex = useMemo(() => {
@@ -215,7 +217,7 @@ export function ChapterView({
   const virtualizer = useVirtualizer({
     count: paragraphGroups.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => hasParallel ? 80 : 120,
+    estimateSize: () => perVerseMode ? 80 : 120,
     overscan: 10,
   });
 

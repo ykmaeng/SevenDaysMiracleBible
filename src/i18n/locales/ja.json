@@ -25,7 +25,8 @@
     "noContent": "コンテンツがありません",
     "parallelView": "対訳表示",
     "readerSettings": "表示設定",
-    "showDictionary": "辞書"
+    "showDictionary": "辞書",
+    "versePerLine": "節ごとに表示"
   },
   "commentary": {
     "title": "AI解説",

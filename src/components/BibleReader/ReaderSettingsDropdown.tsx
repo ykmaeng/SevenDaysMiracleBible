@@ -33,6 +33,8 @@ export function ReaderSettingsDropdown({
   const setFontSize = useSettingsStore((s) => s.setFontSize);
   const commentaryPosition = useSettingsStore((s) => s.commentaryPosition);
   const setCommentaryPosition = useSettingsStore((s) => s.setCommentaryPosition);
+  const versePerLine = useSettingsStore((s) => s.versePerLine);
+  const setVersePerLine = useSettingsStore((s) => s.setVersePerLine);
   const showDictionary = useSettingsStore((s) => s.showDictionary);
   const setShowDictionary = useSettingsStore((s) => s.setShowDictionary);
   const showNotes = useSettingsStore((s) => s.showNotes);
@@ -179,6 +181,13 @@ export function ReaderSettingsDropdown({
               onChange={setShowNotes}
             />
           )}
+
+          {/* Verse per line toggle */}
+          <ToggleItem
+            label={t("reader.versePerLine")}
+            checked={versePerLine}
+            onChange={setVersePerLine}
+          />
 
           {/* Verse Numbers toggle */}
           <ToggleItem

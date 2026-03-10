@@ -25,7 +25,8 @@
     "noContent": "Содержимое недоступно",
     "parallelView": "Параллельный просмотр",
     "readerSettings": "Настройки чтения",
-    "showDictionary": "Словарь"
+    "showDictionary": "Словарь",
+    "versePerLine": "Стих на строку"
   },
   "commentary": {
     "title": "ИИ-комментарий",

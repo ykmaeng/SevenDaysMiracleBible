@@ -25,7 +25,8 @@
     "noContent": "Kein Inhalt verfügbar",
     "parallelView": "Parallelansicht",
     "readerSettings": "Leseeinstellungen",
-    "showDictionary": "Wörterbuch"
+    "showDictionary": "Wörterbuch",
+    "versePerLine": "Vers pro Zeile"
   },
   "commentary": {
     "title": "KI-Kommentar",

@@ -12,6 +12,7 @@ interface SettingsState {
   defaultTranslation: string;
   showVerseNumbers: boolean;
   showParallelInline: boolean;
+  versePerLine: boolean;
   parallelTranslations: string[];
   commentaryPosition: CommentaryPosition;
   commentarySplitRatio: number;
@@ -31,6 +32,7 @@ interface SettingsActions {
   setDefaultTranslation: (id: string) => void;
   setShowVerseNumbers: (show: boolean) => void;
   setShowParallelInline: (show: boolean) => void;
+  setVersePerLine: (show: boolean) => void;
   setCommentaryPosition: (pos: CommentaryPosition) => void;
   setCommentarySplitRatio: (ratio: number) => void;
   toggleParallelTranslation: (id: string) => void;
@@ -58,7 +60,8 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       defaultTranslation: "kjv",
       showVerseNumbers: true,
       showParallelInline: false,
-      parallelTranslations: ["kjv"],
+      versePerLine: false,
+      parallelTranslations: ["kjv", "sav-ko"],
       commentaryPosition: "right" as CommentaryPosition,
       commentarySplitRatio: 0.5,
       ttsVoiceName: "",
@@ -102,6 +105,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setShowParallelInline: (show) =>
         set((state) => {
           state.showParallelInline = show;
+        }),
+
+      setVersePerLine: (show) =>
+        set((state) => {
+          state.versePerLine = show;
         }),
 
       setCommentaryPosition: (pos) =>

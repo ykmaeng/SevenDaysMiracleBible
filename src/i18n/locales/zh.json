@@ -25,7 +25,8 @@
     "noContent": "暂无内容",
     "parallelView": "对照翻译视图",
     "readerSettings": "阅读设置",
-    "showDictionary": "词典"
+    "showDictionary": "词典",
+    "versePerLine": "逐节显示"
   },
   "commentary": {
     "title": "AI释经",
