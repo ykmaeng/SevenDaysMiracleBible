@@ -25,7 +25,7 @@ export function FeaturesView({ onClose }: FeaturesViewProps) {
         </button>
       </div>
 
-      <div className="p-4 space-y-3">
+      <div className="px-4">
         {FEATURE_REGISTRY.map((feature) => {
           const enabled = enabledFeatures.includes(feature.id);
           const expanded = expandedId === feature.id;
@@ -33,7 +33,7 @@ export function FeaturesView({ onClose }: FeaturesViewProps) {
           return (
             <div
               key={feature.id}
-              className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+              className="border-b border-gray-100 dark:border-gray-700/50 last:border-0"
             >
               <div
                 className="flex items-center gap-3 p-4 cursor-pointer"
@@ -81,7 +81,7 @@ export function FeaturesView({ onClose }: FeaturesViewProps) {
               </div>
 
               {expanded && (
-                <div className="px-4 pb-4 pt-0 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700/50 pt-3">
+                <div className="px-4 pb-4 text-xs text-gray-500 dark:text-gray-400">
                   {t(feature.instructionKey)}
                 </div>
               )}

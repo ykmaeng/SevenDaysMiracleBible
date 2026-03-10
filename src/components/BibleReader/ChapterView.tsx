@@ -320,8 +320,13 @@ export function ChapterView({
     // Only clear if clicking the background, not a verse span or toolbar
     const target = e.target as HTMLElement;
     if (target.closest("[data-toolbar]") || target.closest(".cursor-pointer")) return;
-    setSelectedVerses(new Map());
-  }, []);
+    if (selectedVerses.size === 0) {
+      // No verses selected — toggle immersive mode off
+      window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: false }));
+    } else {
+      setSelectedVerses(new Map());
+    }
+  }, [selectedVerses.size]);
 
   const closeDictPopup = useCallback(() => {
     setDictWord(null);
