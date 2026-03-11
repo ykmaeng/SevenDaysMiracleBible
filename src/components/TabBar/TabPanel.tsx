@@ -173,7 +173,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
   return (
     <div className="flex flex-col h-full">
       {/* Navigation header */}
-      <div className={`flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 transition-all duration-150 ease-out ${immersive ? "max-h-0 overflow-hidden opacity-0" : "max-h-14"}`}>
+      <div className={`flex items-center justify-between px-4 bg-white dark:bg-gray-800 transition-all duration-150 ease-out ${immersive ? "max-h-0 py-0 overflow-hidden opacity-0" : "max-h-14 py-2 border-b border-gray-100 dark:border-gray-700"}`}>
         <div className="flex items-center gap-1.5">
           <div className="relative">
             <button

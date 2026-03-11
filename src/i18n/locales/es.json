@@ -26,7 +26,8 @@
     "parallelView": "Vista paralela",
     "readerSettings": "Ajustes de lectura",
     "showDictionary": "Diccionario",
-    "versePerLine": "Versículo por línea"
+    "versePerLine": "Versículo por línea",
+    "showNotes": "Mostrar notas"
   },
   "commentary": {
     "title": "Comentario IA",

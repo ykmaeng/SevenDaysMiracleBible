@@ -176,7 +176,7 @@ export function ReaderSettingsDropdown({
           {/* Notes toggle */}
           {isNotesEnabled && (
             <ToggleItem
-              label={t("verseActions.note")}
+              label={t("reader.showNotes")}
               checked={showNotes}
               onChange={setShowNotes}
             />

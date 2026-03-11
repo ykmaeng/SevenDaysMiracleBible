@@ -27,7 +27,8 @@
     "parallelView": "Parallel View",
     "readerSettings": "Reader Settings",
     "showDictionary": "Dictionary",
-    "versePerLine": "Verse per Line"
+    "versePerLine": "Verse per Line",
+    "showNotes": "Show Notes"
   },
   "commentary": {
     "title": "AI Commentary",

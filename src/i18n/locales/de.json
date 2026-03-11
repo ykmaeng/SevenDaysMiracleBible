@@ -26,7 +26,8 @@
     "parallelView": "Parallelansicht",
     "readerSettings": "Leseeinstellungen",
     "showDictionary": "Wörterbuch",
-    "versePerLine": "Vers pro Zeile"
+    "versePerLine": "Vers pro Zeile",
+    "showNotes": "Notizen anzeigen"
   },
   "commentary": {
     "title": "KI-Kommentar",

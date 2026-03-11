@@ -26,7 +26,8 @@
     "parallelView": "Параллельный просмотр",
     "readerSettings": "Настройки чтения",
     "showDictionary": "Словарь",
-    "versePerLine": "Стих на строку"
+    "versePerLine": "Стих на строку",
+    "showNotes": "Показать заметки"
   },
   "commentary": {
     "title": "ИИ-комментарий",

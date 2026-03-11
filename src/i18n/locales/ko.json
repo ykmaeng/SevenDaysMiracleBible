@@ -27,7 +27,8 @@
     "parallelView": "동시번역보기",
     "readerSettings": "보기 설정",
     "showDictionary": "사전 보기",
-    "versePerLine": "구절단위 보기"
+    "versePerLine": "구절단위 보기",
+    "showNotes": "메모 표시"
   },
   "commentary": {
     "title": "AI 강해",
