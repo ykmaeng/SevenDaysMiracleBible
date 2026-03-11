@@ -204,7 +204,10 @@
     "interlinearInstruction": "在阅读设置中启用原文解析，每节经文下方将显示原文单词、音译和释义。点击单词可查看详情。",
     "dictionary": "词典",
     "dictionaryDesc": "快速查询词义",
-    "dictionaryInstruction": "在阅读设置中启用词典，点击文本即可查询词义。"
+    "dictionaryInstruction": "在阅读设置中启用词典，点击文本即可查询词义。",
+    "tabs": "多标签",
+    "tabsDesc": "在多个标签中同时打开不同的圣经章节",
+    "tabsInstruction": "点击标签栏的+按钮添加新标签，长按可调整顺序。"
   },
   "interlinear": {
     "title": "原文逐字",

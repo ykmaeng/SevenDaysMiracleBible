@@ -67,6 +67,15 @@ export const FEATURE_REGISTRY: FeatureConfig[] = [
     showInFloating: false,
     showInReaderSettings: true,
   },
+  {
+    id: "tabs",
+    labelKey: "features.tabs",
+    descKey: "features.tabsDesc",
+    instructionKey: "features.tabsInstruction",
+    showInTabBar: false,
+    showInFloating: false,
+    showInReaderSettings: false,
+  },
 ];
 
 interface FeatureState {

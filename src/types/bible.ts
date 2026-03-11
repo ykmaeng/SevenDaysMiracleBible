@@ -75,6 +75,7 @@ export interface Bookmark {
   color: string | null;
   translation_id: string | null;
   label_id: number | null;
+  text: string | null;
   created_at: string;
 }
 

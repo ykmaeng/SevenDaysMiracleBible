@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getAllHighlights, type BookmarkWithText } from "../../lib/bookmarks";
+import { getAllHighlights } from "../../lib/bookmarks";
 import { useBookmarkStore } from "../../stores/bookmarkStore";
-import { useSettingsStore } from "../../stores/settingsStore";
+import type { Bookmark } from "../../types/bible";
 
 const COLORS = ["yellow", "green", "blue", "red", "purple"] as const;
 
@@ -29,29 +29,28 @@ interface HighlightsViewProps {
 
 export function HighlightsView({ onClose, onNavigate }: HighlightsViewProps) {
   const { t } = useTranslation();
-  const defaultTranslation = useSettingsStore((s) => s.defaultTranslation);
   const removeBookmark = useBookmarkStore((s) => s.removeBookmark);
   const updateColor = useBookmarkStore((s) => s.updateColor);
-  const [highlights, setHighlights] = useState<BookmarkWithText[]>([]);
+  const [highlights, setHighlights] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeColor, setActiveColor] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [expandAll, setExpandAll] = useState(false);
 
   useEffect(() => {
-    getAllHighlights(defaultTranslation).then((data) => {
+    getAllHighlights().then((data) => {
       setHighlights(data);
       setLoading(false);
     });
-  }, [defaultTranslation]);
+  }, []);
 
   const filtered = activeColor === "all"
     ? highlights
     : highlights.filter((h) => h.color === activeColor);
 
   // Group by book
-  const groups: { bookId: number; items: BookmarkWithText[] }[] = [];
-  const groupMap = new Map<number, BookmarkWithText[]>();
+  const groups: { bookId: number; items: Bookmark[] }[] = [];
+  const groupMap = new Map<number, Bookmark[]>();
   for (const h of filtered) {
     let arr = groupMap.get(h.book_id);
     if (!arr) {
@@ -62,7 +61,7 @@ export function HighlightsView({ onClose, onNavigate }: HighlightsViewProps) {
     arr.push(h);
   }
 
-  const handleRemove = async (bm: BookmarkWithText) => {
+  const handleRemove = async (bm: Bookmark) => {
     if (bm.note) {
       await updateColor(bm.book_id, bm.chapter, bm.verse, null);
     } else {

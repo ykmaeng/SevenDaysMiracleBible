@@ -204,7 +204,10 @@
     "interlinearInstruction": "Active Interlineal en los ajustes del lector para mostrar palabras originales, transliteración y significado debajo de cada versículo. Toque una palabra para ver detalles.",
     "dictionary": "Diccionario",
     "dictionaryDesc": "Búsqueda rápida de palabras",
-    "dictionaryInstruction": "Active el Diccionario en los ajustes del lector para buscar definiciones tocando el texto."
+    "dictionaryInstruction": "Active el Diccionario en los ajustes del lector para buscar definiciones tocando el texto.",
+    "tabs": "Multi-pestaña",
+    "tabsDesc": "Abra varios pasajes bíblicos en pestañas separadas",
+    "tabsInstruction": "Use el botón + en la barra de pestañas para añadir nuevas pestañas, y mantenga presionado para reordenarlas."
   },
   "interlinear": {
     "title": "Interlinear",

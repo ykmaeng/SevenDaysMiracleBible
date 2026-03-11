@@ -124,7 +124,7 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
       if (bm) {
         await updateLabel(v.book_id, v.chapter, v.verse, labelId);
       } else {
-        await addBookmark(v.book_id, v.chapter, v.verse, undefined, undefined, v.translation_id, labelId ?? undefined);
+        await addBookmark(v.book_id, v.chapter, v.verse, undefined, undefined, v.translation_id, labelId ?? undefined, v.text);
       }
     }
     showToast(t("verseActions.bookmarkAdded"), "success");
@@ -145,7 +145,7 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
       if (bm) {
         await updateColor(v.book_id, v.chapter, v.verse, color);
       } else {
-        await addBookmark(v.book_id, v.chapter, v.verse, color, undefined, v.translation_id);
+        await addBookmark(v.book_id, v.chapter, v.verse, color, undefined, v.translation_id, undefined, v.text);
       }
     }
     onClose();

@@ -17,6 +17,12 @@ pub fn run() {
             sql: include_str!("../migrations/001_init.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 2,
+            description: "bookmark_text",
+            sql: include_str!("../migrations/002_bookmark_text.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     let mut builder = tauri::Builder::default()

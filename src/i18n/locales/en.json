@@ -211,7 +211,10 @@
     "interlinearInstruction": "Enable Interlinear in the reader settings to show original language words, transliteration, and glosses below each verse. Tap a word for details.",
     "dictionary": "Dictionary",
     "dictionaryDesc": "Quick word lookup",
-    "dictionaryInstruction": "Enable Dictionary in the reader settings to look up word definitions by tapping on text."
+    "dictionaryInstruction": "Enable Dictionary in the reader settings to look up word definitions by tapping on text.",
+    "tabs": "Multi-Tab",
+    "tabsDesc": "Open multiple Bible passages in separate tabs",
+    "tabsInstruction": "Use the + button in the tab bar to add new tabs, and long-press to reorder them."
   },
   "interlinear": {
     "title": "Interlinear",

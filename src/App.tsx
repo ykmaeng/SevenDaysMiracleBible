@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { TabBar } from "./components/TabBar/TabBar";
 import { TabPanel } from "./components/TabBar/TabPanel";
@@ -19,6 +19,7 @@ function App() {
   const { t } = useTranslation();
   const [view, setView] = useState<View>("reader");
   const [immersive, setImmersive] = useState(false);
+  const immersiveRef = useRef(false);
   const theme = useSettingsStore((s) => s.theme);
   const fontFamily = useSettingsStore((s) => s.fontFamily);
   const onboardingComplete = useSettingsStore((s) => s.onboardingComplete);
@@ -36,11 +37,35 @@ function App() {
     return () => window.removeEventListener("open-settings", handler);
   }, []);
 
+  // Android back button: close popups/views before exiting app
+  useEffect(() => {
+    const handler = () => {
+      // Dispatch dismiss-popup; listeners set handled=true if they closed something
+      const evt = new CustomEvent("dismiss-popup", { detail: { handled: false } });
+      window.dispatchEvent(evt);
+      if (evt.detail.handled) {
+        history.pushState(null, "", "");
+        return;
+      }
+      // Close non-reader views
+      if (view !== "reader") {
+        setView("reader");
+        history.pushState(null, "", "");
+      }
+    };
+    // Push initial state so we can intercept back
+    history.pushState(null, "", "");
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
+  }, [view]);
+
   // Immersive reading mode
   useEffect(() => {
     const handler = (e: Event) => {
-      const fullscreen = (e as CustomEvent).detail;
+      const detail = (e as CustomEvent).detail;
+      const fullscreen = detail === "toggle" ? !immersiveRef.current : !!detail;
       setImmersive(fullscreen);
+      immersiveRef.current = fullscreen;
       try {
         (window as unknown as { AndroidImmersive?: { setImmersive: (v: boolean) => void } })
           .AndroidImmersive?.setImmersive(fullscreen);
@@ -85,7 +110,7 @@ function App() {
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-gray-100">
       {/* Tab bar */}
-      {view === "reader" && (
+      {view === "reader" && enabledFeatures.includes("tabs") && (
         <div className={`transition-all duration-150 ease-out ${immersive ? "max-h-0 -mt-1 overflow-hidden" : "max-h-14"}`}>
           <TabBar />
         </div>

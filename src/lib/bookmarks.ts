@@ -1,10 +1,6 @@
 import { query, execute } from "./db";
 import type { Bookmark, BookmarkLabel } from "../types/bible";
 
-export interface BookmarkWithText extends Bookmark {
-  text: string | null;
-}
-
 // ── Labels ──
 
 export async function getAllLabels(): Promise<BookmarkLabel[]> {
@@ -33,35 +29,21 @@ export async function deleteLabel(id: number): Promise<void> {
 
 // ── Bookmarks ──
 
-export async function getAllBookmarks(fallbackTranslationId: string, labelId?: number | null): Promise<BookmarkWithText[]> {
+export async function getAllBookmarks(labelId?: number | null): Promise<Bookmark[]> {
   if (labelId != null) {
-    return query<BookmarkWithText>(
-      `SELECT b.*, v.text FROM bookmarks b
-       LEFT JOIN verses v ON v.book_id = b.book_id AND v.chapter = b.chapter AND v.verse = b.verse
-         AND v.translation_id = COALESCE(b.translation_id, $1)
-       WHERE b.color IS NULL AND b.label_id = $2
-       ORDER BY b.book_id, b.chapter, b.verse`,
-      [fallbackTranslationId, labelId]
+    return query<Bookmark>(
+      "SELECT * FROM bookmarks WHERE color IS NULL AND label_id = $1 ORDER BY created_at DESC",
+      [labelId]
     );
   }
-  return query<BookmarkWithText>(
-    `SELECT b.*, v.text FROM bookmarks b
-     LEFT JOIN verses v ON v.book_id = b.book_id AND v.chapter = b.chapter AND v.verse = b.verse
-       AND v.translation_id = COALESCE(b.translation_id, $1)
-     WHERE b.color IS NULL
-     ORDER BY b.book_id, b.chapter, b.verse`,
-    [fallbackTranslationId]
+  return query<Bookmark>(
+    "SELECT * FROM bookmarks WHERE color IS NULL ORDER BY created_at DESC"
   );
 }
 
-export async function getAllHighlights(fallbackTranslationId: string): Promise<BookmarkWithText[]> {
-  return query<BookmarkWithText>(
-    `SELECT b.*, v.text FROM bookmarks b
-     LEFT JOIN verses v ON v.book_id = b.book_id AND v.chapter = b.chapter AND v.verse = b.verse
-       AND v.translation_id = COALESCE(b.translation_id, $1)
-     WHERE b.color IS NOT NULL
-     ORDER BY b.book_id, b.chapter, b.verse`,
-    [fallbackTranslationId]
+export async function getAllHighlights(): Promise<Bookmark[]> {
+  return query<Bookmark>(
+    "SELECT * FROM bookmarks WHERE color IS NOT NULL ORDER BY created_at DESC"
   );
 }
 
@@ -79,11 +61,12 @@ export async function addBookmark(
   color?: string,
   note?: string,
   translationId?: string,
-  labelId?: number
+  labelId?: number,
+  text?: string
 ): Promise<number> {
   const result = await execute(
-    "INSERT OR REPLACE INTO bookmarks (book_id, chapter, verse, color, note, translation_id, label_id) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-    [bookId, chapter, verse, color ?? null, note ?? null, translationId ?? null, labelId ?? null]
+    "INSERT OR REPLACE INTO bookmarks (book_id, chapter, verse, color, note, translation_id, label_id, text) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+    [bookId, chapter, verse, color ?? null, note ?? null, translationId ?? null, labelId ?? null, text ?? null]
   );
   return result.lastInsertId ?? 0;
 }

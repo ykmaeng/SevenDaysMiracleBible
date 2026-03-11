@@ -203,7 +203,10 @@
     "interlinearInstruction": "Activez l'Interlinéaire dans les paramètres de lecture pour afficher les mots originaux, la translittération et le sens sous chaque verset. Appuyez sur un mot pour les détails.",
     "dictionary": "Dictionnaire",
     "dictionaryDesc": "Recherche rapide de mots",
-    "dictionaryInstruction": "Activez le Dictionnaire dans les paramètres de lecture pour chercher des définitions en appuyant sur le texte."
+    "dictionaryInstruction": "Activez le Dictionnaire dans les paramètres de lecture pour chercher des définitions en appuyant sur le texte.",
+    "tabs": "Multi-onglets",
+    "tabsDesc": "Ouvrez plusieurs passages bibliques dans des onglets séparés",
+    "tabsInstruction": "Utilisez le bouton + dans la barre d'onglets pour ajouter de nouveaux onglets, et appuyez longuement pour les réorganiser."
   },
   "interlinear": {
     "title": "Interlinear",

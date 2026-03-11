@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getAllBookmarks, type BookmarkWithText } from "../../lib/bookmarks";
+import { getAllBookmarks } from "../../lib/bookmarks";
 import { useBookmarkStore } from "../../stores/bookmarkStore";
-import { useSettingsStore } from "../../stores/settingsStore";
 import { useToastStore } from "../../stores/toastStore";
-import type { BookmarkLabel } from "../../types/bible";
+import type { Bookmark, BookmarkLabel } from "../../types/bible";
 
 const COLOR_DOT: Record<string, string> = {
   yellow: "bg-yellow-400",
@@ -21,16 +20,15 @@ interface BookmarksViewProps {
 
 interface BookGroup {
   bookId: number;
-  bookmarks: BookmarkWithText[];
+  bookmarks: Bookmark[];
 }
 
 export function BookmarksView({ onClose, onNavigate }: BookmarksViewProps) {
   const { t } = useTranslation();
-  const defaultTranslation = useSettingsStore((s) => s.defaultTranslation);
   const removeBookmark = useBookmarkStore((s) => s.removeBookmark);
   const { labels, labelsLoaded, loadLabels, renameLabel, deleteLabel } = useBookmarkStore();
   const showToast = useToastStore((s) => s.showToast);
-  const [bookmarks, setBookmarks] = useState<BookmarkWithText[]>([]);
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [expandAll, setExpandAll] = useState(false);
@@ -46,13 +44,13 @@ export function BookmarksView({ onClose, onNavigate }: BookmarksViewProps) {
   useEffect(() => {
     setLoading(true);
     const labelId = filterLabelId === "all" ? undefined : filterLabelId;
-    getAllBookmarks(defaultTranslation, labelId).then((data) => {
+    getAllBookmarks(labelId).then((data) => {
       setBookmarks(data);
       setLoading(false);
     });
-  }, [defaultTranslation, filterLabelId]);
+  }, [filterLabelId]);
 
-  const handleDelete = async (bm: BookmarkWithText) => {
+  const handleDelete = async (bm: Bookmark) => {
     await removeBookmark(bm.book_id, bm.chapter, bm.verse);
     setBookmarks((prev) => prev.filter((b) => b.id !== bm.id));
     if (expandedId === bm.id) setExpandedId(null);

@@ -303,6 +303,20 @@ export function ChapterView({
     return () => window.removeEventListener("focus-note-input", handler);
   }, []);
 
+  // Android back button: dismiss toolbar/note input
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (noteInputOpen || selectedVerses.size > 0) {
+        setNoteInputOpen(false);
+        setSelectedVerses(new Map());
+        detail.handled = true;
+      }
+    };
+    window.addEventListener("dismiss-popup", handler);
+    return () => window.removeEventListener("dismiss-popup", handler);
+  }, [noteInputOpen, selectedVerses]);
+
   const handleVerseClick = useCallback((info: VerseClickInfo) => {
     setDictWord(null);
     setDictPosition(null);
@@ -329,8 +343,8 @@ export function ChapterView({
     const target = e.target as HTMLElement;
     if (target.closest("[data-toolbar]") || target.closest(".cursor-pointer")) return;
     if (selectedVerses.size === 0) {
-      // No verses selected — toggle immersive mode off
-      window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: false }));
+      // No verses selected — toggle immersive mode
+      window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: "toggle" }));
     } else {
       setSelectedVerses(new Map());
     }
@@ -497,7 +511,7 @@ export function ChapterView({
             if (bm) {
               await updateNote(v.book_id, v.chapter, v.verse, note || null);
             } else if (note) {
-              await addBookmark(v.book_id, v.chapter, v.verse, undefined, note, v.translation_id);
+              await addBookmark(v.book_id, v.chapter, v.verse, undefined, note, v.translation_id, undefined, v.text);
             }
             loadChapterBookmarks(v.book_id, v.chapter);
           }}
@@ -527,13 +541,35 @@ function NoteInputBar({
     setText(existingNote ?? "");
   }, [verse.book_id, verse.chapter, verse.verse, existingNote]);
 
-  // Position above VerseActionToolbar + auto-focus
+  // Position above keyboard (mobile) or toolbar + auto-focus
   useEffect(() => {
     const el = noteBarRef.current;
     if (!el) return;
-    const toolbar = document.querySelector<HTMLElement>("[data-toolbar]");
-    el.style.bottom = toolbar ? toolbar.offsetHeight + "px" : "0px";
+
+    const updatePosition = () => {
+      const vv = window.visualViewport;
+      if (vv) {
+        // On mobile, visualViewport shrinks when keyboard opens
+        const keyboardOffset = window.innerHeight - vv.height - vv.offsetTop;
+        const toolbar = document.querySelector<HTMLElement>("[data-toolbar]");
+        const toolbarH = keyboardOffset > 50 ? 0 : (toolbar?.offsetHeight ?? 0);
+        el.style.bottom = Math.max(keyboardOffset, 0) + toolbarH + "px";
+      } else {
+        const toolbar = document.querySelector<HTMLElement>("[data-toolbar]");
+        el.style.bottom = toolbar ? toolbar.offsetHeight + "px" : "0px";
+      }
+    };
+
+    updatePosition();
     inputRef.current?.focus();
+
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", updatePosition);
+    vv?.addEventListener("scroll", updatePosition);
+    return () => {
+      vv?.removeEventListener("resize", updatePosition);
+      vv?.removeEventListener("scroll", updatePosition);
+    };
   }, []);
 
   const handleSave = async () => {

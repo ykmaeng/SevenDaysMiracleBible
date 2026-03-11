@@ -203,7 +203,10 @@
     "interlinearInstruction": "閲覧設定で原語分析を有効にすると、各節の下に原語の単語・音訳・意味が表示されます。単語をタップすると詳細が見られます。",
     "dictionary": "辞書",
     "dictionaryDesc": "単語の意味をすばやく検索",
-    "dictionaryInstruction": "閲覧設定で辞書を有効にすると、テキストをタップして意味を調べることができます。"
+    "dictionaryInstruction": "閲覧設定で辞書を有効にすると、テキストをタップして意味を調べることができます。",
+    "tabs": "マルチタブ",
+    "tabsDesc": "複数の聖書箇所をタブで同時に開けます",
+    "tabsInstruction": "タブバーの+ボタンで新しいタブを追加し、長押しで順序を変更できます。"
   },
   "interlinear": {
     "title": "原語分解",

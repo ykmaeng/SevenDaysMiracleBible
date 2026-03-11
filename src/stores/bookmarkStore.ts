@@ -13,7 +13,7 @@ interface BookmarkState {
 
 interface BookmarkActions {
   loadChapterBookmarks: (bookId: number, chapter: number) => Promise<void>;
-  addBookmark: (bookId: number, chapter: number, verse: number, color?: string, note?: string, translationId?: string, labelId?: number) => Promise<void>;
+  addBookmark: (bookId: number, chapter: number, verse: number, color?: string, note?: string, translationId?: string, labelId?: number, text?: string) => Promise<void>;
   removeBookmark: (bookId: number, chapter: number, verse: number) => Promise<void>;
   updateColor: (bookId: number, chapter: number, verse: number, color: string | null) => Promise<void>;
   updateNote: (bookId: number, chapter: number, verse: number, note: string | null) => Promise<void>;
@@ -49,8 +49,8 @@ export const useBookmarkStore = create<BookmarkState & BookmarkActions>()(
       });
     },
 
-    addBookmark: async (bookId, chapter, verse, color, note, translationId, labelId) => {
-      const id = await bookmarkDb.addBookmark(bookId, chapter, verse, color, note, translationId, labelId);
+    addBookmark: async (bookId, chapter, verse, color, note, translationId, labelId, text) => {
+      const id = await bookmarkDb.addBookmark(bookId, chapter, verse, color, note, translationId, labelId, text);
       set((state) => {
         state.bookmarks[key(bookId, chapter, verse)] = {
           id,
@@ -61,6 +61,7 @@ export const useBookmarkStore = create<BookmarkState & BookmarkActions>()(
           note: note ?? null,
           translation_id: translationId ?? null,
           label_id: labelId ?? null,
+          text: text ?? null,
           created_at: new Date().toISOString(),
         };
       });

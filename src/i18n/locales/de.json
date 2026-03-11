@@ -203,7 +203,10 @@
     "interlinearInstruction": "Aktivieren Sie Interlinear in den Leseeinstellungen, um Originalwörter, Transliteration und Bedeutung unter jedem Vers anzuzeigen. Tippen Sie auf ein Wort für Details.",
     "dictionary": "Wörterbuch",
     "dictionaryDesc": "Schnelle Wortsuche",
-    "dictionaryInstruction": "Aktivieren Sie das Wörterbuch in den Leseeinstellungen, um Definitionen durch Antippen des Textes nachzuschlagen."
+    "dictionaryInstruction": "Aktivieren Sie das Wörterbuch in den Leseeinstellungen, um Definitionen durch Antippen des Textes nachzuschlagen.",
+    "tabs": "Multi-Tab",
+    "tabsDesc": "Öffnen Sie mehrere Bibelstellen in separaten Tabs",
+    "tabsInstruction": "Verwenden Sie die +-Taste in der Tab-Leiste, um neue Tabs hinzuzufügen, und halten Sie lange gedrückt, um sie neu anzuordnen."
   },
   "interlinear": {
     "title": "Interlinear",

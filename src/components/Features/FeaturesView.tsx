@@ -144,6 +144,14 @@ function FeatureIcon({ id }: { id: string }) {
           </svg>
         </div>
       );
+    case "tabs":
+      return (
+        <div className={`${iconClass} bg-slate-100 dark:bg-slate-900/40 text-slate-600 dark:text-slate-400`}>
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h6V4h12v14h-6v3H3V7zm6 0v11m0-11h9" />
+          </svg>
+        </div>
+      );
     default:
       return null;
   }
