@@ -1,4 +1,5 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "../../stores/settingsStore";
 import type { Verse, InterlinearWord } from "../../types/bible";
 import type { SectionHeading } from "../../lib/bible";
@@ -34,6 +35,9 @@ interface ParagraphGroupProps {
   expandedWordKey?: string | null;
   onExpandWord?: (key: string | null) => void;
   noteMap?: Record<string, string>;
+  onNoteSave?: (verse: Verse, note: string) => void;
+  editingNoteKey?: string | null;
+  onEditingNoteKeyChange?: (key: string | null) => void;
   translationLang?: string;
 }
 
@@ -52,6 +56,9 @@ export function ParagraphGroup({
   expandedWordKey,
   onExpandWord,
   noteMap,
+  onNoteSave,
+  editingNoteKey,
+  onEditingNoteKeyChange,
   translationLang,
 }: ParagraphGroupProps) {
   const showVerseNumbers = useSettingsStore((s) => s.showVerseNumbers);
@@ -156,20 +163,92 @@ export function ParagraphGroup({
                 <InlineInterlinear words={interlinearData.get(verse.verse)!} fontSize={fontSize} verseNum={verse.verse} expandedKey={expandedWordKey ?? null} setExpandedKey={onExpandWord ?? (() => {})} />
               )}
               {/* Inline note */}
-              {noteMap?.[`${verse.book_id}:${verse.chapter}:${verse.verse}`] && (
-                <div className="ml-2 mt-1 mb-1.5 pl-2 border-l-2 border-amber-300 dark:border-amber-600">
-                  <p className="text-xs text-amber-700 dark:text-amber-400 italic whitespace-pre-wrap">
-                    {noteMap[`${verse.book_id}:${verse.chapter}:${verse.verse}`]}
-                  </p>
-                </div>
-              )}
-              {!hasParallel && !interlinearData?.has(verse.verse) && !noteMap?.[`${verse.book_id}:${verse.chapter}:${verse.verse}`] && " "}
+              {noteMap && (() => {
+                const key = `${verse.book_id}:${verse.chapter}:${verse.verse}`;
+                const noteText = noteMap[key] ?? "";
+                if (!noteText && editingNoteKey !== key) return null;
+                return (
+                  <InlineNote
+                    text={noteText}
+                    editing={editingNoteKey === key}
+                    onEditingChange={(e) => onEditingNoteKeyChange?.(e ? key : null)}
+                    onSave={onNoteSave ? (note) => onNoteSave(verse, note) : undefined}
+                  />
+                );
+              })()}
+              {!hasParallel && !interlinearData?.has(verse.verse) && !noteMap && " "}
             </span>
           );
         })}
       </div>
     </div>
   );
+}
+
+/** Inline editable note */
+function InlineNote({ text, editing, onEditingChange, onSave }: {
+  text: string;
+  editing: boolean;
+  onEditingChange: (editing: boolean) => void;
+  onSave?: (note: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState(text);
+
+  // Sync draft when entering edit mode or text changes
+  const prevEditing = useRef(false);
+  if (editing && !prevEditing.current) {
+    // Just entered edit mode — reset draft
+    if (draft !== text) setDraft(text);
+  }
+  prevEditing.current = editing;
+
+  if (editing) {
+    return (
+      <div data-note-input className="ml-2 mt-1 mb-1.5 pl-2 border-l-2 border-amber-400 dark:border-amber-500 flex items-end gap-1" onClick={(e) => e.stopPropagation()}>
+        <textarea
+          autoFocus
+          ref={(el) => {
+            if (el && !el.dataset.init) {
+              el.dataset.init = "1";
+              el.style.height = "auto";
+              el.style.height = el.scrollHeight + "px";
+              el.selectionStart = el.selectionEnd = el.value.length;
+            }
+          }}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder={t("features.notePlaceholder")}
+          rows={2}
+          className="flex-1 text-xs bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded px-2 py-1.5 resize-none outline-none focus:ring-1 focus:ring-amber-400 italic"
+          onInput={(e) => {
+            const el = e.currentTarget;
+            el.style.height = "auto";
+            el.style.height = el.scrollHeight + "px";
+          }}
+        />
+        <button
+          className="shrink-0 text-[11px] text-white bg-amber-500 dark:bg-amber-600 rounded px-2 py-1.5 font-medium"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => {
+            const trimmed = draft.trim();
+            if (trimmed !== text) onSave?.(trimmed);
+            onEditingChange(false);
+          }}
+        >{t("features.noteSave")}</button>
+      </div>
+    );
+  }
+
+  if (text) {
+    return (
+      <div className="ml-2 mt-1 mb-1.5 pl-2 border-l-2 border-amber-300 dark:border-amber-600">
+        <p className="text-xs text-amber-700 dark:text-amber-400 italic whitespace-pre-wrap">{text}</p>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 /** Compact inline interlinear word display */

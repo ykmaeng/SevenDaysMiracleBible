@@ -170,7 +170,7 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
   const handleNote = useCallback(() => {
     if (verses.length !== 1) return;
     if (!showNotes) setShowNotes(true);
-    window.dispatchEvent(new CustomEvent("focus-note-input"));
+    window.dispatchEvent(new CustomEvent("focus-note-input", { detail: verses[0] }));
   }, [verses, showNotes, setShowNotes]);
 
   // Check if any selected verse has a bookmark/highlight
