@@ -85,7 +85,9 @@
     "pause": "Пауза",
     "stop": "Остановить",
     "speed": "Скорость",
-    "voice": "Голос"
+    "voice": "Голос",
+    "systemDefault": "По умолчанию",
+    "online": "HD TTS (Онлайн)"
   },
   "search": {
     "placeholder": "Поиск по Библии...",

@@ -91,7 +91,8 @@
     "stop": "Stop",
     "speed": "Speed",
     "voice": "Voice",
-    "systemDefault": "System Default"
+    "systemDefault": "System Default",
+    "online": "HD TTS (Online)"
   },
   "search": {
     "placeholder": "Search the Bible...",

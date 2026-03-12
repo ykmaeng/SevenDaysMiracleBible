@@ -3,7 +3,28 @@ use tauri::Manager;
 use tauri_plugin_fs::FsExt;
 use tauri_plugin_sql::{Migration, MigrationKind};
 
+mod edge_tts;
 mod tts_plugin;
+
+#[derive(serde::Serialize)]
+struct EdgeTtsVoice {
+    name: &'static str,
+    lang: &'static str,
+    gender: &'static str,
+}
+
+#[tauri::command]
+async fn edge_tts_synthesize(text: String, voice: String, rate: f32) -> Result<Vec<u8>, String> {
+    edge_tts::synthesize(&text, &voice, rate).await
+}
+
+#[tauri::command]
+fn edge_tts_voices() -> Vec<EdgeTtsVoice> {
+    edge_tts::get_voices()
+        .into_iter()
+        .map(|(name, lang, gender)| EdgeTtsVoice { name, lang, gender })
+        .collect()
+}
 
 /// Bundled translation DB files to copy on first run.
 const BUNDLED_TRANSLATION_DBS: &[&str] = &["kjv.db", "sav-ko.db"];
@@ -35,7 +56,15 @@ pub fn run() {
         )
         .plugin(tauri_plugin_opener::init())
         .plugin(tts_plugin::init())
-        .invoke_handler(tts_plugin::commands());
+        .invoke_handler(tauri::generate_handler![
+            tts_plugin::tts_speak,
+            tts_plugin::tts_stop,
+            tts_plugin::tts_is_speaking,
+            tts_plugin::tts_is_initialized,
+            tts_plugin::tts_get_voices,
+            edge_tts_synthesize,
+            edge_tts_voices,
+        ]);
 
     #[cfg(mobile)]
     {

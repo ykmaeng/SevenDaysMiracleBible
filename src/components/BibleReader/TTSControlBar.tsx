@@ -1,5 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { getVoices as getEdgeVoices, type EdgeTtsVoice } from "../../lib/edgeTts";
 import type { TTSVoice } from "../../hooks/useTTS";
 
 interface TTSControlBarProps {
@@ -18,9 +20,14 @@ interface TTSControlBarProps {
 
 const SPEED_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
-/** Clean up voice names for display (remove parenthesized suffixes and common prefixes) */
+/** Clean up voice names for display */
 function formatVoiceName(name: string): string {
   return name.replace(/\s*\(.*\)$/, "").replace(/^Google\s+/, "");
+}
+
+/** Clean Edge TTS voice name: "ko-KR-SunHiNeural" → "ko KR SunHi" */
+function formatEdgeVoiceName(name: string): string {
+  return name.replace(/Neural$/, "").replace(/-/g, " ");
 }
 
 export function TTSControlBar({
@@ -38,25 +45,48 @@ export function TTSControlBar({
 }: TTSControlBarProps) {
   const { t } = useTranslation();
   const [showVoicePicker, setShowVoicePicker] = useState(false);
+  const [edgeVoices, setEdgeVoices] = useState<EdgeTtsVoice[]>([]);
+  const ttsOnline = useSettingsStore((s) => s.ttsOnline);
+  const ttsOnlineVoice = useSettingsStore((s) => s.ttsOnlineVoice);
+  const setTtsOnlineVoice = useSettingsStore((s) => s.setTtsOnlineVoice);
+
+  useEffect(() => {
+    getEdgeVoices().then(setEdgeVoices).catch(() => {});
+  }, []);
 
   // Filter out non-functional voices, then split by language
   const { matchingVoices, otherVoices } = useMemo(() => {
+    if (ttsOnline) {
+      if (!lang) return { matchingVoices: edgeVoices, otherVoices: [] as EdgeTtsVoice[] };
+      const matching = edgeVoices.filter((v) => v.lang === lang);
+      const other = edgeVoices.filter((v) => v.lang !== lang);
+      return { matchingVoices: matching, otherVoices: other };
+    }
     const usable = voices.filter((v) => !v.name.includes("Eloquence"));
     if (!lang)
       return { matchingVoices: usable, otherVoices: [] as TTSVoice[] };
     const matching = usable.filter((v) => v.lang.startsWith(lang));
     const other = usable.filter((v) => !v.lang.startsWith(lang));
     return { matchingVoices: matching, otherVoices: other };
-  }, [voices, lang]);
+  }, [voices, edgeVoices, lang, ttsOnline]);
 
-  const currentVoice = voices.find((v) => v.name === voiceName);
-  const autoVoice = !voiceName && lang
-    ? voices.find((v) => v.lang.startsWith(lang + "-")) ?? voices.find((v) => v.lang === lang)
+  const activeVoiceName = ttsOnline ? ttsOnlineVoice : voiceName;
+  const handleVoiceSelect = (name: string) => {
+    if (ttsOnline) {
+      setTtsOnlineVoice(name);
+    }
+    onVoiceChange(name);
+  };
+
+  const allVoices = ttsOnline ? edgeVoices : voices;
+  const currentVoice = allVoices.find((v) => v.name === activeVoiceName);
+  const autoVoice = !activeVoiceName && lang
+    ? allVoices.find((v) => v.lang.startsWith(lang + "-") || v.lang === lang)
     : null;
   const displayName = currentVoice
-    ? formatVoiceName(currentVoice.name)
+    ? formatEdgeVoiceName(currentVoice.name)
     : autoVoice
-      ? `Auto (${formatVoiceName(autoVoice.name)})`
+      ? `Auto (${formatEdgeVoiceName(autoVoice.name)})`
       : "Auto";
 
   const cycleSpeed = () => {
@@ -132,11 +162,11 @@ export function TTSControlBar({
         <div className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 w-64 max-h-60 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 py-1">
           <button
             onClick={() => {
-              onVoiceChange("");
+              handleVoiceSelect("");
               setShowVoicePicker(false);
             }}
             className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
-              !voiceName
+              !activeVoiceName
                 ? "text-blue-600 dark:text-blue-400 font-medium"
                 : "text-gray-700 dark:text-gray-300"
             }`}
@@ -153,17 +183,22 @@ export function TTSControlBar({
                 <button
                   key={v.name}
                   onClick={() => {
-                    onVoiceChange(v.name);
+                    handleVoiceSelect(v.name);
                     setShowVoicePicker(false);
                   }}
                   className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                    voiceName === v.name
+                    activeVoiceName === v.name
                       ? "text-blue-600 dark:text-blue-400 font-medium"
                       : "text-gray-700 dark:text-gray-300"
                   }`}
                 >
-                  <span>{formatVoiceName(v.name)}</span>
-                  {v.localService && (
+                  <span>{ttsOnline ? formatEdgeVoiceName(v.name) : formatVoiceName(v.name)}</span>
+                  {"gender" in v && (
+                    <span className="ml-1 text-[10px] text-gray-400 dark:text-gray-500">
+                      {(v as EdgeTtsVoice).gender === "Female" ? "♀" : "♂"}
+                    </span>
+                  )}
+                  {"localService" in v && (v as TTSVoice).localService && (
                     <span className="ml-1 text-[10px] text-gray-400 dark:text-gray-500">local</span>
                   )}
                 </button>
@@ -180,16 +215,16 @@ export function TTSControlBar({
                 <button
                   key={v.name}
                   onClick={() => {
-                    onVoiceChange(v.name);
+                    handleVoiceSelect(v.name);
                     setShowVoicePicker(false);
                   }}
                   className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                    voiceName === v.name
+                    activeVoiceName === v.name
                       ? "text-blue-600 dark:text-blue-400 font-medium"
                       : "text-gray-700 dark:text-gray-300"
                   }`}
                 >
-                  <span>{formatVoiceName(v.name)}</span>
+                  <span>{ttsOnline ? formatEdgeVoiceName(v.name) : formatVoiceName(v.name)}</span>
                   <span className="ml-1 text-gray-400 dark:text-gray-500">
                     {v.lang}
                   </span>

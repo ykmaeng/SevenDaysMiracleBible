@@ -58,7 +58,6 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
   const ttsSpeed = useSettingsStore((s) => s.ttsSpeed);
   const setTtsSpeed = useSettingsStore((s) => s.setTtsSpeed);
   const ttsVoiceName = useSettingsStore((s) => s.ttsVoiceName);
-  const setTtsVoiceName = useSettingsStore((s) => s.setTtsVoiceName);
   const commentaryPosition = useSettingsStore((s) => s.commentaryPosition);
   const splitRatio = useSettingsStore((s) => s.commentarySplitRatio);
   const setSplitRatio = useSettingsStore((s) => s.setCommentarySplitRatio);
@@ -109,8 +108,8 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
     versesRef.current = verses;
   }, []);
 
-  const handleVoiceChange = (name: string) => {
-    setTtsVoiceName(name);
+  const handleVoiceChange = (_name: string) => {
+    // Voice setting is already persisted by TTSControlBar; just restart from current verse
     const idx = tts.currentVerseIndex;
     if (tts.isPlaying && versesRef.current.length > 0) {
       const lang = translationToLang(activeTab.translationId);

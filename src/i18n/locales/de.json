@@ -85,7 +85,9 @@
     "pause": "Pause",
     "stop": "Stopp",
     "speed": "Geschwindigkeit",
-    "voice": "Stimme"
+    "voice": "Stimme",
+    "systemDefault": "Systemstandard",
+    "online": "HD TTS (Online)"
   },
   "search": {
     "placeholder": "In der Bibel suchen...",

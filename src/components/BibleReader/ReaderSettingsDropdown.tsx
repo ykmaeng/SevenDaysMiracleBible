@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore, type CommentaryPosition } from "../../stores/settingsStore";
 import { useFeatureStore } from "../../stores/featureStore";
+import { getVoices as getEdgeVoices, type EdgeTtsVoice } from "../../lib/edgeTts";
 import type { TTSVoice } from "../../hooks/useTTS";
 
 interface ReaderSettingsDropdownProps {
@@ -43,10 +44,20 @@ export function ReaderSettingsDropdown({
   const setTtsVoiceName = useSettingsStore((s) => s.setTtsVoiceName);
   const ttsSpeed = useSettingsStore((s) => s.ttsSpeed);
   const setTtsSpeed = useSettingsStore((s) => s.setTtsSpeed);
+  const ttsOnline = useSettingsStore((s) => s.ttsOnline);
+  const setTtsOnline = useSettingsStore((s) => s.setTtsOnline);
+  const ttsOnlineVoice = useSettingsStore((s) => s.ttsOnlineVoice);
+  const setTtsOnlineVoice = useSettingsStore((s) => s.setTtsOnlineVoice);
   const isCommentaryEnabled = useFeatureStore((s) => s.isEnabled("commentary"));
   const isInterlinearEnabled = useFeatureStore((s) => s.isEnabled("interlinear"));
   const isDictionaryEnabled = useFeatureStore((s) => s.isEnabled("dictionary"));
   const isNotesEnabled = useFeatureStore((s) => s.isEnabled("notes"));
+
+  const [edgeVoices, setEdgeVoices] = useState<EdgeTtsVoice[]>([]);
+
+  useEffect(() => {
+    getEdgeVoices().then(setEdgeVoices).catch(() => {});
+  }, []);
 
   const groupedVoices = useMemo(() => {
     const map = new Map<string, TTSVoice[]>();
@@ -58,6 +69,15 @@ export function ReaderSettingsDropdown({
     }
     return map;
   }, [ttsVoices]);
+
+  const groupedEdgeVoices = useMemo(() => {
+    const map = new Map<string, EdgeTtsVoice[]>();
+    for (const v of edgeVoices) {
+      if (!map.has(v.lang)) map.set(v.lang, []);
+      map.get(v.lang)!.push(v);
+    }
+    return map;
+  }, [edgeVoices]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -222,26 +242,55 @@ export function ReaderSettingsDropdown({
             <span className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase">{t("tts.title")}</span>
           </div>
 
+          {/* Online TTS toggle */}
+          <ToggleItem
+            label={t("tts.online")}
+            checked={ttsOnline}
+            onChange={setTtsOnline}
+          />
+
           {/* TTS Voice selector */}
-          <div className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
-            <span className="text-sm text-gray-700 dark:text-gray-300 shrink-0">{t("tts.voice")}</span>
-            <select
-              value={ttsVoiceName}
-              onChange={(e) => setTtsVoiceName(e.target.value)}
-              className="ml-2 max-w-[140px] text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded px-2 py-1.5 border-none outline-none"
-            >
-              <option value="">{t("tts.systemDefault")}</option>
-              {[...groupedVoices.entries()].map(([lang, langVoices]) => (
-                <optgroup key={lang} label={lang.toUpperCase()}>
-                  {langVoices.map((v, i) => (
-                    <option key={`${lang}-${i}`} value={v.name}>
-                      {v.name.replace(/\s*\(.*\)$/, "").replace(/^Google\s+/, "")}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </div>
+          {ttsOnline ? (
+            <div className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+              <span className="text-sm text-gray-700 dark:text-gray-300 shrink-0">{t("tts.voice")}</span>
+              <select
+                value={ttsOnlineVoice}
+                onChange={(e) => setTtsOnlineVoice(e.target.value)}
+                className="ml-2 max-w-[140px] text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded px-2 py-1.5 border-none outline-none"
+              >
+                <option value="">{t("tts.systemDefault")}</option>
+                {[...groupedEdgeVoices.entries()].map(([lang, langVoices]) => (
+                  <optgroup key={lang} label={lang.toUpperCase()}>
+                    {langVoices.map((v) => (
+                      <option key={v.name} value={v.name}>
+                        {v.name.replace(/Neural$/, "").replace(/-/g, " ")} ({v.gender === "Female" ? "♀" : "♂"})
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+              <span className="text-sm text-gray-700 dark:text-gray-300 shrink-0">{t("tts.voice")}</span>
+              <select
+                value={ttsVoiceName}
+                onChange={(e) => setTtsVoiceName(e.target.value)}
+                className="ml-2 max-w-[140px] text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded px-2 py-1.5 border-none outline-none"
+              >
+                <option value="">{t("tts.systemDefault")}</option>
+                {[...groupedVoices.entries()].map(([lang, langVoices]) => (
+                  <optgroup key={lang} label={lang.toUpperCase()}>
+                    {langVoices.map((v, i) => (
+                      <option key={`${lang}-${i}`} value={v.name}>
+                        {v.name.replace(/\s*\(.*\)$/, "").replace(/^Google\s+/, "")}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* TTS Speed slider */}
           <div className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">

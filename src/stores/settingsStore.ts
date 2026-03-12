@@ -18,6 +18,8 @@ interface SettingsState {
   commentarySplitRatio: number;
   ttsVoiceName: string;
   ttsSpeed: number;
+  ttsOnline: boolean;
+  ttsOnlineVoice: string;
   showDictionary: boolean;
   showNotes: boolean;
   showCommentary: boolean;
@@ -39,6 +41,8 @@ interface SettingsActions {
   reorderParallelTranslation: (fromIndex: number, toIndex: number) => void;
   setTtsVoiceName: (name: string) => void;
   setTtsSpeed: (speed: number) => void;
+  setTtsOnline: (on: boolean) => void;
+  setTtsOnlineVoice: (name: string) => void;
   setShowDictionary: (show: boolean) => void;
   setShowNotes: (show: boolean) => void;
   setShowCommentary: (show: boolean) => void;
@@ -66,6 +70,8 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       commentarySplitRatio: 0.5,
       ttsVoiceName: "",
       ttsSpeed: 1.0,
+      ttsOnline: true,
+      ttsOnlineVoice: "",
       showDictionary: true,
       showNotes: false,
       showCommentary: false,
@@ -146,6 +152,16 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setTtsSpeed: (speed) =>
         set((state) => {
           state.ttsSpeed = Math.max(0.5, Math.min(2.0, speed));
+        }),
+
+      setTtsOnline: (on) =>
+        set((state) => {
+          state.ttsOnline = on;
+        }),
+
+      setTtsOnlineVoice: (name) =>
+        set((state) => {
+          state.ttsOnlineVoice = name;
         }),
 
       setShowDictionary: (show) =>

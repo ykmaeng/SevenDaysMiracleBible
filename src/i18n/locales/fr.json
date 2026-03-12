@@ -85,7 +85,9 @@
     "pause": "Pause",
     "stop": "Arr\u00eater",
     "speed": "Vitesse",
-    "voice": "Voix"
+    "voice": "Voix",
+    "systemDefault": "Par défaut",
+    "online": "TTS HD (En ligne)"
   },
   "search": {
     "placeholder": "Rechercher dans la Bible...",

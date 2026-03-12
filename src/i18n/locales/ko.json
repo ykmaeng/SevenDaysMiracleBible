@@ -91,7 +91,8 @@
     "stop": "정지",
     "speed": "속도",
     "voice": "음성",
-    "systemDefault": "시스템 기본"
+    "systemDefault": "시스템 기본",
+    "online": "고음질 TTS (온라인)"
   },
   "search": {
     "placeholder": "성경 검색...",

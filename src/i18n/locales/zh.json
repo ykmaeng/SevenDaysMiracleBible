@@ -86,7 +86,9 @@
     "pause": "暂停",
     "stop": "停止",
     "speed": "速度",
-    "voice": "语音"
+    "voice": "语音",
+    "systemDefault": "系统默认",
+    "online": "高品质TTS（在线）"
   },
   "search": {
     "placeholder": "搜索圣经...",

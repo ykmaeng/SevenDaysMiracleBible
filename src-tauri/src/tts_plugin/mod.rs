@@ -96,7 +96,7 @@ impl<R: Runtime, T: Manager<R>> TtsExt<R> for T {
 }
 
 #[command]
-async fn tts_speak<R: Runtime>(app: AppHandle<R>, payload: SpeakRequest) -> Result<SpeakResponse> {
+pub async fn tts_speak<R: Runtime>(app: AppHandle<R>, payload: SpeakRequest) -> Result<SpeakResponse> {
     #[cfg(mobile)]
     {
         app.tts().speak(payload)
@@ -110,7 +110,7 @@ async fn tts_speak<R: Runtime>(app: AppHandle<R>, payload: SpeakRequest) -> Resu
 }
 
 #[command]
-async fn tts_stop<R: Runtime>(app: AppHandle<R>) -> Result<StopResponse> {
+pub async fn tts_stop<R: Runtime>(app: AppHandle<R>) -> Result<StopResponse> {
     #[cfg(mobile)]
     {
         app.tts().stop()
@@ -123,7 +123,7 @@ async fn tts_stop<R: Runtime>(app: AppHandle<R>) -> Result<StopResponse> {
 }
 
 #[command]
-async fn tts_is_speaking<R: Runtime>(app: AppHandle<R>) -> Result<IsSpeakingResponse> {
+pub async fn tts_is_speaking<R: Runtime>(app: AppHandle<R>) -> Result<IsSpeakingResponse> {
     #[cfg(mobile)]
     {
         app.tts().is_speaking()
@@ -136,7 +136,7 @@ async fn tts_is_speaking<R: Runtime>(app: AppHandle<R>) -> Result<IsSpeakingResp
 }
 
 #[command]
-async fn tts_is_initialized<R: Runtime>(app: AppHandle<R>) -> Result<IsInitializedResponse> {
+pub async fn tts_is_initialized<R: Runtime>(app: AppHandle<R>) -> Result<IsInitializedResponse> {
     #[cfg(mobile)]
     {
         app.tts().is_initialized()
@@ -149,7 +149,7 @@ async fn tts_is_initialized<R: Runtime>(app: AppHandle<R>) -> Result<IsInitializ
 }
 
 #[command]
-async fn tts_get_voices<R: Runtime>(app: AppHandle<R>) -> Result<GetVoicesResponse> {
+pub async fn tts_get_voices<R: Runtime>(app: AppHandle<R>) -> Result<GetVoicesResponse> {
     #[cfg(mobile)]
     {
         app.tts().get_voices()

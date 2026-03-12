@@ -85,7 +85,9 @@
     "pause": "一時停止",
     "stop": "停止",
     "speed": "速度",
-    "voice": "音声"
+    "voice": "音声",
+    "systemDefault": "システムデフォルト",
+    "online": "高音質TTS（オンライン）"
   },
   "search": {
     "placeholder": "聖書を検索...",
