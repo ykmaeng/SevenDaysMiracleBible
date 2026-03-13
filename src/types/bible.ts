@@ -117,6 +117,16 @@ export interface InterlinearWord {
   gloss: string;
 }
 
+export interface StrongsEntry {
+  strongs_id: string;
+  lemma: string;
+  translit: string;
+  pronunciation: string;
+  strongs_def: string;
+  kjv_def: string;
+  derivation: string;
+}
+
 export interface ParallelVerse {
   original: OriginalText | null;
   translations: {

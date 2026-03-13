@@ -1,8 +1,9 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "../../stores/settingsStore";
-import type { Verse, InterlinearWord } from "../../types/bible";
+import type { Verse, InterlinearWord, StrongsEntry } from "../../types/bible";
 import type { SectionHeading } from "../../lib/bible";
+import { getStrongsEntry } from "../../lib/bible";
 import type { VerseClickInfo, WordClickInfo } from "./VerseItem";
 import { decodeMorphology } from "../../lib/morphology";
 
@@ -347,24 +348,90 @@ function InlineInterlinear({ words, fontSize, verseNum, expandedKey, setExpanded
         const wp = parseInt(expandedKey.split(":")[1]);
         const w = words.find((w) => w.word_pos === wp);
         if (!w) return null;
-        const morph = decodeMorphology(w.morphology);
-        return (
-          <div className={`mt-1.5 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 text-xs space-y-1 ${isHebrew ? "text-right" : ""}`}>
-            <div className={`flex items-baseline gap-2 ${isHebrew ? "flex-row-reverse" : ""}`}>
-              <span className={`text-base font-serif text-gray-900 dark:text-gray-100 ${isHebrew ? "dir-rtl" : ""}`}>{w.greek_word}</span>
-              <span className="text-gray-400 italic">{w.transliteration}</span>
-              <span className="text-blue-600 dark:text-blue-400 font-mono text-[10px]">{w.strongs}</span>
-            </div>
-            <div className={`text-gray-500 dark:text-gray-400 ${isHebrew ? "flex flex-row-reverse gap-3 justify-end" : ""}`}>
-              <span><span className="text-gray-400 mr-1">어근</span> <span dir={isHebrew ? "rtl" : undefined}>{w.lexeme}</span></span>
-              <span><span className="text-gray-400 mr-1">형태</span> {morph.details}</span>
-            </div>
-            <div className="text-gray-700 dark:text-gray-300 font-medium">
-              {cleanGloss(w.gloss)}
-            </div>
-          </div>
-        );
+        return <InterlinearDetail word={w} isHebrew={isHebrew} />;
       })()}
+    </div>
+  );
+}
+
+/** Expanded detail panel for a single interlinear word with Strong's lookup */
+function InterlinearDetail({ word: w, isHebrew }: { word: InterlinearWord; isHebrew: boolean }) {
+  const morph = decodeMorphology(w.morphology);
+  const [strongsEntry, setStrongsEntry] = useState<StrongsEntry | null>(null);
+  const [showStrongs, setShowStrongs] = useState(false);
+  const strongsRef = useRef<HTMLDivElement>(null);
+
+  // Pre-fetch Strong's entry on mount
+  useEffect(() => {
+    setStrongsEntry(null);
+    setShowStrongs(false);
+    const id = w.strongs.trim();
+    if (id) {
+      getStrongsEntry(id).then(setStrongsEntry);
+    }
+  }, [w.strongs]);
+
+  const handleStrongsClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!strongsEntry) return;
+    setShowStrongs((v) => !v);
+  }, [strongsEntry]);
+
+  return (
+    <div className={`mt-1.5 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 text-xs space-y-1 ${isHebrew ? "text-right" : ""}`} onClick={(e) => e.stopPropagation()}>
+      <div className={`flex items-baseline gap-2 ${isHebrew ? "flex-row-reverse" : ""}`}>
+        <span className="text-base font-serif text-gray-900 dark:text-gray-100">{w.greek_word}</span>
+        <span className="text-gray-400 italic">{w.transliteration}</span>
+        {strongsEntry && (
+          <button
+            onClick={handleStrongsClick}
+            className={`font-mono text-[10px] cursor-pointer transition-colors ${showStrongs ? "text-blue-700 dark:text-blue-300 font-bold" : "text-blue-600 dark:text-blue-400"}`}
+          >
+            {w.strongs} ▾
+          </button>
+        )}
+        {!strongsEntry && <span className="text-blue-600 dark:text-blue-400 font-mono text-[10px]">{w.strongs}</span>}
+      </div>
+      <div className={`text-gray-500 dark:text-gray-400 ${isHebrew ? "flex flex-row-reverse gap-3 justify-end" : ""}`}>
+        <span><span className="text-gray-400 mr-1">어근</span> <span dir={isHebrew ? "rtl" : undefined}>{w.lexeme}</span></span>
+        <span><span className="text-gray-400 mr-1">형태</span> {morph.details}</span>
+      </div>
+      <div className="text-gray-700 dark:text-gray-300 font-medium">
+        {cleanGloss(w.gloss)}
+      </div>
+      {strongsEntry && (
+        <div
+          ref={strongsRef}
+          className="overflow-hidden transition-all duration-250 ease-out"
+          style={{
+            maxHeight: showStrongs ? `${strongsRef.current?.scrollHeight ?? 300}px` : "0px",
+            opacity: showStrongs ? 1 : 0,
+          }}
+        >
+          <div className="mt-1.5 pt-1.5 border-t border-gray-200 dark:border-gray-600 space-y-1">
+            <div className={`flex items-baseline gap-2 ${isHebrew ? "flex-row-reverse" : ""}`}>
+              <span className="font-mono text-blue-600 dark:text-blue-400 text-[10px] font-bold">{strongsEntry.strongs_id}</span>
+              <span className="font-serif text-gray-900 dark:text-gray-100">{strongsEntry.lemma}</span>
+              {strongsEntry.pronunciation && (
+                <span className="text-gray-400 italic">{strongsEntry.pronunciation}</span>
+              )}
+            </div>
+            {strongsEntry.strongs_def && (
+              <p className="text-gray-700 dark:text-gray-300 text-left">{strongsEntry.strongs_def}</p>
+            )}
+            {strongsEntry.kjv_def && (
+              <p className="text-gray-500 dark:text-gray-400 text-left">
+                <span className="text-gray-400 mr-1">KJV:</span>{strongsEntry.kjv_def}
+              </p>
+            )}
+            {strongsEntry.derivation && (
+              <p className="text-gray-500 dark:text-gray-400 text-left">
+                <span className="text-gray-400 mr-1">유래:</span>{strongsEntry.derivation}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

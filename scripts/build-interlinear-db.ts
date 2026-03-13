@@ -162,10 +162,69 @@ if (existsSync(HEBREW_CSV)) {
   console.log(`  ${count} Hebrew words imported`);
 }
 
+// --- Import Strong's Dictionary ---
+const STRONGS_GREEK_PATH = resolve(__dirname, "data/interlinear/strongs-greek.js");
+const STRONGS_HEBREW_PATH = resolve(__dirname, "data/interlinear/strongs-hebrew.js");
+
+db.exec(`CREATE TABLE IF NOT EXISTS strongs_dictionary (
+  strongs_id TEXT PRIMARY KEY,
+  lemma TEXT,
+  translit TEXT,
+  pronunciation TEXT,
+  strongs_def TEXT,
+  kjv_def TEXT,
+  derivation TEXT
+)`);
+
+const insertStrongs = db.prepare(
+  "INSERT OR IGNORE INTO strongs_dictionary (strongs_id, lemma, translit, pronunciation, strongs_def, kjv_def, derivation) VALUES (?, ?, ?, ?, ?, ?, ?)"
+);
+
+function parseStrongsJs(path: string): Record<string, Record<string, string>> {
+  let content = readFileSync(path, "utf-8");
+  const startIdx = content.indexOf("{");
+  const lastIdx = content.lastIndexOf("}");
+  content = content.slice(startIdx, lastIdx + 1);
+  return JSON.parse(content);
+}
+
+if (existsSync(STRONGS_GREEK_PATH)) {
+  console.log("Importing Strong's Greek dictionary...");
+  const dict = parseStrongsJs(STRONGS_GREEK_PATH);
+  const entries = Object.entries(dict);
+  const insertManyStrongs = db.transaction((rows: unknown[][]) => {
+    for (const row of rows) insertStrongs.run(...row);
+  });
+  const batch: unknown[][] = [];
+  for (const [id, entry] of entries) {
+    batch.push([id, entry.lemma ?? "", entry.translit ?? "", entry.pron ?? "", entry.strongs_def ?? "", entry.kjv_def ?? "", entry.derivation ?? ""]);
+    if (batch.length >= 1000) { insertManyStrongs(batch); batch.length = 0; }
+  }
+  if (batch.length) insertManyStrongs(batch);
+  console.log(`  ${entries.length} Greek entries imported`);
+}
+
+if (existsSync(STRONGS_HEBREW_PATH)) {
+  console.log("Importing Strong's Hebrew dictionary...");
+  const dict = parseStrongsJs(STRONGS_HEBREW_PATH);
+  const entries = Object.entries(dict);
+  const insertManyStrongs = db.transaction((rows: unknown[][]) => {
+    for (const row of rows) insertStrongs.run(...row);
+  });
+  const batch: unknown[][] = [];
+  for (const [id, entry] of entries) {
+    batch.push([id, entry.lemma ?? "", entry.xlit ?? entry.translit ?? "", entry.pron ?? "", entry.strongs_def ?? "", entry.kjv_def ?? "", entry.derivation ?? ""]);
+    if (batch.length >= 1000) { insertManyStrongs(batch); batch.length = 0; }
+  }
+  if (batch.length) insertManyStrongs(batch);
+  console.log(`  ${entries.length} Hebrew entries imported`);
+}
+
 db.pragma("journal_mode = DELETE");
 const total = db.prepare("SELECT COUNT(*) as c FROM interlinear_words").get() as { c: number };
+const strongsTotal = db.prepare("SELECT COUNT(*) as c FROM strongs_dictionary").get() as { c: number };
 const sizeMb = (statSync(DB_PATH).size / 1024 / 1024).toFixed(1);
-console.log(`\nTotal: ${total.c} words → ${DB_PATH}`);
+console.log(`\nTotal: ${total.c} interlinear words, ${strongsTotal.c} Strong's entries → ${DB_PATH}`);
 console.log(`Size: ${sizeMb} MB`);
 db.close();
 console.log("Done!");

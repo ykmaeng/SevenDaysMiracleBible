@@ -251,6 +251,15 @@ export async function isInterlinearAvailable(bookId: number): Promise<boolean> {
   return (result[0]?.c ?? 0) > 0;
 }
 
+export async function getStrongsEntry(strongsId: string): Promise<import("../types/bible").StrongsEntry | null> {
+  // Handle compound IDs like "H9003" or multiple IDs
+  const rows = await queryInterlinear<import("../types/bible").StrongsEntry>(
+    "SELECT * FROM strongs_dictionary WHERE strongs_id = $1",
+    [strongsId]
+  );
+  return rows[0] ?? null;
+}
+
 export async function searchVerses(
   translationId: string,
   searchText: string,
