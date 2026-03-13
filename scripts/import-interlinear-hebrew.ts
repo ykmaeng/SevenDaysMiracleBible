@@ -124,6 +124,25 @@ function main() {
   console.log(`Opening database: ${DB_PATH}`);
   const db = new Database(DB_PATH);
 
+  // Create table if not exists
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS interlinear_words (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      book_id INTEGER NOT NULL,
+      chapter INTEGER NOT NULL,
+      verse INTEGER NOT NULL,
+      word_pos INTEGER NOT NULL,
+      greek_word TEXT NOT NULL,
+      lexeme TEXT NOT NULL,
+      transliteration TEXT NOT NULL,
+      morphology TEXT NOT NULL,
+      strongs TEXT NOT NULL,
+      gloss TEXT NOT NULL,
+      UNIQUE (book_id, chapter, verse, word_pos)
+    );
+    CREATE INDEX IF NOT EXISTS idx_interlinear_lookup ON interlinear_words(book_id, chapter, verse);
+  `);
+
   // Clear only OT data (book_id 1-39)
   const existing = db.prepare("SELECT COUNT(*) as c FROM interlinear_words WHERE book_id <= 39").get() as { c: number };
   if (existing.c > 0) {

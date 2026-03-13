@@ -160,14 +160,21 @@ export function ParagraphGroup({
           const hlCls = hlColor && HIGHLIGHT_BG[hlColor] ? HIGHLIGHT_BG[hlColor] : "";
 
           return (
-            <span key={verse.verse}>
+            <span
+              key={verse.verse}
+              onClick={(e) => {
+                const target = e.target as HTMLElement;
+                if (target.closest("[data-parallel-word]") || target.closest("[data-note-input]")) return;
+                handleVerseSpanClick(e, verse);
+              }}
+              className="cursor-pointer"
+            >
               <span
-                onClick={(e) => handleVerseSpanClick(e, verse)}
-                className={`cursor-pointer rounded-sm transition-colors ${
+                className={`rounded-sm transition-colors ${
                   isPlaying
                     ? "bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-200 dark:ring-blue-700"
                     : isSelected
-                    ? "bg-blue-100/70 dark:bg-blue-800/50"
+                    ? "bg-blue-100/70 dark:bg-blue-500/30"
                     : hlCls
                 }`}
               >
@@ -213,7 +220,7 @@ export function ParagraphGroup({
               )}
               {/* Interlinear Greek words */}
               {interlinearData?.has(verse.verse) && (
-                <InlineInterlinear words={interlinearData.get(verse.verse)!} fontSize={fontSize} verseNum={verse.verse} expandedKey={expandedWordKey ?? null} setExpandedKey={onExpandWord ?? (() => {})} />
+                <InlineInterlinear words={interlinearData.get(verse.verse)!} fontSize={fontSize} verseNum={verse.verse} expandedKey={expandedWordKey ?? null} setExpandedKey={onExpandWord ?? (() => {})} bookId={verse.book_id} />
               )}
               {/* Inline note */}
               {noteMap && (() => {
@@ -305,10 +312,11 @@ function InlineNote({ text, editing, onEditingChange, onSave }: {
 }
 
 /** Compact inline interlinear word display */
-function InlineInterlinear({ words, fontSize, verseNum, expandedKey, setExpandedKey }: { words: InterlinearWord[]; fontSize: number; verseNum: number; expandedKey: string | null; setExpandedKey: (k: string | null) => void }) {
+function InlineInterlinear({ words, fontSize, verseNum, expandedKey, setExpandedKey, bookId }: { words: InterlinearWord[]; fontSize: number; verseNum: number; expandedKey: string | null; setExpandedKey: (k: string | null) => void; bookId: number }) {
+  const isHebrew = bookId <= 39;
   return (
     <div className="ml-2 mt-1.5 mb-2">
-      <div className="flex flex-wrap gap-0.5">
+      <div className={`flex flex-wrap gap-0.5 ${isHebrew ? "flex-row-reverse" : ""}`}>
         {words.map((w) => {
           const key = `${verseNum}:${w.word_pos}`;
           const isExpanded = expandedKey === key;
@@ -341,15 +349,15 @@ function InlineInterlinear({ words, fontSize, verseNum, expandedKey, setExpanded
         if (!w) return null;
         const morph = decodeMorphology(w.morphology);
         return (
-          <div className="mt-1.5 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 text-xs space-y-1">
-            <div className="flex items-baseline gap-2">
-              <span className="text-base font-serif text-gray-900 dark:text-gray-100">{w.greek_word}</span>
+          <div className={`mt-1.5 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 text-xs space-y-1 ${isHebrew ? "text-right" : ""}`}>
+            <div className={`flex items-baseline gap-2 ${isHebrew ? "flex-row-reverse" : ""}`}>
+              <span className={`text-base font-serif text-gray-900 dark:text-gray-100 ${isHebrew ? "dir-rtl" : ""}`}>{w.greek_word}</span>
               <span className="text-gray-400 italic">{w.transliteration}</span>
               <span className="text-blue-600 dark:text-blue-400 font-mono text-[10px]">{w.strongs}</span>
             </div>
-            <div className="text-gray-500 dark:text-gray-400">
-              <span className="text-gray-400 mr-1">어근</span> {w.lexeme}
-              <span className="text-gray-400 ml-3 mr-1">형태</span> {morph.details}
+            <div className={`text-gray-500 dark:text-gray-400 ${isHebrew ? "flex flex-row-reverse gap-3 justify-end" : ""}`}>
+              <span><span className="text-gray-400 mr-1">어근</span> <span dir={isHebrew ? "rtl" : undefined}>{w.lexeme}</span></span>
+              <span><span className="text-gray-400 mr-1">형태</span> {morph.details}</span>
             </div>
             <div className="text-gray-700 dark:text-gray-300 font-medium">
               {cleanGloss(w.gloss)}

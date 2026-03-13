@@ -50,7 +50,7 @@ function getFontOptions(lang: string): FontOption[] {
 
 export function LanguageSettings() {
   const { t, i18n } = useTranslation();
-  const { language, setLanguage, fontSize, setFontSize, fontFamily, setFontFamily, theme, setTheme, showVerseNumbers, setShowVerseNumbers, parallelTranslations, toggleParallelTranslation, reorderParallelTranslation } =
+  const { language, setLanguage, fontSize, setFontSize, fontFamily, setFontFamily, theme, setTheme, parallelTranslations, toggleParallelTranslation, reorderParallelTranslation } =
     useSettingsStore();
   const [availableTranslations, setAvailableTranslations] = useState<Translation[]>([]);
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -215,25 +215,6 @@ export function LanguageSettings() {
             </button>
           ))}
         </div>
-      </section>
-
-      {/* Verse numbers */}
-      <section>
-        <label className="flex items-center justify-between">
-          <span className="text-sm text-gray-700 dark:text-gray-300">{t("settings.showVerseNumbers")}</span>
-          <button
-            onClick={() => setShowVerseNumbers(!showVerseNumbers)}
-            className={`w-10 h-6 rounded-full transition-colors ${
-              showVerseNumbers ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"
-            }`}
-          >
-            <span
-              className={`block w-4 h-4 bg-white rounded-full shadow transition-transform mx-1 ${
-                showVerseNumbers ? "translate-x-4" : ""
-              }`}
-            />
-          </button>
-        </label>
       </section>
 
       {/* Parallel translations (foldable) */}
