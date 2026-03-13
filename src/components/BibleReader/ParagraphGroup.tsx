@@ -3,8 +3,25 @@ import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "../../stores/settingsStore";
 import type { Verse, InterlinearWord } from "../../types/bible";
 import type { SectionHeading } from "../../lib/bible";
-import type { VerseClickInfo } from "./VerseItem";
+import type { VerseClickInfo, WordClickInfo } from "./VerseItem";
 import { decodeMorphology } from "../../lib/morphology";
+
+const TRANSLATION_LANG: Record<string, string> = {
+  "sav-ko": "ko",
+  cunpss: "zh",
+  rv1909: "es",
+  hebrew: "he",
+  greek: "el",
+  japkougo: "ja",
+  gerelb: "de",
+  frecrampon: "fr",
+  russynodal: "ru",
+  porblivre: "pt",
+};
+
+function translationToLang(translationId: string): string {
+  return TRANSLATION_LANG[translationId] ?? "en";
+}
 
 const HIGHLIGHT_BG: Record<string, string> = {
   yellow: "bg-yellow-100/60 dark:bg-yellow-800/50",
@@ -39,6 +56,7 @@ interface ParagraphGroupProps {
   editingNoteKey?: string | null;
   onEditingNoteKeyChange?: (key: string | null) => void;
   translationLang?: string;
+  onWordClick?: (info: WordClickInfo) => void;
 }
 
 export function ParagraphGroup({
@@ -60,6 +78,7 @@ export function ParagraphGroup({
   editingNoteKey,
   onEditingNoteKeyChange,
   translationLang,
+  onWordClick,
 }: ParagraphGroupProps) {
   const showVerseNumbers = useSettingsStore((s) => s.showVerseNumbers);
   const fontSize = useSettingsStore((s) => s.fontSize);
@@ -83,6 +102,24 @@ export function ParagraphGroup({
       });
     },
     [onVerseClick]
+  );
+
+  const handleWordSpanClick = useCallback(
+    (e: React.MouseEvent<HTMLSpanElement>, sourceLang: string) => {
+      if (!onWordClick) return;
+      e.stopPropagation();
+      const word = (e.currentTarget.textContent ?? "").trim();
+      if (!word) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      onWordClick({
+        word,
+        sourceLang,
+        x: rect.left + rect.width / 2,
+        y: rect.top,
+        bottom: rect.bottom,
+      });
+    },
+    [onWordClick]
   );
 
   const sectionTitle = sectionHeading
@@ -147,12 +184,28 @@ export function ParagraphGroup({
                   {parallelIds!.map((tid) => {
                     const pv = parallelData!.get(tid)?.get(verse.verse);
                     if (!pv) return null;
+                    const sourceLang = translationToLang(pv.translationId);
                     return (
                       <div key={tid} className="text-gray-500 dark:text-gray-400">
                         <sup className="text-blue-500 dark:text-blue-400 font-medium select-none mx-1" style={{ fontSize: '0.55em' }}>
                           {pv.translationId.toUpperCase()}
                         </sup>
-                        {pv.text}
+                        {onWordClick ? (
+                          (pv.text.match(/[\p{L}\p{M}'-]+|[^\p{L}\p{M}'-]+/gu) ?? []).map((token, i) =>
+                            /\p{L}/u.test(token) ? (
+                              <span
+                                key={i}
+                                data-parallel-word
+                                onClick={(e) => handleWordSpanClick(e, sourceLang)}
+                                className="cursor-pointer rounded hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/40 dark:hover:text-blue-300 transition-colors"
+                              >
+                                {token}
+                              </span>
+                            ) : (
+                              <span key={i}>{token}</span>
+                            )
+                          )
+                        ) : pv.text}
                       </div>
                     );
                   })}

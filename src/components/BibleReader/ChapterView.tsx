@@ -10,7 +10,7 @@ import { BUNDLED_TRANSLATIONS } from "../../lib/downloadConfig";
 import { ParagraphGroup } from "./ParagraphGroup";
 import { DictionaryPopup } from "./DictionaryPopup";
 import { VerseActionToolbar } from "./VerseActionToolbar";
-import type { VerseClickInfo } from "./VerseItem";
+import type { VerseClickInfo, WordClickInfo } from "./VerseItem";
 import type { Verse, InterlinearWord } from "../../types/bible";
 
 interface ParagraphData {
@@ -62,7 +62,7 @@ export function ChapterView({
 
   // Dictionary popup state
   const [dictWord, setDictWord] = useState<string | null>(null);
-  const [dictSourceLang] = useState<string>("en");
+  const [dictSourceLang, setDictSourceLang] = useState<string>("en");
   const [dictPosition, setDictPosition] = useState<{ x: number; y: number; bottom: number } | null>(null);
 
   // Verse selection state (multi-select)
@@ -77,8 +77,10 @@ export function ChapterView({
   const versePerLine = useSettingsStore((s) => s.versePerLine);
   const parallelTranslations = useSettingsStore((s) => s.parallelTranslations);
   const showNotes = useSettingsStore((s) => s.showNotes);
+  const showDictionary = useSettingsStore((s) => s.showDictionary);
   const isHighlightsEnabled = useFeatureStore((s) => s.isEnabled("highlights"));
   const isNotesEnabled = useFeatureStore((s) => s.isEnabled("notes"));
+  const isDictionaryEnabled = useFeatureStore((s) => s.isEnabled("dictionary"));
   const updateNote = useBookmarkStore((s) => s.updateNote);
   const addBookmark = useBookmarkStore((s) => s.addBookmark);
 
@@ -345,7 +347,7 @@ export function ChapterView({
 
   const handleBackgroundClick = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-    if (target.closest("[data-toolbar]") || target.closest(".cursor-pointer") || target.closest("[data-note-input]")) return;
+    if (target.closest("[data-toolbar]") || target.closest(".cursor-pointer") || target.closest("[data-note-input]") || target.closest("[data-parallel-word]")) return;
     if (editingNoteKey) {
       setEditingNoteKey(null);
       setSelectedVerses(new Map());
@@ -361,6 +363,12 @@ export function ChapterView({
   const closeDictPopup = useCallback(() => {
     setDictWord(null);
     setDictPosition(null);
+  }, []);
+
+  const handleWordClick = useCallback((info: WordClickInfo) => {
+    setDictWord(info.word);
+    setDictSourceLang(info.sourceLang);
+    setDictPosition({ x: info.x, y: info.y, bottom: info.bottom });
   }, []);
 
   // Swipe gesture for chapter navigation
@@ -498,6 +506,7 @@ export function ChapterView({
                   if (!key) setSelectedVerses(new Map());
                 }}
                 translationLang={translationLang}
+                onWordClick={isDictionaryEnabled && showDictionary && hasParallel ? handleWordClick : undefined}
               />
             </div>
           );
