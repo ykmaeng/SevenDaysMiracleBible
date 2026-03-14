@@ -162,53 +162,59 @@ export function HighlightsView({ onClose, onNavigate }: HighlightsViewProps) {
                 {group.items.map((h) => {
                   const expanded = expandAll || expandedId === h.id;
                   return (
-                    <div key={h.id} className="rounded-lg overflow-hidden">
-                      <button
-                        onClick={() => setExpandedId(expanded ? null : h.id)}
-                        className="w-full text-left px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2 min-w-0"
-                      >
-                        <span className={`w-2 h-2 rounded-full shrink-0 ${COLOR_BG[h.color!]}`} />
-                        <span className="text-xs font-medium text-blue-600 dark:text-blue-400 shrink-0">
-                          {h.chapter}:{h.verse}
-                        </span>
-                        {h.text && (
-                          <span className={`text-sm text-gray-600 dark:text-gray-300 min-w-0 ${expanded ? "" : "truncate"}`}>
-                            {h.text}
+                    <div key={h.id} className="rounded-lg overflow-hidden px-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <div className="flex items-start gap-2 min-w-0">
+                        <div className="flex items-center gap-2 shrink-0 py-2">
+                          <span className={`w-2 h-2 rounded-full shrink-0 ${COLOR_BG[h.color!]}`} />
+                          <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                            {h.chapter}:{h.verse}
                           </span>
-                        )}
-                      </button>
-                      {expanded && (
-                        <div className="flex items-center gap-2 px-3 pb-2 flex-wrap">
-                          {h.translation_id && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 uppercase">
-                              {h.translation_id}
-                            </span>
-                          )}
-                          {h.note && (
-                            <p className="text-xs text-gray-400 dark:text-gray-500 italic flex-1 min-w-0 truncate">
-                              {h.note}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-1 ml-auto shrink-0">
-                            <button
-                              onClick={() => handleRemove(h)}
-                              className="p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => onNavigate(h.book_id, h.chapter, h.verse)}
-                              className="p-1.5 rounded-md text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                            >
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                              </svg>
-                            </button>
-                          </div>
                         </div>
-                      )}
+                        <div className="flex-1 min-w-0">
+                          <button
+                            onClick={() => setExpandedId(expanded ? null : h.id)}
+                            className="w-full text-left py-2"
+                          >
+                            {h.text && (
+                              <span className={`text-sm text-gray-600 dark:text-gray-300 block min-w-0 ${expanded ? "" : "truncate"}`}>
+                                {h.text}
+                              </span>
+                            )}
+                          </button>
+                          {expanded && (
+                            <div className="flex items-center gap-2 pb-2 flex-wrap">
+                              {h.translation_id && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 uppercase">
+                                  {h.translation_id}
+                                </span>
+                              )}
+                              {h.note && (
+                                <p className="text-xs text-gray-400 dark:text-gray-500 italic flex-1 min-w-0 truncate">
+                                  {h.note}
+                                </p>
+                              )}
+                              <div className="flex items-center gap-1 ml-auto shrink-0">
+                                <button
+                                  onClick={() => handleRemove(h)}
+                                  className="p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => onNavigate(h.book_id, h.chapter, h.verse)}
+                                  className="p-1.5 rounded-md text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                >
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   );
                 })}

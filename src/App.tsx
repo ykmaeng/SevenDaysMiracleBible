@@ -8,12 +8,13 @@ import { LanguageOnboarding } from "./components/Onboarding/LanguageOnboarding";
 import { FeaturesView } from "./components/Features/FeaturesView";
 import { BookmarksView } from "./components/Bookmarks/BookmarksView";
 import { HighlightsView } from "./components/Highlights/HighlightsView";
+import { NotesView } from "./components/Notes/NotesView";
 import { useSettingsStore } from "./stores/settingsStore";
 import { useFeatureStore, FEATURE_REGISTRY } from "./stores/featureStore";
 import { useTabStore } from "./stores/tabStore";
 import { loadGoogleFont } from "./lib/googleFonts";
 
-type View = "reader" | "settings" | "features" | "bookmarks" | "highlights";
+type View = "reader" | "settings" | "features" | "bookmarks" | "highlights" | "notes";
 
 function App() {
   const { t } = useTranslation();
@@ -175,15 +176,24 @@ function App() {
             }}
           />
         )}
+        {view === "notes" && (
+          <NotesView
+            onClose={() => setView("reader")}
+            onNavigate={(bookId, chapter, verse) => {
+              navigateTo(bookId, chapter, verse);
+              setView("reader");
+            }}
+          />
+        )}
       </div>
 
       <ToastContainer />
 
       {/* Bottom navigation bar */}
-      <nav className={`flex items-center justify-around border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 transition-all duration-150 overflow-hidden ${immersive && view === "reader" ? "max-h-0 py-0" : "max-h-20 py-2"}`}>
+      <nav className={`flex items-center border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 transition-all duration-150 overflow-hidden ${immersive && view === "reader" ? "max-h-0 py-0" : "max-h-20 py-2"}`}>
         <button
           onClick={() => setView("reader")}
-          className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
+          className={`flex flex-col items-center gap-0.5 px-3 py-1 shrink-0 ${
             view === "reader" ? "text-blue-600" : "text-gray-400"
           }`}
         >
@@ -193,43 +203,45 @@ function App() {
           <span className="text-[10px]">{t("app.title")}</span>
         </button>
 
-        {tabBarFeatures.map((feature) => (
+        <div className="flex items-center overflow-x-auto no-scrollbar flex-1 min-w-0 justify-evenly">
+          {tabBarFeatures.map((feature) => (
+            <button
+              key={feature.id}
+              onClick={() => setView(feature.id as View)}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1 shrink-0 ${
+                view === feature.id ? "text-blue-600" : "text-gray-400"
+              }`}
+            >
+              <NavFeatureIcon id={feature.id} />
+              <span className="text-[10px]">{t(feature.labelKey)}</span>
+            </button>
+          ))}
+
           <button
-            key={feature.id}
-            onClick={() => setView(feature.id as View)}
-            className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
-              view === feature.id ? "text-blue-600" : "text-gray-400"
+            onClick={() => setView(view === "features" ? "reader" : "features")}
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 shrink-0 ${
+              view === "features" ? "text-blue-600" : "text-gray-400"
             }`}
           >
-            <NavFeatureIcon id={feature.id} />
-            <span className="text-[10px]">{t(feature.labelKey)}</span>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span className="text-[10px]">{t("features.add")}</span>
           </button>
-        ))}
 
-        <button
-          onClick={() => setView(view === "features" ? "reader" : "features")}
-          className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
-            view === "features" ? "text-blue-600" : "text-gray-400"
-          }`}
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          <span className="text-[10px]">{t("features.add")}</span>
-        </button>
-
-        <button
-          onClick={() => setView("settings")}
-          className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
-            view === "settings" ? "text-blue-600" : "text-gray-400"
-          }`}
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span className="text-[10px]">{t("settings.title")}</span>
-        </button>
+          <button
+            onClick={() => setView("settings")}
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 shrink-0 ${
+              view === "settings" ? "text-blue-600" : "text-gray-400"
+            }`}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-[10px]">{t("settings.title")}</span>
+          </button>
+        </div>
       </nav>
     </div>
   );
@@ -247,6 +259,13 @@ function NavFeatureIcon({ id }: { id: string }) {
       return (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
+        </svg>
+      );
+    case "notes":
+      return (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
         </svg>
       );
     default:
