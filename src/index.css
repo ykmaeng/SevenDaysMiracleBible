@@ -42,6 +42,36 @@ body,
   @apply bg-gray-600;
 }
 
+/* Selected verse underline */
+.verse-selected {
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-underline-offset: 5px;
+  text-decoration-thickness: 0.5px;
+  text-decoration-color: rgb(75 85 99); /* gray-600 */
+  background-image: repeating-linear-gradient(
+    to right,
+    rgb(75 85 99) 0,
+    rgb(75 85 99) 3px,
+    transparent 3px,
+    transparent 6px
+  );
+  padding-bottom: 2px;
+  background-position: 0 100%;
+  background-size: 100% 1px;
+  background-repeat: repeat-x;
+  text-decoration: none;
+}
+.dark .verse-selected {
+  background-image: repeating-linear-gradient(
+    to right,
+    rgb(209 213 219) 0,
+    rgb(209 213 219) 3px,
+    transparent 3px,
+    transparent 6px
+  );
+}
+
 /* Hide scrollbar for horizontal scroll containers */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

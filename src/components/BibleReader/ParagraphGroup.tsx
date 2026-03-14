@@ -174,8 +174,6 @@ export function ParagraphGroup({
                 className={`rounded-sm transition-colors ${
                   isPlaying
                     ? "bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-200 dark:ring-blue-700"
-                    : isSelected
-                    ? "bg-blue-100/70 dark:bg-blue-500/30"
                     : hlCls
                 }`}
               >
@@ -184,7 +182,11 @@ export function ParagraphGroup({
                     {verse.verse}
                   </sup>
                 )}
-                {verse.text}
+                <span
+                  className={isSelected && !isPlaying ? "verse-selected" : ""}
+                >
+                  {verse.text}
+                </span>
               </span>
               {/* Parallel translations — each on new line */}
               {hasParallel && (

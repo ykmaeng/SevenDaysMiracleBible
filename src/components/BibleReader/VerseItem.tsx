@@ -164,8 +164,6 @@ export function VerseItem({ verse, parallelVerses, isPlaying, isSelected, highli
         className={`rounded px-0.5 pr-2 py-1.5 transition-colors cursor-pointer ${
           isPlaying
             ? "bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-200 dark:ring-blue-700"
-            : isSelected
-            ? "bg-blue-50/50 dark:bg-blue-900/20 ring-1 ring-blue-300/50 dark:ring-blue-600/50"
             : highlightCls || ""
         }`}
         style={{ fontSize: `${fontSize}px`, lineHeight: 1.5, fontFamily: fontFamily || undefined }}
@@ -174,7 +172,7 @@ export function VerseItem({ verse, parallelVerses, isPlaying, isSelected, highli
           {showVerseNumbers && (
             <sup className="text-gray-400 dark:text-gray-500 font-medium mx-1 shrink-0 select-none" style={{ fontSize: '0.55em', top: '-0.4em' }}>{verse.verse}</sup>
           )}
-          <span className="flex-1">{verse.text}</span>
+          <span className={`flex-1 ${isSelected && !isPlaying ? "verse-selected" : ""}`}>{verse.text}</span>
         </div>
         {parallelVerses && parallelVerses.length > 0 && (
           <div className="ml-6 mt-0.5 space-y-0.5">
