@@ -30,6 +30,7 @@ interface ChapterViewProps {
   onVersesLoaded?: (verses: Verse[]) => void;
   showInterlinear?: boolean;
   translationLang?: string;
+  targetVerse?: number;
   onSwipePrev?: () => void;
   onSwipeNext?: () => void;
 }
@@ -45,6 +46,7 @@ export function ChapterView({
   onVersesLoaded,
   showInterlinear,
   translationLang,
+  targetVerse,
   onSwipePrev,
   onSwipeNext,
 }: ChapterViewProps) {
@@ -226,10 +228,31 @@ export function ChapterView({
   });
 
   useEffect(() => {
-    if (initialScrollPosition != null && parentRef.current) {
+    if (initialScrollPosition != null && !targetVerse && parentRef.current) {
       parentRef.current.scrollTop = initialScrollPosition;
     }
-  }, [initialScrollPosition, verses]);
+  }, [initialScrollPosition, targetVerse, verses]);
+
+  // Scroll to target verse and flash highlight (from search, bookmarks, etc.)
+  const scrolledVerseRef = useRef<string | null>(null);
+  const [flashVerse, setFlashVerse] = useState<number | undefined>();
+  useEffect(() => {
+    if (targetVerse == null || verses.length === 0) return;
+    const key = `${bookId}:${chapter}:${targetVerse}`;
+    if (scrolledVerseRef.current === key) return;
+    scrolledVerseRef.current = key;
+    const groupIdx = verseToGroupIndex.get(targetVerse - 1);
+    if (groupIdx != null) {
+      requestAnimationFrame(() => {
+        virtualizer.scrollToIndex(groupIdx, { align: "start", behavior: "smooth" });
+        // Flash after scroll animation settles
+        setTimeout(() => {
+          setFlashVerse(targetVerse);
+          setTimeout(() => setFlashVerse(undefined), 3000);
+        }, 500);
+      });
+    }
+  }, [targetVerse, bookId, chapter, verses.length, virtualizer, verseToGroupIndex]);
 
   useEffect(() => {
     if (ttsVerseIndex == null || ttsVerseIndex < 0 || ttsVerseIndex >= verses.length) return;
@@ -495,6 +518,7 @@ export function ChapterView({
                 isFirstParagraph={group.isFirst}
                 chapterHeader={group.isFirst ? { bookName: bookName ?? "", chapter } : undefined}
                 ttsVerseNumber={ttsVerseNumber}
+                flashVerseNumber={flashVerse}
                 selectedVerses={selectedVerseNumbers}
                 highlightColors={highlightColorMap}
                 onVerseClick={handleVerseClick}

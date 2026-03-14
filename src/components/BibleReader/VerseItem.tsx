@@ -56,6 +56,7 @@ interface VerseItemProps {
   verse: Verse;
   parallelVerses?: { translationId: string; translationName: string; text: string }[];
   isPlaying?: boolean;
+  isFlashing?: boolean;
   isSelected?: boolean;
   highlightColor?: string | null;
   onWordClick?: (info: WordClickInfo) => void;
@@ -64,7 +65,7 @@ interface VerseItemProps {
   isParagraphStart?: boolean;
 }
 
-export function VerseItem({ verse, parallelVerses, isPlaying, isSelected, highlightColor, onWordClick, onVerseClick, sectionHeading, isParagraphStart }: VerseItemProps) {
+export function VerseItem({ verse, parallelVerses, isPlaying, isFlashing, isSelected, highlightColor, onWordClick, onVerseClick, sectionHeading, isParagraphStart }: VerseItemProps) {
   const showVerseNumbers = useSettingsStore((s) => s.showVerseNumbers);
   const fontSize = useSettingsStore((s) => s.fontSize);
   const fontFamily = useSettingsStore((s) => s.fontFamily);
@@ -164,7 +165,9 @@ export function VerseItem({ verse, parallelVerses, isPlaying, isSelected, highli
         className={`rounded px-0.5 pr-2 py-1.5 transition-colors cursor-pointer ${
           isPlaying
             ? "bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-200 dark:ring-blue-700"
-            : highlightCls || ""
+            : isFlashing
+              ? "animate-verse-flash"
+              : highlightCls || ""
         }`}
         style={{ fontSize: `${fontSize}px`, lineHeight: 1.5, fontFamily: fontFamily || undefined }}
       >

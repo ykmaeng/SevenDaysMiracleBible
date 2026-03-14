@@ -9,12 +9,13 @@ import { FeaturesView } from "./components/Features/FeaturesView";
 import { BookmarksView } from "./components/Bookmarks/BookmarksView";
 import { HighlightsView } from "./components/Highlights/HighlightsView";
 import { NotesView } from "./components/Notes/NotesView";
+import { SearchView } from "./components/Search/SearchView";
 import { useSettingsStore } from "./stores/settingsStore";
 import { useFeatureStore, FEATURE_REGISTRY } from "./stores/featureStore";
 import { useTabStore } from "./stores/tabStore";
 import { loadGoogleFont } from "./lib/googleFonts";
 
-type View = "reader" | "settings" | "features" | "bookmarks" | "highlights" | "notes";
+type View = "reader" | "settings" | "features" | "bookmarks" | "highlights" | "notes" | "search";
 
 function App() {
   const { t } = useTranslation();
@@ -27,16 +28,23 @@ function App() {
   const onboardingComplete = useSettingsStore((s) => s.onboardingComplete);
   const enabledFeatures = useFeatureStore((s) => s.enabledFeatures);
   const navigateTo = useTabStore((s) => s.navigateTo);
+  const updateTab = useTabStore((s) => s.updateTab);
+  const activeTabId = useTabStore((s) => s.activeTabId);
 
   const tabBarFeatures = FEATURE_REGISTRY.filter(
     (f) => f.showInTabBar && enabledFeatures.includes(f.id)
   );
 
-  // Listen for open-settings event (e.g. from download banner)
+  // Listen for open-settings/open-search events
   useEffect(() => {
-    const handler = () => setView("settings");
-    window.addEventListener("open-settings", handler);
-    return () => window.removeEventListener("open-settings", handler);
+    const settingsHandler = () => setView("settings");
+    const searchHandler = () => setView("search");
+    window.addEventListener("open-settings", settingsHandler);
+    window.addEventListener("open-search", searchHandler);
+    return () => {
+      window.removeEventListener("open-settings", settingsHandler);
+      window.removeEventListener("open-search", searchHandler);
+    };
   }, []);
 
   // Android back button: close popups/views before exiting app
@@ -164,6 +172,7 @@ function App() {
             onNavigate={(bookId, chapter, verse) => {
               navigateTo(bookId, chapter, verse);
               setView("reader");
+              setTimeout(() => updateTab(activeTabId, { verse: undefined }), 4000);
             }}
           />
         )}
@@ -173,6 +182,7 @@ function App() {
             onNavigate={(bookId, chapter, verse) => {
               navigateTo(bookId, chapter, verse);
               setView("reader");
+              setTimeout(() => updateTab(activeTabId, { verse: undefined }), 4000);
             }}
           />
         )}
@@ -182,6 +192,17 @@ function App() {
             onNavigate={(bookId, chapter, verse) => {
               navigateTo(bookId, chapter, verse);
               setView("reader");
+              setTimeout(() => updateTab(activeTabId, { verse: undefined }), 4000);
+            }}
+          />
+        )}
+        {view === "search" && (
+          <SearchView
+            onClose={() => setView("reader")}
+            onNavigate={(bookId, chapter, verse) => {
+              navigateTo(bookId, chapter, verse);
+              setView("reader");
+              setTimeout(() => updateTab(activeTabId, { verse: undefined }), 4000);
             }}
           />
         )}

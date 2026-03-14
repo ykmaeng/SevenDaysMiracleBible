@@ -44,6 +44,7 @@ interface ParagraphGroupProps {
   isFirstParagraph?: boolean;
   chapterHeader?: { bookName: string; chapter: number };
   ttsVerseNumber?: number;
+  flashVerseNumber?: number;
   selectedVerses?: Set<number>;
   highlightColors?: Record<string, string | null>;
   onVerseClick?: (info: VerseClickInfo) => void;
@@ -66,6 +67,7 @@ export function ParagraphGroup({
   isFirstParagraph,
   chapterHeader,
   ttsVerseNumber,
+  flashVerseNumber,
   selectedVerses,
   highlightColors,
   onVerseClick,
@@ -156,6 +158,7 @@ export function ParagraphGroup({
       >
         {verses.map((verse) => {
           const isPlaying = ttsVerseNumber === verse.verse;
+          const isFlashing = flashVerseNumber === verse.verse;
           const isSelected = selectedVerses?.has(verse.verse) ?? false;
           const hlColor = highlightColors?.[`${verse.book_id}:${verse.chapter}:${verse.verse}`];
           const hlCls = hlColor && HIGHLIGHT_BG[hlColor] ? HIGHLIGHT_BG[hlColor] : "";
@@ -174,7 +177,9 @@ export function ParagraphGroup({
                 className={`rounded-sm transition-colors ${
                   isPlaying
                     ? "bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-200 dark:ring-blue-700"
-                    : hlCls
+                    : isFlashing
+                      ? "animate-verse-flash"
+                      : hlCls
                 }`}
               >
                 {showVerseNumbers && (

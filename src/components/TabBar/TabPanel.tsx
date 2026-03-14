@@ -255,6 +255,15 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
               )}
             </button>
           )}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("open-search"))}
+            className="p-1.5 rounded text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+            title={t("search.placeholder")}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
           <ReaderSettingsDropdown
             showCommentary={showCommentary}
             onToggleCommentary={() => setShowCommentary(!showCommentary)}
@@ -311,6 +320,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
             translationLang={translationToLang(activeTab.translationId)}
             onScrollPositionChange={handleScrollChange}
             initialScrollPosition={activeTab.scrollPosition}
+            targetVerse={activeTab.verse}
             ttsVerseIndex={tts.isPlaying ? tts.currentVerseIndex : undefined}
             onVersesLoaded={handleVersesLoaded}
             showInterlinear={showInterlinear}

@@ -72,6 +72,30 @@ body,
   );
 }
 
+/* Verse target underline (search navigation) */
+.animate-verse-flash {
+  padding-bottom: 2px;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgb(75 85 99) 0,
+    rgb(75 85 99) 3px,
+    transparent 3px,
+    transparent 6px
+  );
+  background-position: 0 100%;
+  background-size: 100% 1px;
+  background-repeat: repeat-x;
+}
+.dark .animate-verse-flash {
+  background-image: repeating-linear-gradient(
+    to right,
+    rgb(209 213 219) 0,
+    rgb(209 213 219) 3px,
+    transparent 3px,
+    transparent 6px
+  );
+}
+
 /* Hide scrollbar for horizontal scroll containers */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
