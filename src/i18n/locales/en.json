@@ -28,7 +28,7 @@
     "parallelView": "Parallel View",
     "readerSettings": "Reader Settings",
     "showDictionary": "Dictionary",
-    "versePerLine": "Verse per Line",
+    "paragraphView": "Paragraph View",
     "showNotes": "Show Notes"
   },
   "commentary": {
@@ -65,7 +65,8 @@
     "downloads": "Download Manager",
     "showVerseNumbers": "Show Verse Numbers",
     "defaultTranslation": "Default Translation",
-    "parallelTranslations": "Parallel Translations"
+    "parallelTranslations": "Parallel Translations",
+    "fontSystem": "System Font"
   },
   "download": {
     "title": "Downloads",
@@ -191,12 +192,14 @@
     "notesInstruction": "Tap a verse, then press the note button to write a note.",
     "notePlaceholder": "Write a note...",
     "noteSave": "Save",
+    "noteDeleteConfirm": "Delete this note?",
     "tabBar": "Bottom Menu",
     "floatingMenu": "Verse Menu",
     "readerSettings": "Reader Settings",
     "noBookmarks": "No bookmarks saved",
     "all": "All",
     "noHighlights": "No highlighted verses",
+    "noNotes": "No notes yet",
     "goToVerse": "Go to verse",
     "noLabel": "No label",
     "manageLabels": "Manage labels",

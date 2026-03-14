@@ -26,7 +26,7 @@
     "parallelView": "Vue parall\u00e8le",
     "readerSettings": "Param\u00e8tres de lecture",
     "showDictionary": "Dictionnaire",
-    "versePerLine": "Verset par ligne",
+    "paragraphView": "Vue en paragraphes",
     "showNotes": "Afficher les notes"
   },
   "commentary": {
@@ -60,7 +60,8 @@
     "downloads": "Gestionnaire de t\u00e9l\u00e9chargements",
     "showVerseNumbers": "Afficher les num\u00e9ros de versets",
     "defaultTranslation": "Traduction par d\u00e9faut",
-    "parallelTranslations": "Traductions parall\u00e8les"
+    "parallelTranslations": "Traductions parall\u00e8les",
+    "fontSystem": "Police syst\u00e8me"
   },
   "download": {
     "title": "T\u00e9l\u00e9chargements",
@@ -189,6 +190,7 @@
     "noBookmarks": "Aucun signet enregistré",
     "all": "Tout",
     "noHighlights": "Aucun verset surligné",
+    "noNotes": "Aucune note pour le moment",
     "goToVerse": "Aller au verset",
     "noLabel": "Sans étiquette",
     "manageLabels": "Gérer les étiquettes",

@@ -41,6 +41,12 @@ export async function getAllBookmarks(labelId?: number | null): Promise<Bookmark
   );
 }
 
+export async function getAllNotes(): Promise<Bookmark[]> {
+  return query<Bookmark>(
+    "SELECT * FROM bookmarks WHERE note IS NOT NULL AND note != '' ORDER BY created_at DESC"
+  );
+}
+
 export async function getAllHighlights(): Promise<Bookmark[]> {
   return query<Bookmark>(
     "SELECT * FROM bookmarks WHERE color IS NOT NULL ORDER BY created_at DESC"

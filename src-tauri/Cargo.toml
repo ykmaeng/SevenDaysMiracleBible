@@ -31,6 +31,9 @@ futures-util = "0.3"
 sha2 = "0.10"
 rand = "0.8"
 
+[target.'cfg(not(target_os = "android"))'.dependencies]
+font-kit = "0.14"
+
 [target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
 tauri-plugin-sharesheet = "0.0.1"
 

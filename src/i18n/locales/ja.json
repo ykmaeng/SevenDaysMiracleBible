@@ -26,7 +26,7 @@
     "parallelView": "対訳表示",
     "readerSettings": "表示設定",
     "showDictionary": "辞書",
-    "versePerLine": "節ごとに表示",
+    "paragraphView": "段落表示",
     "showNotes": "メモ表示"
   },
   "commentary": {
@@ -60,7 +60,8 @@
     "downloads": "ダウンロード管理",
     "showVerseNumbers": "節番号を表示",
     "defaultTranslation": "既定の翻訳",
-    "parallelTranslations": "対訳の翻訳"
+    "parallelTranslations": "対訳の翻訳",
+    "fontSystem": "システムフォント"
   },
   "download": {
     "title": "ダウンロード",
@@ -189,6 +190,7 @@
     "noBookmarks": "保存されたブックマークはありません",
     "all": "すべて",
     "noHighlights": "ハイライトされた聖句はありません",
+    "noNotes": "メモはまだありません",
     "goToVerse": "聖句に移動",
     "noLabel": "ラベルなし",
     "manageLabels": "ラベル管理",

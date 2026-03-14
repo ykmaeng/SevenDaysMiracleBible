@@ -213,11 +213,11 @@ export function ReaderSettingsDropdown({
             />
           )}
 
-          {/* Verse per line toggle */}
+          {/* Paragraph view toggle */}
           <ToggleItem
-            label={t("reader.versePerLine")}
-            checked={versePerLine}
-            onChange={setVersePerLine}
+            label={t("reader.paragraphView")}
+            checked={!versePerLine}
+            onChange={(v) => setVersePerLine(!v)}
           />
 
           {/* Verse Numbers toggle */}

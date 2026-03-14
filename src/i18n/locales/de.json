@@ -26,7 +26,7 @@
     "parallelView": "Parallelansicht",
     "readerSettings": "Leseeinstellungen",
     "showDictionary": "Wörterbuch",
-    "versePerLine": "Vers pro Zeile",
+    "paragraphView": "Absatzansicht",
     "showNotes": "Notizen anzeigen"
   },
   "commentary": {
@@ -60,7 +60,8 @@
     "downloads": "Download-Manager",
     "showVerseNumbers": "Versnummern anzeigen",
     "defaultTranslation": "Standardübersetzung",
-    "parallelTranslations": "Parallelübersetzungen"
+    "parallelTranslations": "Parallelübersetzungen",
+    "fontSystem": "Systemschriftart"
   },
   "download": {
     "title": "Downloads",
@@ -189,6 +190,7 @@
     "noBookmarks": "Keine Lesezeichen gespeichert",
     "all": "Alle",
     "noHighlights": "Keine markierten Verse",
+    "noNotes": "Noch keine Notizen",
     "goToVerse": "Zum Vers gehen",
     "noLabel": "Kein Label",
     "manageLabels": "Labels verwalten",

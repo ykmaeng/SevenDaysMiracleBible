@@ -26,7 +26,7 @@
     "parallelView": "对照翻译视图",
     "readerSettings": "阅读设置",
     "showDictionary": "词典",
-    "versePerLine": "逐节显示",
+    "paragraphView": "段落视图",
     "showNotes": "显示笔记"
   },
   "commentary": {
@@ -60,7 +60,8 @@
     "downloads": "下载管理",
     "showVerseNumbers": "显示节号",
     "defaultTranslation": "默认译本",
-    "parallelTranslations": "对照翻译译本"
+    "parallelTranslations": "对照翻译译本",
+    "fontSystem": "系统字体"
   },
   "download": {
     "title": "下载",
@@ -190,6 +191,7 @@
     "noBookmarks": "暂无书签",
     "all": "全部",
     "noHighlights": "没有高亮的经文",
+    "noNotes": "还没有笔记",
     "goToVerse": "跳转到经文",
     "noLabel": "无标签",
     "manageLabels": "管理标签",

@@ -28,7 +28,7 @@
     "parallelView": "동시번역보기",
     "readerSettings": "보기 설정",
     "showDictionary": "사전 보기",
-    "versePerLine": "절 단위 보기",
+    "paragraphView": "단락 보기",
     "showNotes": "메모 표시"
   },
   "commentary": {
@@ -65,7 +65,8 @@
     "downloads": "다운로드 관리",
     "showVerseNumbers": "절 번호 표시",
     "defaultTranslation": "기본 번역본",
-    "parallelTranslations": "동시번역 번역본"
+    "parallelTranslations": "동시번역 번역본",
+    "fontSystem": "시스템 폰트"
   },
   "download": {
     "title": "다운로드",
@@ -191,12 +192,14 @@
     "notesInstruction": "구절을 탭한 후 메모 버튼을 눌러 메모를 작성하세요.",
     "notePlaceholder": "메모를 입력하세요...",
     "noteSave": "저장",
+    "noteDeleteConfirm": "메모를 삭제하시겠습니까?",
     "tabBar": "하단 메뉴",
     "floatingMenu": "구절 메뉴",
     "readerSettings": "보기 옵션",
     "noBookmarks": "저장된 북마크가 없습니다",
     "all": "전체",
     "noHighlights": "하이라이트된 구절이 없습니다",
+    "noNotes": "작성된 메모가 없습니다",
     "goToVerse": "구절로 이동",
     "noLabel": "라벨 없음",
     "manageLabels": "라벨 관리",

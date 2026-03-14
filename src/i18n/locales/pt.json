@@ -26,7 +26,7 @@
     "parallelView": "Visualização Paralela",
     "readerSettings": "Configurações de Leitura",
     "showDictionary": "Dicionário",
-    "versePerLine": "Versículo por linha",
+    "paragraphView": "Vista em parágrafos",
     "showNotes": "Mostrar notas"
   },
   "commentary": {
@@ -60,7 +60,8 @@
     "downloads": "Gerenciador de Downloads",
     "showVerseNumbers": "Mostrar Números dos Versículos",
     "defaultTranslation": "Tradução Padrão",
-    "parallelTranslations": "Traduções Paralelas"
+    "parallelTranslations": "Traduções Paralelas",
+    "fontSystem": "Fonte do sistema"
   },
   "download": {
     "title": "Downloads",
@@ -189,6 +190,7 @@
     "noBookmarks": "Nenhum favorito salvo",
     "all": "Todos",
     "noHighlights": "Nenhum versículo destacado",
+    "noNotes": "Nenhuma nota ainda",
     "goToVerse": "Ir para o versículo",
     "noLabel": "Sem rótulo",
     "manageLabels": "Gerenciar rótulos",

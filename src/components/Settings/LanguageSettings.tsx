@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { invoke } from "@tauri-apps/api/core";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { getDownloadedTranslations } from "../../lib/bible";
 import { preloadFontsForLang } from "../../lib/googleFonts";
@@ -24,8 +25,6 @@ const FONT_OPTIONS: Record<string, FontOption[]> = {
     { id: "'Noto Serif KR', serif", label: "본명조", googleFont: "Noto Serif KR" },
     { id: "'Nanum Gothic', sans-serif", label: "나눔고딕", googleFont: "Nanum Gothic" },
     { id: "'Nanum Myeongjo', serif", label: "나눔명조", googleFont: "Nanum Myeongjo" },
-    { id: "'Jua', sans-serif", label: "주아", googleFont: "Jua" },
-    { id: "'Gaegu', cursive", label: "개구", googleFont: "Gaegu" },
     { id: "'Gamja Flower', cursive", label: "감자꽃", googleFont: "Gamja Flower" },
   ],
   en: [
@@ -60,6 +59,7 @@ export function LanguageSettings() {
   const dragIdx = useRef<number | null>(null);
   const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const [dragActiveIdx, setDragActiveIdx] = useState<number | null>(null);
+  const [systemFonts, setSystemFonts] = useState<string[]>([]);
 
   useEffect(() => {
     const load = () => getDownloadedTranslations().then(setAvailableTranslations);
@@ -74,6 +74,15 @@ export function LanguageSettings() {
       preloadFontsForLang(getFontOptions(language));
     }
   }, [fontOpen, language]);
+
+  // Load system fonts once
+  useEffect(() => {
+    if (fontOpen && systemFonts.length === 0) {
+      invoke<string[]>("get_system_fonts")
+        .then(setSystemFonts)
+        .catch(() => {});
+    }
+  }, [fontOpen]);
 
   const handleLanguageChange = (lang: string) => {
     setLanguage(lang);
@@ -183,6 +192,26 @@ export function LanguageSettings() {
                 ))}
               </div>
             </div>
+
+            {/* System fonts */}
+            {systemFonts.length > 0 && (
+              <div>
+                <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t("settings.fontSystem")}</label>
+                <select
+                  value={getFontOptions(language).some((f) => f.id === fontFamily) ? "" : fontFamily}
+                  onChange={(e) => setFontFamily(e.target.value)}
+                  className="w-full py-2 px-3 rounded-lg text-sm bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
+                  style={{ fontFamily: (!getFontOptions(language).some((f) => f.id === fontFamily) && fontFamily) || "inherit" }}
+                >
+                  <option value="">{t("settings.fontSystem")}</option>
+                  {systemFonts.map((name) => (
+                    <option key={name} value={`'${name}', sans-serif`} style={{ fontFamily: `'${name}'` }}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Preview */}
             <div

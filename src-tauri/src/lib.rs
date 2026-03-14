@@ -4,6 +4,7 @@ use tauri_plugin_fs::FsExt;
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 mod edge_tts;
+mod fonts_plugin;
 mod tts_plugin;
 
 #[derive(serde::Serialize)]
@@ -64,6 +65,7 @@ pub fn run() {
             tts_plugin::tts_get_voices,
             edge_tts_synthesize,
             edge_tts_voices,
+            fonts_plugin::get_system_fonts,
         ]);
 
     #[cfg(mobile)]

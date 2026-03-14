@@ -26,7 +26,7 @@
     "parallelView": "Параллельный просмотр",
     "readerSettings": "Настройки чтения",
     "showDictionary": "Словарь",
-    "versePerLine": "Стих на строку",
+    "paragraphView": "Абзацный вид",
     "showNotes": "Показать заметки"
   },
   "commentary": {
@@ -60,7 +60,8 @@
     "downloads": "Менеджер загрузок",
     "showVerseNumbers": "Показывать номера стихов",
     "defaultTranslation": "Перевод по умолчанию",
-    "parallelTranslations": "Параллельные переводы"
+    "parallelTranslations": "Параллельные переводы",
+    "fontSystem": "Системный шрифт"
   },
   "download": {
     "title": "Загрузки",
@@ -189,6 +190,7 @@
     "noBookmarks": "Нет сохранённых закладок",
     "all": "Все",
     "noHighlights": "Нет выделенных стихов",
+    "noNotes": "Заметок пока нет",
     "goToVerse": "Перейти к стиху",
     "noLabel": "Без метки",
     "manageLabels": "Управление метками",

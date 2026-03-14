@@ -36,7 +36,7 @@ export const FEATURE_REGISTRY: FeatureConfig[] = [
     labelKey: "features.notes",
     descKey: "features.notesDesc",
     instructionKey: "features.notesInstruction",
-    showInTabBar: false,
+    showInTabBar: true,
     showInFloating: true,
     showInReaderSettings: true,
   },
