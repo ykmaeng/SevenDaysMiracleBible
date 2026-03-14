@@ -54,6 +54,17 @@ export function TTSControlBar({
     getEdgeVoices().then(setEdgeVoices).catch(() => {});
   }, []);
 
+  // Close voice picker on Android back button
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail.handled) return;
+      if (showVoicePicker) { setShowVoicePicker(false); detail.handled = true; }
+    };
+    window.addEventListener("dismiss-popup", handler);
+    return () => window.removeEventListener("dismiss-popup", handler);
+  }, [showVoicePicker]);
+
   // Filter out non-functional voices, then split by language
   const { matchingVoices, otherVoices } = useMemo(() => {
     if (ttsOnline) {

@@ -20,6 +20,7 @@ function App() {
   const [view, setView] = useState<View>("reader");
   const [immersive, setImmersive] = useState(false);
   const immersiveRef = useRef(false);
+  const lastBackRef = useRef(0);
   const theme = useSettingsStore((s) => s.theme);
   const fontFamily = useSettingsStore((s) => s.fontFamily);
   const onboardingComplete = useSettingsStore((s) => s.onboardingComplete);
@@ -47,9 +48,21 @@ function App() {
         history.pushState(null, "", "");
         return;
       }
+      // Exit immersive mode first
+      if (immersiveRef.current) {
+        window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: false }));
+        history.pushState(null, "", "");
+        return;
+      }
       // Close non-reader views
       if (view !== "reader") {
         setView("reader");
+        history.pushState(null, "", "");
+      } else {
+        // Double-back to exit silently
+        const now = Date.now();
+        if (now - lastBackRef.current < 2000) return;
+        lastBackRef.current = now;
         history.pushState(null, "", "");
       }
     };
@@ -101,14 +114,20 @@ function App() {
 
   if (!onboardingComplete) {
     return (
-      <div className="h-screen bg-white dark:bg-gray-900 dark:text-gray-100">
+      <div className="h-screen bg-white dark:bg-gray-900 dark:text-gray-100" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
         <LanguageOnboarding />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-gray-100">
+    <div
+      className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-gray-100"
+      style={{
+        paddingTop: immersive ? 0 : "env(safe-area-inset-top, 0px)",
+        paddingBottom: immersive ? 0 : "env(safe-area-inset-bottom, 0px)",
+      }}
+    >
       {/* Tab bar */}
       {view === "reader" && enabledFeatures.includes("tabs") && (
         <div className={`transition-all duration-150 ease-out overflow-hidden ${immersive ? "max-h-0" : "max-h-14"}`}>

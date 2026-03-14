@@ -310,11 +310,16 @@ export function ChapterView({
     return () => window.removeEventListener("focus-note-input", handler);
   }, []);
 
-  // Android back button: dismiss note editing / toolbar
+  // Android back button: dismiss dictionary → note editing → toolbar
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (editingNoteKey) {
+      if (detail.handled) return;
+      if (dictWord) {
+        setDictWord(null);
+        setDictPosition(null);
+        detail.handled = true;
+      } else if (editingNoteKey) {
         setEditingNoteKey(null);
         detail.handled = true;
       } else if (selectedVerses.size > 0) {
@@ -324,7 +329,7 @@ export function ChapterView({
     };
     window.addEventListener("dismiss-popup", handler);
     return () => window.removeEventListener("dismiss-popup", handler);
-  }, [editingNoteKey, selectedVerses]);
+  }, [dictWord, editingNoteKey, selectedVerses]);
 
   const handleVerseClick = useCallback((info: VerseClickInfo) => {
     setDictWord(null);

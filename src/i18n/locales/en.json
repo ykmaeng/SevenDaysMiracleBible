@@ -1,6 +1,7 @@
 {
   "app": {
-    "title": "Bible"
+    "title": "Bible",
+    "backToExit": "Press back again to exit"
   },
   "fontSizePreview": "In the beginning God created the heaven and the earth.",
   "nav": {

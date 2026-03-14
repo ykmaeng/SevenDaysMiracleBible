@@ -46,6 +46,20 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
   const [showTranslationPicker, setShowTranslationPicker] = useState(false);
   const tts = useTTS();
 
+  // Handle Android back button for pickers
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail.handled) return;
+      if (showTranslationPicker) { setShowTranslationPicker(false); detail.handled = true; return; }
+      if (showChapterPicker) { setShowChapterPicker(false); detail.handled = true; return; }
+      if (showBookPicker) { setShowBookPicker(false); detail.handled = true; return; }
+      if (showInterlinear) { setShowInterlinear(false); detail.handled = true; return; }
+    };
+    window.addEventListener("dismiss-popup", handler);
+    return () => window.removeEventListener("dismiss-popup", handler);
+  }, [showBookPicker, showChapterPicker, showTranslationPicker, showInterlinear]);
+
   useEffect(() => { getBooks().then(setBooks); }, []);
   useEffect(() => {
     const load = () => getDownloadedTranslations().then(setTranslations);

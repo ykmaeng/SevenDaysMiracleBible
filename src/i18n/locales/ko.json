@@ -1,6 +1,7 @@
 {
   "app": {
-    "title": "성경"
+    "title": "성경",
+    "backToExit": "한 번 더 누르면 앱을 종료합니다"
   },
   "fontSizePreview": "태초에 하나님이 천지를 창조하시니라",
   "nav": {

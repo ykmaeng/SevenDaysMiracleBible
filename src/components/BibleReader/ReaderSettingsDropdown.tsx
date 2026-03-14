@@ -91,6 +91,17 @@ export function ReaderSettingsDropdown({
     }
   }, [open]);
 
+  // Close on Android back button via dismiss-popup
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail.handled) return;
+      if (open) { setOpen(false); detail.handled = true; }
+    };
+    window.addEventListener("dismiss-popup", handler);
+    return () => window.removeEventListener("dismiss-popup", handler);
+  }, [open]);
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
