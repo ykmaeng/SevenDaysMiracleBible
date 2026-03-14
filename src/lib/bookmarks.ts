@@ -4,7 +4,7 @@ import type { Bookmark, BookmarkLabel } from "../types/bible";
 // ── Labels ──
 
 export async function getAllLabels(): Promise<BookmarkLabel[]> {
-  return query<BookmarkLabel>("SELECT * FROM bookmark_labels ORDER BY created_at DESC");
+  return query<BookmarkLabel>("SELECT * FROM bookmark_labels ORDER BY book_id, chapter, verse");
 }
 
 export async function createLabel(name: string): Promise<BookmarkLabel> {
@@ -32,24 +32,24 @@ export async function deleteLabel(id: number): Promise<void> {
 export async function getAllBookmarks(labelId?: number | null): Promise<Bookmark[]> {
   if (labelId != null) {
     return query<Bookmark>(
-      "SELECT * FROM bookmarks WHERE color IS NULL AND label_id = $1 ORDER BY created_at DESC",
+      "SELECT * FROM bookmarks WHERE color IS NULL AND label_id = $1 ORDER BY book_id, chapter, verse",
       [labelId]
     );
   }
   return query<Bookmark>(
-    "SELECT * FROM bookmarks WHERE color IS NULL ORDER BY created_at DESC"
+    "SELECT * FROM bookmarks WHERE color IS NULL ORDER BY book_id, chapter, verse"
   );
 }
 
 export async function getAllNotes(): Promise<Bookmark[]> {
   return query<Bookmark>(
-    "SELECT * FROM bookmarks WHERE note IS NOT NULL AND note != '' ORDER BY created_at DESC"
+    "SELECT * FROM bookmarks WHERE note IS NOT NULL AND note != '' ORDER BY book_id, chapter, verse"
   );
 }
 
 export async function getAllHighlights(): Promise<Bookmark[]> {
   return query<Bookmark>(
-    "SELECT * FROM bookmarks WHERE color IS NOT NULL ORDER BY created_at DESC"
+    "SELECT * FROM bookmarks WHERE color IS NOT NULL ORDER BY book_id, chapter, verse"
   );
 }
 

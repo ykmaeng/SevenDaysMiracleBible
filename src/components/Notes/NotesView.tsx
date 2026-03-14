@@ -93,29 +93,26 @@ export function NotesView({ onClose, onNavigate }: NotesViewProps) {
                 {group.items.map((n) => {
                   const expanded = expandAll || expandedId === n.id;
                   return (
-                    <div key={n.id} className="rounded-lg overflow-hidden">
-                      <button
-                        onClick={() => setExpandedId(expanded ? null : n.id)}
-                        className="w-full text-left px-3 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 flex items-start gap-2 min-w-0"
-                      >
-                        <span className="text-xs font-medium text-blue-600 dark:text-blue-400 shrink-0 mt-0.5">
+                    <div key={n.id} className="rounded-lg overflow-hidden px-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <div className="flex items-start gap-2 min-w-0">
+                        <span className="text-xs font-medium text-blue-600 dark:text-blue-400 shrink-0 py-2">
                           {n.chapter}:{n.verse}
                         </span>
-                        <span className={`text-sm text-amber-700 dark:text-amber-400 italic min-w-0 ${expanded ? "" : "truncate"}`}>
-                          {n.note}
-                        </span>
-                      </button>
-                      {expanded && (
-                        <div className="px-3 pb-2">
-                          <div className="flex items-start gap-2">
-                            <span className="text-xs font-medium shrink-0 mt-0.5 invisible">{n.chapter}:{n.verse}</span>
-                            <div className="min-w-0">
-                              {n.text && (
-                                <p className="text-xs text-gray-400 dark:text-gray-500 mb-2 line-clamp-2">
-                                  {n.text}
-                                </p>
-                              )}
-                              <div className="flex items-center gap-1">
+                        <div className="flex-1 min-w-0">
+                          <button
+                            onClick={() => setExpandedId(expanded ? null : n.id)}
+                            className="w-full text-left py-2"
+                          >
+                            <span className={`text-sm text-amber-700 dark:text-amber-400 italic block min-w-0 ${expanded ? "" : "truncate"}`}>
+                              {n.note}
+                            </span>
+                          </button>
+                          {expanded && n.text && (
+                            <div className="flex items-center gap-2 pb-2 min-w-0">
+                              <span className="text-xs text-gray-400 dark:text-gray-500 min-w-0 truncate flex-1">
+                                {n.text}
+                              </span>
+                              <div className="flex items-center gap-1 shrink-0">
                                 <button
                                   onClick={() => handleDelete(n)}
                                   className="p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -136,9 +133,31 @@ export function NotesView({ onClose, onNavigate }: NotesViewProps) {
                                 </button>
                               </div>
                             </div>
-                          </div>
+                          )}
+                          {expanded && !n.text && (
+                            <div className="flex items-center gap-1 pb-2 justify-end">
+                              <button
+                                onClick={() => handleDelete(n)}
+                                className="p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                title={t("download.delete")}
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => onNavigate(n.book_id, n.chapter, n.verse)}
+                                className="p-1.5 rounded-md text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                title={t("features.goToVerse")}
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                </svg>
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
                   );
                 })}
