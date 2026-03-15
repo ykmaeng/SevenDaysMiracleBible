@@ -211,7 +211,7 @@ function App() {
       <ToastContainer />
 
       {/* Bottom navigation bar */}
-      <nav className={`flex items-center justify-between px-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 transition-all duration-150 overflow-hidden ${immersive && view === "reader" ? "max-h-0 py-0" : "max-h-20 py-2"}`}>
+      <nav className={`flex items-center justify-evenly border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 transition-all duration-150 overflow-hidden ${immersive && view === "reader" ? "max-h-0 py-0" : "max-h-20 py-2"}`}>
         <button
           onClick={() => setView("reader")}
           className={`flex flex-col items-center gap-0.5 px-3 py-1 shrink-0 ${
