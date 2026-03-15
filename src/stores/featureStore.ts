@@ -14,6 +14,15 @@ export interface FeatureConfig {
 
 export const FEATURE_REGISTRY: FeatureConfig[] = [
   {
+    id: "tabs",
+    labelKey: "features.tabs",
+    descKey: "features.tabsDesc",
+    instructionKey: "features.tabsInstruction",
+    showInTabBar: false,
+    showInFloating: false,
+    showInReaderSettings: false,
+  },
+  {
     id: "bookmarks",
     labelKey: "features.bookmarks",
     descKey: "features.bookmarksDesc",
@@ -66,15 +75,6 @@ export const FEATURE_REGISTRY: FeatureConfig[] = [
     showInTabBar: false,
     showInFloating: false,
     showInReaderSettings: true,
-  },
-  {
-    id: "tabs",
-    labelKey: "features.tabs",
-    descKey: "features.tabsDesc",
-    instructionKey: "features.tabsInstruction",
-    showInTabBar: false,
-    showInFloating: false,
-    showInReaderSettings: false,
   },
 ];
 
