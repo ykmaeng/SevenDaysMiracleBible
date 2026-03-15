@@ -62,9 +62,8 @@ export function HighlightsView({ onClose, onNavigate }: HighlightsViewProps) {
   }
 
   const handleRemove = async (bm: Bookmark) => {
-    if (bm.note) {
-      await updateColor(bm.book_id, bm.chapter, bm.verse, null);
-    } else {
+    await updateColor(bm.book_id, bm.chapter, bm.verse, null);
+    if (!bm.note && !bm.is_bookmarked) {
       await removeBookmark(bm.book_id, bm.chapter, bm.verse);
     }
     setHighlights((prev) => prev.filter((h) => h.id !== bm.id));

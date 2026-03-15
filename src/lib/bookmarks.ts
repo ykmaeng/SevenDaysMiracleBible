@@ -4,7 +4,7 @@ import type { Bookmark, BookmarkLabel } from "../types/bible";
 // ── Labels ──
 
 export async function getAllLabels(): Promise<BookmarkLabel[]> {
-  return query<BookmarkLabel>("SELECT * FROM bookmark_labels ORDER BY book_id, chapter, verse");
+  return query<BookmarkLabel>("SELECT * FROM bookmark_labels ORDER BY name");
 }
 
 export async function createLabel(name: string): Promise<BookmarkLabel> {
@@ -32,12 +32,12 @@ export async function deleteLabel(id: number): Promise<void> {
 export async function getAllBookmarks(labelId?: number | null): Promise<Bookmark[]> {
   if (labelId != null) {
     return query<Bookmark>(
-      "SELECT * FROM bookmarks WHERE color IS NULL AND label_id = $1 ORDER BY book_id, chapter, verse",
+      "SELECT * FROM bookmarks WHERE is_bookmarked = 1 AND label_id = $1 ORDER BY book_id, chapter, verse",
       [labelId]
     );
   }
   return query<Bookmark>(
-    "SELECT * FROM bookmarks WHERE color IS NULL ORDER BY book_id, chapter, verse"
+    "SELECT * FROM bookmarks WHERE is_bookmarked = 1 ORDER BY book_id, chapter, verse"
   );
 }
 
@@ -70,18 +70,40 @@ export async function addBookmark(
   labelId?: number,
   text?: string
 ): Promise<number> {
+  const isBookmark = !note && !color ? 1 : color ? 0 : 0;
   const result = await execute(
-    "INSERT OR REPLACE INTO bookmarks (book_id, chapter, verse, color, note, translation_id, label_id, text) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-    [bookId, chapter, verse, color ?? null, note ?? null, translationId ?? null, labelId ?? null, text ?? null]
+    `INSERT INTO bookmarks (book_id, chapter, verse, color, note, translation_id, label_id, text, is_bookmarked)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+     ON CONFLICT (book_id, chapter, verse) DO UPDATE SET
+       color = COALESCE($4, color),
+       note = COALESCE($5, note),
+       translation_id = COALESCE($6, translation_id),
+       label_id = COALESCE($7, label_id),
+       text = COALESCE($8, text),
+       is_bookmarked = MAX(is_bookmarked, $9)`,
+    [bookId, chapter, verse, color ?? null, note ?? null, translationId ?? null, labelId ?? null, text ?? null, isBookmark]
   );
   return result.lastInsertId ?? 0;
 }
 
 export async function removeBookmark(bookId: number, chapter: number, verse: number): Promise<void> {
-  await execute(
-    "DELETE FROM bookmarks WHERE book_id = $1 AND chapter = $2 AND verse = $3",
+  // Check if the row has note or color — if so, just clear bookmark flag
+  const rows = await query<{ note: string | null; color: string | null }>(
+    "SELECT note, color FROM bookmarks WHERE book_id = $1 AND chapter = $2 AND verse = $3",
     [bookId, chapter, verse]
   );
+  const row = rows[0];
+  if (row && (row.note || row.color)) {
+    await execute(
+      "UPDATE bookmarks SET is_bookmarked = 0, label_id = NULL WHERE book_id = $1 AND chapter = $2 AND verse = $3",
+      [bookId, chapter, verse]
+    );
+  } else {
+    await execute(
+      "DELETE FROM bookmarks WHERE book_id = $1 AND chapter = $2 AND verse = $3",
+      [bookId, chapter, verse]
+    );
+  }
 }
 
 export async function updateBookmarkColor(
@@ -115,7 +137,7 @@ export async function updateBookmarkLabel(
   labelId: number | null
 ): Promise<void> {
   await execute(
-    "UPDATE bookmarks SET label_id = $1 WHERE book_id = $2 AND chapter = $3 AND verse = $4",
+    "UPDATE bookmarks SET label_id = $1, is_bookmarked = 1 WHERE book_id = $2 AND chapter = $3 AND verse = $4",
     [labelId, bookId, chapter, verse]
   );
 }

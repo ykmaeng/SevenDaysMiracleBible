@@ -232,6 +232,7 @@
     "copied": "Verset copié",
     "bookmarkAdded": "Signet ajouté",
     "bookmarkRemoved": "Signet supprimé",
+    "removeBookmark": "Supprimer le signet",
     "removeHighlight": "Supprimer",
     "notePrompt": "Saisissez votre note",
     "noteSaved": "Note enregistrée",

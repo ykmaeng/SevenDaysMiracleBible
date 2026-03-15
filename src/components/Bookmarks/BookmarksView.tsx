@@ -47,6 +47,9 @@ export function BookmarksView({ onClose, onNavigate }: BookmarksViewProps) {
     getAllBookmarks(labelId).then((data) => {
       setBookmarks(data);
       setLoading(false);
+    }).catch(() => {
+      setBookmarks([]);
+      setLoading(false);
     });
   }, [filterLabelId]);
 

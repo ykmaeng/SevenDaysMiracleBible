@@ -233,6 +233,7 @@
     "copied": "经文已复制",
     "bookmarkAdded": "已添加书签",
     "bookmarkRemoved": "已移除书签",
+    "removeBookmark": "移除书签",
     "removeHighlight": "移除",
     "notePrompt": "请输入笔记",
     "noteSaved": "笔记已保存",

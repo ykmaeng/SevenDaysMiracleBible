@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS bookmark_labels (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- User bookmarks and highlights
+-- User bookmarks, highlights, and notes
 CREATE TABLE IF NOT EXISTS bookmarks (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   book_id INTEGER NOT NULL,
@@ -86,8 +86,11 @@ CREATE TABLE IF NOT EXISTS bookmarks (
   color TEXT,
   translation_id TEXT,
   label_id INTEGER REFERENCES bookmark_labels(id) ON DELETE SET NULL,
+  text TEXT,
+  is_bookmarked INTEGER NOT NULL DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_bookmarks_verse ON bookmarks (book_id, chapter, verse);
 
 -- Paragraph breaks for structured reading
 CREATE TABLE IF NOT EXISTS paragraph_breaks (

@@ -85,6 +85,7 @@ export function ChapterView({
   const isDictionaryEnabled = useFeatureStore((s) => s.isEnabled("dictionary"));
   const updateNote = useBookmarkStore((s) => s.updateNote);
   const addBookmark = useBookmarkStore((s) => s.addBookmark);
+  const removeBookmark = useBookmarkStore((s) => s.removeBookmark);
 
   const activeParallelIds = useMemo(
     () => parallelTranslations.filter((id) => id !== translationId),
@@ -443,11 +444,14 @@ export function ChapterView({
     const bm = bookmarks[`${verse.book_id}:${verse.chapter}:${verse.verse}`];
     if (bm) {
       await updateNote(verse.book_id, verse.chapter, verse.verse, note || null);
+      if (!note && !bm.color && !bm.is_bookmarked) {
+        await removeBookmark(verse.book_id, verse.chapter, verse.verse);
+      }
     } else if (note) {
       await addBookmark(verse.book_id, verse.chapter, verse.verse, undefined, note, verse.translation_id, undefined, verse.text);
     }
     loadChapterBookmarks(verse.book_id, verse.chapter);
-  }, [bookmarks, updateNote, addBookmark, loadChapterBookmarks]);
+  }, [bookmarks, updateNote, addBookmark, removeBookmark, loadChapterBookmarks]);
 
   // Selected verse numbers set for ParagraphGroup
   const selectedVerseNumbers = useMemo(() => new Set(selectedVerses.keys()), [selectedVerses]);

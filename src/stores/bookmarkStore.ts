@@ -52,17 +52,19 @@ export const useBookmarkStore = create<BookmarkState & BookmarkActions>()(
     addBookmark: async (bookId, chapter, verse, color, note, translationId, labelId, text) => {
       const id = await bookmarkDb.addBookmark(bookId, chapter, verse, color, note, translationId, labelId, text);
       set((state) => {
+        const existing = state.bookmarks[key(bookId, chapter, verse)];
         state.bookmarks[key(bookId, chapter, verse)] = {
           id,
           book_id: bookId,
           chapter,
           verse,
-          color: color ?? null,
-          note: note ?? null,
-          translation_id: translationId ?? null,
-          label_id: labelId ?? null,
-          text: text ?? null,
-          created_at: new Date().toISOString(),
+          color: color ?? existing?.color ?? null,
+          note: note ?? existing?.note ?? null,
+          translation_id: translationId ?? existing?.translation_id ?? null,
+          label_id: labelId ?? existing?.label_id ?? null,
+          text: text ?? existing?.text ?? null,
+          is_bookmarked: (!note && !color) ? 1 : (existing?.is_bookmarked ?? 0),
+          created_at: existing?.created_at ?? new Date().toISOString(),
         };
       });
     },
@@ -70,7 +72,15 @@ export const useBookmarkStore = create<BookmarkState & BookmarkActions>()(
     removeBookmark: async (bookId, chapter, verse) => {
       await bookmarkDb.removeBookmark(bookId, chapter, verse);
       set((state) => {
-        delete state.bookmarks[key(bookId, chapter, verse)];
+        const k = key(bookId, chapter, verse);
+        const bm = state.bookmarks[k];
+        if (bm && (bm.note || bm.color)) {
+          // Row still exists in DB — just clear bookmark fields
+          bm.is_bookmarked = 0;
+          bm.label_id = null;
+        } else {
+          delete state.bookmarks[k];
+        }
       });
     },
 
@@ -94,7 +104,10 @@ export const useBookmarkStore = create<BookmarkState & BookmarkActions>()(
       await bookmarkDb.updateBookmarkLabel(bookId, chapter, verse, labelId);
       set((state) => {
         const bm = state.bookmarks[key(bookId, chapter, verse)];
-        if (bm) bm.label_id = labelId;
+        if (bm) {
+          bm.label_id = labelId;
+          bm.is_bookmarked = 1;
+        }
       });
     },
 

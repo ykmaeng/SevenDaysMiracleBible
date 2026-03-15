@@ -167,9 +167,8 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
     for (const v of verses) {
       const bm = getBookmark(v.book_id, v.chapter, v.verse);
       if (bm?.color) {
-        if (bm.note) {
-          await updateColor(v.book_id, v.chapter, v.verse, null);
-        } else {
+        await updateColor(v.book_id, v.chapter, v.verse, null);
+        if (!bm.note && !bm.is_bookmarked) {
           await removeBookmark(v.book_id, v.chapter, v.verse);
         }
       }
@@ -216,7 +215,7 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
                   onClick={handleRemoveBookmarks}
                   className="text-xs px-3 py-1.5 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
                 >
-                  {t("verseActions.bookmarkRemoved")}
+                  {t("verseActions.removeBookmark")}
                 </button>
               )}
               {labels.map((label) => (

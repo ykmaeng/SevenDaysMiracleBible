@@ -76,6 +76,7 @@ export interface Bookmark {
   translation_id: string | null;
   label_id: number | null;
   text: string | null;
+  is_bookmarked: number;
   created_at: string;
 }
 

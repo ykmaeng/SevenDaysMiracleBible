@@ -12,6 +12,7 @@ interface NotesViewProps {
 export function NotesView({ onClose, onNavigate }: NotesViewProps) {
   const { t } = useTranslation();
   const updateNote = useBookmarkStore((s) => s.updateNote);
+  const removeBookmark = useBookmarkStore((s) => s.removeBookmark);
   const [notes, setNotes] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -27,6 +28,9 @@ export function NotesView({ onClose, onNavigate }: NotesViewProps) {
   const handleDelete = async (bm: Bookmark) => {
     if (!confirm(t("features.noteDeleteConfirm"))) return;
     await updateNote(bm.book_id, bm.chapter, bm.verse, null);
+    if (!bm.color && !bm.is_bookmarked) {
+      await removeBookmark(bm.book_id, bm.chapter, bm.verse);
+    }
     setNotes((prev) => prev.filter((n) => n.id !== bm.id));
     if (expandedId === bm.id) setExpandedId(null);
   };
