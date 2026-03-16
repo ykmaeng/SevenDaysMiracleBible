@@ -448,6 +448,29 @@ export function LanguageSettings() {
         </button>
         {downloadsOpen && <DownloadManager />}
       </section>
+
+      {/* About */}
+      <section className="mt-8 mb-4 text-center px-2">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+          <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{t("settings.aboutTitle")}</span>
+          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+          {t("settings.aboutDescription")}
+        </p>
+        <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t("settings.aboutAI")}</div>
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+          {t("settings.aboutAIDescription")}
+        </p>
+        <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t("settings.aboutMission")}</div>
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
+          {t("settings.aboutMissionDescription")}
+        </p>
+        <p className="text-[11px] text-gray-400 dark:text-gray-600">
+          Selah Bible v0.1
+        </p>
+      </section>
     </div>
   );
 }

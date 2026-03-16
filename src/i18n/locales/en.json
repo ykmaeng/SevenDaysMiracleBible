@@ -66,7 +66,13 @@
     "showVerseNumbers": "Show Verse Numbers",
     "defaultTranslation": "Default Translation",
     "parallelTranslations": "Parallel Translations",
-    "fontSystem": "System Font"
+    "fontSystem": "System Font",
+    "aboutTitle": "Selah Bible",
+    "aboutDescription": "Selah Bible is built to make Scripture freely accessible to everyone. Whether you're opening the Bible for the first time or seeking deeper study, we aim to bring the richness of God's Word to all.",
+    "aboutAI": "AI Translation (SAV)",
+    "aboutAIDescription": "SAV (Selah AI Version) is a modern translation crafted by AI, drawing from original biblical texts and authoritative translations. It's designed for clarity and natural readability.",
+    "aboutMission": "Our Vision",
+    "aboutMissionDescription": "We hope that the wisdom of Scripture will reach everyone, beyond the barriers of language and knowledge."
   },
   "download": {
     "title": "Downloads",

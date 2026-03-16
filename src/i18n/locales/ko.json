@@ -66,7 +66,13 @@
     "showVerseNumbers": "절 번호 표시",
     "defaultTranslation": "기본 번역본",
     "parallelTranslations": "동시번역 번역본",
-    "fontSystem": "시스템 폰트"
+    "fontSystem": "시스템 폰트",
+    "aboutTitle": "셀라 바이블",
+    "aboutDescription": "셀라 바이블은 누구나 성경을 쉽고 자유롭게 접할 수 있도록 만들어진 앱입니다. 처음 성경을 읽는 분부터 깊이 있는 연구를 원하는 분까지, 모든 이에게 말씀의 풍요로움을 전하고자 합니다.",
+    "aboutAI": "AI 번역 (SAV)",
+    "aboutAIDescription": "SAV(Selah AI Version)는 성경 원문과 권위 있는 번역본들을 토대로 AI가 번역한 현대어 성경입니다. 누구나 쉽게 읽고 이해할 수 있는 자연스러운 문체를 지향합니다.",
+    "aboutMission": "우리의 비전",
+    "aboutMissionDescription": "언어와 지식의 장벽을 넘어, 성경의 지혜가 모든 사람에게 닿을 수 있기를 소망합니다."
   },
   "download": {
     "title": "다운로드",
