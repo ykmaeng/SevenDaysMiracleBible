@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useTabStore } from "../../stores/tabStore";
 import { getDownloadedTranslations } from "../../lib/bible";
@@ -9,17 +9,22 @@ export function TabBar() {
   const { tabs, activeTabId, addTab, closeTab, setActiveTab, togglePin, reorderTab } = useTabStore();
   const [translations, setTranslations] = useState<Translation[]>([]);
 
-  // DnD state (long-press + pointer-based)
+  // DnD state
   const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [dropIndex, setDropIndex] = useState<number | null>(null);
-  const isDragging = useRef(false);
-  const longPressReady = useRef(false);
+  const [dragOffsetX, setDragOffsetX] = useState(0);
+  const dragStartX = useRef(0);
+  const dragIdx = useRef<number | null>(null);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressReady = useRef(false);
+  const justDragged = useRef(false);
+  const swapCooldown = useRef(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const tabRefMap = useRef<Map<string, HTMLDivElement>>(new Map());
+  const prevRectsRef = useRef<Map<string, DOMRect>>(new Map());
   const pointerStartX = useRef(0);
   const scrollStartX = useRef(0);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const tabRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  const tabIds = useMemo(() => tabs.map((t) => t.id), [tabs]);
 
   useEffect(() => {
     const load = () => getDownloadedTranslations().then(setTranslations);
@@ -28,10 +33,43 @@ export function TabBar() {
     return () => window.removeEventListener("translations-changed", load);
   }, []);
 
-  const canDrop = useCallback((from: number, to: number) => {
-    if (from === to) return false;
-    return !!tabs[from]?.pinned === !!tabs[to]?.pinned;
+  const canDrop = useCallback((fromIdx: number, toIdx: number) => {
+    if (fromIdx === toIdx) return false;
+    return !!tabs[fromIdx]?.pinned === !!tabs[toIdx]?.pinned;
   }, [tabs]);
+
+  const snapshotPositions = useCallback(() => {
+    const rects = new Map<string, DOMRect>();
+    for (const [id, el] of tabRefMap.current) {
+      rects.set(id, el.getBoundingClientRect());
+    }
+    prevRectsRef.current = rects;
+  }, []);
+
+  // FLIP animation after reorder
+  useLayoutEffect(() => {
+    const prev = prevRectsRef.current;
+    if (prev.size === 0) return;
+    prevRectsRef.current = new Map();
+    if (dragIdx.current === null) return;
+
+    const dragTabId = tabs[dragIdx.current]?.id;
+    for (const [id, el] of tabRefMap.current) {
+      if (id === dragTabId) continue;
+      const oldRect = prev.get(id);
+      if (!oldRect) continue;
+      const newRect = el.getBoundingClientRect();
+      const dx = oldRect.left - newRect.left;
+      if (Math.abs(dx) < 1) continue;
+      el.animate(
+        [
+          { transform: `translateX(${dx}px)` },
+          { transform: "translateX(0)" },
+        ],
+        { duration: 200, easing: "ease-out" }
+      );
+    }
+  }, [tabIds]);
 
   const clearLongPress = () => {
     if (longPressTimer.current) {
@@ -42,61 +80,93 @@ export function TabBar() {
 
   const handlePointerDown = (e: React.PointerEvent, index: number) => {
     if ((e.target as HTMLElement).closest("button")) return;
-    longPressReady.current = false;
-    isDragging.current = false;
     pointerStartX.current = e.clientX;
     scrollStartX.current = scrollContainerRef.current?.scrollLeft ?? 0;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    longPressReady.current = false;
+
+    const cancelLongPress = () => {
+      clearLongPress();
+      document.removeEventListener("pointermove", onEarlyMove);
+      document.removeEventListener("pointerup", cancelLongPress);
+    };
+    const onEarlyMove = (ev: PointerEvent) => {
+      const dx = ev.clientX - pointerStartX.current;
+      if (Math.abs(dx) > 5) {
+        cancelLongPress();
+        // Scroll the tab bar instead
+        if (scrollContainerRef.current) {
+          const onScrollMove = (sev: PointerEvent) => {
+            const sdx = sev.clientX - pointerStartX.current;
+            scrollContainerRef.current!.scrollLeft = scrollStartX.current - sdx;
+          };
+          const onScrollUp = () => {
+            document.removeEventListener("pointermove", onScrollMove);
+            document.removeEventListener("pointerup", onScrollUp);
+          };
+          document.addEventListener("pointermove", onScrollMove);
+          document.addEventListener("pointerup", onScrollUp);
+        }
+      }
+    };
+
     clearLongPress();
     longPressTimer.current = setTimeout(() => {
+      document.removeEventListener("pointermove", onEarlyMove);
+      document.removeEventListener("pointerup", cancelLongPress);
+
       longPressReady.current = true;
+      dragIdx.current = index;
+      dragStartX.current = pointerStartX.current;
       setDragIndex(index);
-    }, 400);
-  };
+      setDragOffsetX(0);
+      navigator.vibrate?.(30);
 
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    const dx = e.clientX - pointerStartX.current;
+      const onMove = (ev: PointerEvent) => {
+        if (dragIdx.current === null) return;
+        ev.preventDefault();
+        setDragOffsetX(ev.clientX - dragStartX.current);
 
-    // Long press not yet fired → scroll the tab bar
-    if (!longPressReady.current) {
-      if (Math.abs(dx) > 3) clearLongPress(); // cancel long press on move
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollLeft = scrollStartX.current - dx;
-      }
-      return;
-    }
+        if (swapCooldown.current) return;
 
-    // Long press fired → DnD mode
-    if (dragIndex === null) return;
-    isDragging.current = true;
-
-    const x = e.clientX;
-    for (let i = 0; i < tabRefs.current.length; i++) {
-      const el = tabRefs.current[i];
-      if (!el) continue;
-      const rect = el.getBoundingClientRect();
-      if (x >= rect.left && x <= rect.right) {
-        if (canDrop(dragIndex, i)) {
-          setDropIndex(i);
-        } else {
-          setDropIndex(null);
+        const currentTabs = useTabStore.getState().tabs;
+        for (const [id, el] of tabRefMap.current.entries()) {
+          const tabIdx = currentTabs.findIndex((t) => t.id === id);
+          if (tabIdx < 0 || tabIdx === dragIdx.current) continue;
+          const rect = el.getBoundingClientRect();
+          const center = rect.left + rect.width / 2;
+          const atCenter = Math.abs(ev.clientX - center) < rect.width * 0.3;
+          if (atCenter && canDrop(dragIdx.current, tabIdx)) {
+            snapshotPositions();
+            reorderTab(dragIdx.current, tabIdx);
+            dragStartX.current = ev.clientX;
+            setDragOffsetX(0);
+            dragIdx.current = tabIdx;
+            setDragIndex(tabIdx);
+            navigator.vibrate?.(15);
+            swapCooldown.current = true;
+            setTimeout(() => { swapCooldown.current = false; }, 250);
+            break;
+          }
         }
-        return;
-      }
-    }
-    setDropIndex(null);
-  }, [dragIndex, canDrop]);
+      };
 
-  const handlePointerUp = useCallback(() => {
-    clearLongPress();
-    if (dragIndex !== null && dropIndex !== null && isDragging.current) {
-      reorderTab(dragIndex, dropIndex);
-    }
-    setDragIndex(null);
-    setDropIndex(null);
-    isDragging.current = false;
-    longPressReady.current = false;
-  }, [dragIndex, dropIndex, reorderTab]);
+      const onUp = () => {
+        dragIdx.current = null;
+        longPressReady.current = false;
+        setDragIndex(null);
+        setDragOffsetX(0);
+        justDragged.current = true;
+        setTimeout(() => { justDragged.current = false; }, 300);
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
+      };
+      document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp);
+    }, 400);
+
+    document.addEventListener("pointermove", onEarlyMove);
+    document.addEventListener("pointerup", cancelLongPress);
+  };
 
   return (
     <div className="flex items-center bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -105,24 +175,21 @@ export function TabBar() {
           <div
             key={tab.id}
             data-tab
-            ref={(el) => { tabRefs.current[index] = el; }}
+            ref={(el) => { if (el) tabRefMap.current.set(tab.id, el); else tabRefMap.current.delete(tab.id); }}
             onPointerDown={(e) => handlePointerDown(e, index)}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
             className={`group flex items-center gap-1 py-2 text-sm border-r border-gray-200 dark:border-gray-700 min-w-0 shrink-0 select-none touch-none ${
               dragIndex !== null ? "cursor-grabbing" : "cursor-grab"
-            } ${
-              dragIndex === index && isDragging.current ? "opacity-40" : ""
             } ${
               tab.id === activeTabId
                 ? "bg-white dark:bg-gray-900 text-blue-600 font-medium"
                 : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
-            } ${dropIndex === index ? "pl-1 pr-3 border-l-2 border-l-blue-500" : "px-3"}`}
+            } ${dragIndex === index ? "z-10 relative" : ""} px-3`}
+            style={dragIndex === index ? { transform: `translateX(${dragOffsetX}px) scale(1.05)`, opacity: 0.8 } : undefined}
             onClick={() => {
-              if (!isDragging.current) setActiveTab(tab.id);
+              if (!justDragged.current) setActiveTab(tab.id);
             }}
             onDoubleClick={() => {
-              if (!isDragging.current) togglePin(tab.id);
+              if (!justDragged.current) togglePin(tab.id);
             }}
             title={tab.pinned ? t("tabs.unpin") : t("tabs.pin")}
           >
