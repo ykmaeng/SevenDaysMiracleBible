@@ -177,9 +177,7 @@ export function ParagraphGroup({
                 className={`rounded-sm transition-colors ${
                   isPlaying
                     ? "bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-200 dark:ring-blue-700"
-                    : isFlashing
-                      ? "animate-verse-flash"
-                      : hlCls
+                    : hlCls
                 }`}
               >
                 {showVerseNumbers && (
@@ -188,7 +186,7 @@ export function ParagraphGroup({
                   </sup>
                 )}
                 <span
-                  className={isSelected && !isPlaying ? "verse-selected" : ""}
+                  className={`${isSelected && !isPlaying ? "verse-selected" : ""} ${isFlashing ? "animate-verse-flash" : ""}`}
                 >
                   {verse.text}
                 </span>

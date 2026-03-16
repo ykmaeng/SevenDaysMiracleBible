@@ -25,6 +25,7 @@ function App() {
   const [showSplash, setShowSplash] = useState(() => onboardingComplete);
   const [immersive, setImmersive] = useState(false);
   const immersiveRef = useRef(false);
+  const lastBackRef = useRef(0);
   const theme = useSettingsStore((s) => s.theme);
   const fontFamily = useSettingsStore((s) => s.fontFamily);
   const enabledFeatures = useFeatureStore((s) => s.enabledFeatures);
@@ -56,36 +57,36 @@ function App() {
     };
   }, []);
 
-  // Android back button: push sentinel entry once on mount
-  useEffect(() => {
-    history.pushState(null, "", "");
-  }, []);
 
-  // Re-register handler when view changes (to capture current view in closure)
+  // Android back button
   useEffect(() => {
     const handler = () => {
-      // Dispatch dismiss-popup; listeners set handled=true if they closed something
-      let handled = false;
-      // Dispatch dismiss-popup; listeners set handled=true if they closed something
+      // 1. Close popups/sub-toolbars
       const evt = new CustomEvent("dismiss-popup", { detail: { handled: false } });
       window.dispatchEvent(evt);
-      if (evt.detail.handled) handled = true;
-      // Always exit immersive mode on back press (show main toolbar)
-      if (immersiveRef.current) {
-        window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: false }));
-        handled = true;
-      }
-      if (handled) {
+      if (evt.detail.handled) {
         history.pushState(null, "", "");
         return;
       }
-      // Close non-reader views
+      // 2. Exit immersive mode
+      if (immersiveRef.current) {
+        window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: false }));
+        history.pushState(null, "", "");
+        return;
+      }
+      // 3. Close non-reader views
       if (view !== "reader") {
         setView("reader");
         history.pushState(null, "", "");
+        return;
       }
-      // else: reader with toolbar visible — no pushState, next native back exits app
+      // 4. Reader + toolbar visible — double-back to exit
+      const now = Date.now();
+      if (now - lastBackRef.current < 2000) return;
+      lastBackRef.current = now;
+      history.pushState(null, "", "");
     };
+    history.pushState(null, "", "");
     window.addEventListener("popstate", handler);
     return () => window.removeEventListener("popstate", handler);
   }, [view]);
@@ -97,8 +98,6 @@ function App() {
       const fullscreen = detail === "toggle" ? !immersiveRef.current : !!detail;
       setImmersive(fullscreen);
       immersiveRef.current = fullscreen;
-      // Ensure back button can exit immersive mode
-      if (fullscreen) history.pushState(null, "", "");
       try {
         (window as unknown as { AndroidImmersive?: { setImmersive: (v: boolean) => void } })
           .AndroidImmersive?.setImmersive(fullscreen);
