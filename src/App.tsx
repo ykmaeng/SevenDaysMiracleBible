@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { TabBar } from "./components/TabBar/TabBar";
 import { TabPanel } from "./components/TabBar/TabPanel";
 import { ToastContainer } from "./components/Toast";
 import { LanguageSettings } from "./components/Settings/LanguageSettings";
 import { LanguageOnboarding } from "./components/Onboarding/LanguageOnboarding";
+import { SplashScreen } from "./components/Splash/SplashScreen";
 import { FeaturesView } from "./components/Features/FeaturesView";
 import { BookmarksView } from "./components/Bookmarks/BookmarksView";
 import { HighlightsView } from "./components/Highlights/HighlightsView";
@@ -20,20 +21,29 @@ type View = "reader" | "settings" | "features" | "bookmarks" | "highlights" | "n
 function App() {
   const { t } = useTranslation();
   const [view, setView] = useState<View>("reader");
+  const onboardingComplete = useSettingsStore((s) => s.onboardingComplete);
+  const [showSplash, setShowSplash] = useState(() => onboardingComplete);
   const [immersive, setImmersive] = useState(false);
   const immersiveRef = useRef(false);
   const lastBackRef = useRef(0);
   const theme = useSettingsStore((s) => s.theme);
   const fontFamily = useSettingsStore((s) => s.fontFamily);
-  const onboardingComplete = useSettingsStore((s) => s.onboardingComplete);
   const enabledFeatures = useFeatureStore((s) => s.enabledFeatures);
   const navigateTo = useTabStore((s) => s.navigateTo);
   const updateTab = useTabStore((s) => s.updateTab);
   const activeTabId = useTabStore((s) => s.activeTabId);
 
-  const tabBarFeatures = FEATURE_REGISTRY.filter(
-    (f) => f.showInTabBar && enabledFeatures.includes(f.id)
-  );
+  const featureOrder = useFeatureStore((s) => s.featureOrder);
+  const tabBarFeatures = (() => {
+    const allIds = new Set(FEATURE_REGISTRY.map((f) => f.id));
+    const order = featureOrder.filter((id) => allIds.has(id));
+    for (const f of FEATURE_REGISTRY) {
+      if (!order.includes(f.id)) order.push(f.id);
+    }
+    return order
+      .map((id) => FEATURE_REGISTRY.find((f) => f.id === id)!)
+      .filter((f) => f && f.showInTabBar && enabledFeatures.includes(f.id));
+  })();
 
   // Listen for open-settings/open-search events
   useEffect(() => {
@@ -121,6 +131,8 @@ function App() {
     }
   }, [theme]);
 
+  const dismissSplash = useCallback(() => setShowSplash(false), []);
+
   if (!onboardingComplete) {
     return (
       <div className="h-screen bg-white dark:bg-gray-900 dark:text-gray-100" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
@@ -130,6 +142,8 @@ function App() {
   }
 
   return (
+    <>
+      {showSplash && <SplashScreen onDone={dismissSplash} />}
     <div
       className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-gray-100"
       style={{
@@ -224,18 +238,12 @@ function App() {
           <span className="text-[10px]">{t("app.title")}</span>
         </button>
 
-          {tabBarFeatures.map((feature) => (
-            <button
-              key={feature.id}
-              onClick={() => setView(feature.id as View)}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1 shrink-0 ${
-                view === feature.id ? "text-blue-600" : "text-gray-400"
-              }`}
-            >
-              <NavFeatureIcon id={feature.id} />
-              <span className="text-[10px]">{t(feature.labelKey)}</span>
-            </button>
-          ))}
+          <NavFeatureButtons
+            features={tabBarFeatures}
+            view={view}
+            setView={setView}
+            t={t}
+          />
 
           <button
             onClick={() => setView(view === "features" ? "reader" : "features")}
@@ -263,6 +271,177 @@ function App() {
           </button>
       </nav>
     </div>
+    </>
+  );
+}
+
+function NavFeatureButtons({
+  features,
+  view,
+  setView,
+  t,
+}: {
+  features: { id: string; labelKey: string }[];
+  view: string;
+  setView: (v: View) => void;
+  t: (key: string) => string;
+}) {
+  const reorderFeature = useFeatureStore((s) => s.reorderFeature);
+  const btnRefMap = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dragIdx = useRef<number | null>(null);
+  const dragFeatureId = useRef<string | null>(null);
+  const [dragActiveIdx, setDragActiveIdx] = useState<number | null>(null);
+  const [dragOffsetX, setDragOffsetX] = useState(0);
+  const dragStartX = useRef(0);
+  const justDragged = useRef(false);
+  const swapCooldown = useRef(false);
+  const prevRectsRef = useRef<Map<string, DOMRect>>(new Map());
+
+  // Memoize feature ids to detect changes
+  const featureIds = useMemo(() => features.map((f) => f.id), [features]);
+
+  // Snapshot positions before React commits DOM changes
+  const snapshotPositions = useCallback(() => {
+    const rects = new Map<string, DOMRect>();
+    for (const [id, el] of btnRefMap.current) {
+      rects.set(id, el.getBoundingClientRect());
+    }
+    prevRectsRef.current = rects;
+  }, []);
+
+  // FLIP animation after reorder — uses Web Animations API (immune to React re-renders)
+  useLayoutEffect(() => {
+    const prev = prevRectsRef.current;
+    if (prev.size === 0) return;
+    prevRectsRef.current = new Map();
+    if (!dragFeatureId.current) return;
+
+    for (const [id, el] of btnRefMap.current) {
+      if (dragFeatureId.current === id) continue;
+      const oldRect = prev.get(id);
+      if (!oldRect) continue;
+      const newRect = el.getBoundingClientRect();
+      const dx = oldRect.left - newRect.left;
+      if (Math.abs(dx) < 1) continue;
+      el.animate(
+        [
+          { transform: `translateX(${dx}px)` },
+          { transform: "translateX(0)" },
+        ],
+        { duration: 200, easing: "ease-out" }
+      );
+    }
+  }, [featureIds]);
+
+  const handlePointerDown = (e: React.PointerEvent, idx: number) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startY = e.clientY;
+
+    // Declare early listeners first so they can be cleaned up when drag starts
+    const cancelLongPress = () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+      document.removeEventListener("pointermove", onEarlyMove);
+      document.removeEventListener("pointerup", cancelLongPress);
+    };
+    const onEarlyMove = (ev: PointerEvent) => {
+      if (Math.abs(ev.clientX - startX) > 10 || Math.abs(ev.clientY - startY) > 10) {
+        cancelLongPress();
+      }
+    };
+    longPressTimer.current = setTimeout(() => {
+      // Clean up early listeners since drag is starting
+      document.removeEventListener("pointermove", onEarlyMove);
+      document.removeEventListener("pointerup", cancelLongPress);
+
+      dragIdx.current = idx;
+      dragFeatureId.current = featureIds[idx];
+      dragStartX.current = startX;
+      setDragActiveIdx(idx);
+      setDragOffsetX(0);
+
+      navigator.vibrate?.(30);
+
+      const onMove = (ev: PointerEvent) => {
+        if (dragIdx.current === null || !dragFeatureId.current) return;
+        ev.preventDefault();
+        setDragOffsetX(ev.clientX - dragStartX.current);
+
+        if (swapCooldown.current) return;
+
+        const currentIds = useFeatureStore.getState().featureOrder;
+        const enabledIds = useFeatureStore.getState().enabledFeatures;
+        const tabBarIds = currentIds.filter((id) => {
+          const cfg = FEATURE_REGISTRY.find((f) => f.id === id);
+          return cfg?.showInTabBar && enabledIds.includes(id);
+        });
+        for (const [id, el] of btnRefMap.current.entries()) {
+          if (id === dragFeatureId.current) continue;
+          const rect = el.getBoundingClientRect();
+          const i = tabBarIds.indexOf(id);
+          if (i < 0) continue;
+          // Swap when pointer reaches the center of the target button
+          const center = rect.left + rect.width / 2;
+          const atCenter = Math.abs(ev.clientX - center) < rect.width * 0.3;
+          if (atCenter && dragIdx.current !== i) {
+            snapshotPositions();
+            const fromOrderIdx = currentIds.indexOf(dragFeatureId.current!);
+            const toOrderIdx = currentIds.indexOf(id);
+            if (fromOrderIdx >= 0 && toOrderIdx >= 0) {
+              reorderFeature(fromOrderIdx, toOrderIdx);
+            }
+            dragStartX.current = ev.clientX;
+            setDragOffsetX(0);
+            dragIdx.current = i;
+            setDragActiveIdx(i);
+            navigator.vibrate?.(15);
+            // Cooldown to prevent rapid oscillation
+            swapCooldown.current = true;
+            setTimeout(() => { swapCooldown.current = false; }, 250);
+            break;
+          }
+        }
+      };
+      const onUp = () => {
+        dragIdx.current = null;
+        dragFeatureId.current = null;
+        setDragActiveIdx(null);
+        setDragOffsetX(0);
+        justDragged.current = true;
+        setTimeout(() => { justDragged.current = false; }, 300);
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
+      };
+      document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp);
+    }, 400);
+
+    document.addEventListener("pointermove", onEarlyMove);
+    document.addEventListener("pointerup", cancelLongPress);
+  };
+
+  return (
+    <>
+      {features.map((feature, idx) => (
+        <button
+          key={feature.id}
+          ref={(el) => { if (el) btnRefMap.current.set(feature.id, el); else btnRefMap.current.delete(feature.id); }}
+          onClick={() => { if (dragActiveIdx === null && !justDragged.current) setView(feature.id as View); }}
+          onPointerDown={(e) => handlePointerDown(e, idx)}
+          className={`flex flex-col items-center gap-0.5 px-3 py-1 shrink-0 touch-none ${
+            view === feature.id ? "text-blue-600" : "text-gray-400"
+          } ${dragActiveIdx === idx ? "z-10 relative" : ""}`}
+          style={dragActiveIdx === idx ? { transform: `translateX(${dragOffsetX}px) scale(1.1)`, opacity: 0.8 } : undefined}
+        >
+          <NavFeatureIcon id={feature.id} />
+          <span className="text-[10px]">{t(feature.labelKey)}</span>
+        </button>
+      ))}
+    </>
   );
 }
 

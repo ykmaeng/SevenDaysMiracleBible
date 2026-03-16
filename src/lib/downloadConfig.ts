@@ -14,6 +14,8 @@ export function getCommentaryDownloadUrl(language: string): string {
 
 export const BUNDLED_TRANSLATIONS = new Set(["kjv", "sav-ko"]);
 
+export const PREPARING_TRANSLATIONS = new Set(["nkrv", "niv", "esv"]);
+
 export const COMMENTARY_LANGUAGES: { language: string; name: string; sizeMb: number; ready?: boolean }[] = [
   { language: "ko", name: "한국어", sizeMb: 14, ready: true },
   { language: "en", name: "English", sizeMb: 10, ready: true },

@@ -99,3 +99,53 @@ body,
 /* Hide scrollbar for horizontal scroll containers */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Splash & Onboarding animations */
+@keyframes splash-fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes splash-ref-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes splash-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+.animate-splash-text {
+  animation: splash-fade-in 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  opacity: 0;
+}
+.animate-splash-ref {
+  animation: splash-ref-in 0.8s ease-out 0.8s forwards;
+  opacity: 0;
+}
+.animate-splash-glow {
+  animation: splash-glow 3s ease-in-out infinite;
+}
+
+@keyframes onboard-verse-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes onboard-buttons-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-onboard-verse {
+  animation: onboard-verse-in 1s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+  opacity: 0;
+}
+.animate-onboard-en {
+  animation: onboard-verse-in 1s cubic-bezier(0.22, 1, 0.36, 1) 0.7s forwards;
+  opacity: 0;
+}
+.animate-onboard-buttons {
+  animation: onboard-buttons-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 1.2s forwards;
+  opacity: 0;
+}
+.animate-onboard-ref {
+  animation: splash-ref-in 0.6s ease-out 1.6s forwards;
+  opacity: 0;
+}

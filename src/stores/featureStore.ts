@@ -80,17 +80,21 @@ export const FEATURE_REGISTRY: FeatureConfig[] = [
 
 interface FeatureState {
   enabledFeatures: string[];
+  featureOrder: string[];
 }
 
 interface FeatureActions {
   toggleFeature: (id: string) => void;
   isEnabled: (id: string) => boolean;
+  reorderFeature: (fromIdx: number, toIdx: number) => void;
+  getOrderedFeatures: () => FeatureConfig[];
 }
 
 export const useFeatureStore = create<FeatureState & FeatureActions>()(
   persist(
     immer((set, get) => ({
       enabledFeatures: [],
+      featureOrder: FEATURE_REGISTRY.map((f) => f.id),
 
       toggleFeature: (id) =>
         set((state) => {
@@ -100,10 +104,35 @@ export const useFeatureStore = create<FeatureState & FeatureActions>()(
           } else {
             state.enabledFeatures.push(id);
           }
+          // Ensure featureOrder includes all registry IDs
+          for (const f of FEATURE_REGISTRY) {
+            if (!state.featureOrder.includes(f.id)) {
+              state.featureOrder.push(f.id);
+            }
+          }
         }),
 
       isEnabled: (id) => {
         return get().enabledFeatures.includes(id);
+      },
+
+      reorderFeature: (fromIdx, toIdx) =>
+        set((state) => {
+          const [item] = state.featureOrder.splice(fromIdx, 1);
+          state.featureOrder.splice(toIdx, 0, item);
+        }),
+
+      getOrderedFeatures: () => {
+        const { featureOrder } = get();
+        // Ensure all registry features are in the order list
+        const allIds = new Set(FEATURE_REGISTRY.map((f) => f.id));
+        const order = featureOrder.filter((id) => allIds.has(id));
+        for (const f of FEATURE_REGISTRY) {
+          if (!order.includes(f.id)) order.push(f.id);
+        }
+        return order
+          .map((id) => FEATURE_REGISTRY.find((f) => f.id === id)!)
+          .filter(Boolean);
       },
     })),
     { name: "bible-features" }

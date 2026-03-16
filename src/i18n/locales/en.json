@@ -220,7 +220,8 @@
     "dictionaryInstruction": "Enable Dictionary in reader settings and activate a parallel translation. Tap any word in the parallel translation text to see definitions by part of speech, pronunciation, and more. English words use offline and online dictionaries, with definitions auto-translated to your app language. Use the speaker button to hear pronunciation.",
     "tabs": "Multi-Tab",
     "tabsDesc": "Open multiple Bible passages in separate tabs",
-    "tabsInstruction": "Use the + button in the tab bar to add new tabs. Each tab maintains its own translation, book, chapter, and scroll position independently. Long-press and drag to reorder tabs. Double-tap a tab to pin it to the front. Close a tab with the X button on the active tab."
+    "tabsInstruction": "Use the + button in the tab bar to add new tabs. Each tab maintains its own translation, book, chapter, and scroll position independently. Long-press and drag to reorder tabs. Double-tap a tab to pin it to the front. Close a tab with the X button on the active tab.",
+    "available": "Available"
   },
   "interlinear": {
     "title": "Interlinear",

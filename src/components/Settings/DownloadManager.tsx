@@ -5,7 +5,7 @@ import { downloadTranslation, deleteTranslation } from "../../lib/translationSer
 import { downloadCommentary, deleteCommentary, commentaryDownloadKey, isCommentaryDbDownloaded } from "../../lib/commentaryService";
 import { downloadDictionary, deleteDictionary, isDictionaryDownloaded, DICTIONARY_DOWNLOAD_KEY } from "../../lib/dictionaryService";
 import { downloadInterlinear, deleteInterlinear, isInterlinearDbDownloaded, interlinearDownloadKey } from "../../lib/interlinearService";
-import { BUNDLED_TRANSLATIONS, COMMENTARY_LANGUAGES } from "../../lib/downloadConfig";
+import { BUNDLED_TRANSLATIONS, PREPARING_TRANSLATIONS, COMMENTARY_LANGUAGES } from "../../lib/downloadConfig";
 import { useDownloadStore } from "../../stores/downloadStore";
 import { useToastStore } from "../../stores/toastStore";
 import type { Translation } from "../../types/bible";
@@ -88,10 +88,11 @@ export function DownloadManager() {
     const isError = dl?.status === "error";
     const isDone = tr.downloaded || dl?.status === "done";
     const isBundled = BUNDLED_TRANSLATIONS.has(tr.id);
+    const isPreparing = PREPARING_TRANSLATIONS.has(tr.id);
     const isDeletingThis = deleting === tr.id;
 
     return (
-      <div key={tr.id} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+      <div key={tr.id} className={`flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0 ${isPreparing ? "opacity-50" : ""}`}>
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{tr.name}</span>
@@ -109,7 +110,9 @@ export function DownloadManager() {
           )}
         </div>
         <div>
-          {isDownloading ? (
+          {isPreparing ? (
+            <span className="text-xs text-gray-400 font-medium">{t("download.preparing")}</span>
+          ) : isDownloading ? (
             <div className="flex items-center gap-2">
               <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div

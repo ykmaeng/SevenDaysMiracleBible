@@ -39,6 +39,12 @@ pub fn run() {
             sql: include_str!("../migrations/001_init.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 2,
+            description: "add_niv_esv",
+            sql: include_str!("../migrations/002_add_niv_esv.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     let mut builder = tauri::Builder::default()
