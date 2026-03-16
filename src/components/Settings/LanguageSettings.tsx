@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useLayoutEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { invoke } from "@tauri-apps/api/core";
 import { useSettingsStore } from "../../stores/settingsStore";
@@ -57,8 +57,40 @@ export function LanguageSettings() {
   const [parallelOpen, setParallelOpen] = useState(false);
   const [downloadsOpen, setDownloadsOpen] = useState(false);
   const dragIdx = useRef<number | null>(null);
-  const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const dragItemId = useRef<string | null>(null);
+  const dragStartY = useRef(0);
+  const itemRefMap = useRef<Map<string, HTMLDivElement>>(new Map());
+  const prevRectsRef = useRef<Map<string, DOMRect>>(new Map());
+  const swapCooldown = useRef(false);
+  const justDragged = useRef(false);
   const [dragActiveIdx, setDragActiveIdx] = useState<number | null>(null);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+
+  const parallelIds = useMemo(() => [...parallelTranslations], [parallelTranslations]);
+
+  // FLIP animation for parallel translation reorder
+  useLayoutEffect(() => {
+    const prev = prevRectsRef.current;
+    if (prev.size === 0) return;
+    prevRectsRef.current = new Map();
+    if (!dragItemId.current) return;
+
+    for (const [id, el] of itemRefMap.current) {
+      if (id === dragItemId.current) continue;
+      const oldRect = prev.get(id);
+      if (!oldRect) continue;
+      const newRect = el.getBoundingClientRect();
+      const dy = oldRect.top - newRect.top;
+      if (Math.abs(dy) < 1) continue;
+      el.animate(
+        [
+          { transform: `translateY(${dy}px)` },
+          { transform: "translateY(0)" },
+        ],
+        { duration: 200, easing: "ease-out" }
+      );
+    }
+  }, [parallelIds]);
   const [systemFonts, setSystemFonts] = useState<string[]>([]);
 
   useEffect(() => {
@@ -279,24 +311,55 @@ export function LanguageSettings() {
                   const handlePointerDown = (e: React.PointerEvent) => {
                     e.preventDefault();
                     dragIdx.current = idx;
+                    dragItemId.current = id;
+                    dragStartY.current = e.clientY;
                     setDragActiveIdx(idx);
+                    setDragOffsetY(0);
+
+                    const snapshotPositions = () => {
+                      const rects = new Map<string, DOMRect>();
+                      for (const [rid, el] of itemRefMap.current) {
+                        rects.set(rid, el.getBoundingClientRect());
+                      }
+                      prevRectsRef.current = rects;
+                    };
 
                     const onMove = (ev: PointerEvent) => {
-                      if (dragIdx.current === null) return;
-                      // Find which item the pointer is over
-                      for (const [i, el] of itemRefs.current.entries()) {
+                      if (dragIdx.current === null || !dragItemId.current) return;
+                      ev.preventDefault();
+                      setDragOffsetY(ev.clientY - dragStartY.current);
+
+                      if (swapCooldown.current) return;
+
+                      const currentList = useSettingsStore.getState().parallelTranslations;
+                      for (const [rid, el] of itemRefMap.current.entries()) {
+                        if (rid === dragItemId.current) continue;
+                        const i = currentList.indexOf(rid);
+                        if (i < 0) continue;
                         const rect = el.getBoundingClientRect();
-                        if (ev.clientY >= rect.top && ev.clientY <= rect.bottom && dragIdx.current !== i) {
+                        const center = rect.top + rect.height / 2;
+                        const atCenter = Math.abs(ev.clientY - center) < rect.height * 0.3;
+                        if (atCenter && dragIdx.current !== i) {
+                          snapshotPositions();
                           reorderParallelTranslation(dragIdx.current, i);
+                          dragStartY.current = ev.clientY;
+                          setDragOffsetY(0);
                           dragIdx.current = i;
                           setDragActiveIdx(i);
+                          navigator.vibrate?.(15);
+                          swapCooldown.current = true;
+                          setTimeout(() => { swapCooldown.current = false; }, 250);
                           break;
                         }
                       }
                     };
                     const onUp = () => {
                       dragIdx.current = null;
+                      dragItemId.current = null;
                       setDragActiveIdx(null);
+                      setDragOffsetY(0);
+                      justDragged.current = true;
+                      setTimeout(() => { justDragged.current = false; }, 300);
                       document.removeEventListener("pointermove", onMove);
                       document.removeEventListener("pointerup", onUp);
                     };
@@ -307,10 +370,11 @@ export function LanguageSettings() {
                   return (
                     <div
                       key={tr.id}
-                      ref={(el) => { if (el) itemRefs.current.set(idx, el); else itemRefs.current.delete(idx); }}
-                      className={`flex items-center gap-2 w-full py-2 px-3 rounded-lg text-sm transition-colors bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 ${
-                        dragActiveIdx === idx ? "opacity-50 ring-2 ring-blue-400" : ""
+                      ref={(el) => { if (el) itemRefMap.current.set(tr.id, el); else itemRefMap.current.delete(tr.id); }}
+                      className={`flex items-center gap-2 w-full py-2 px-3 rounded-lg text-sm bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 ${
+                        dragActiveIdx === idx ? "z-10 relative" : ""
                       }`}
+                      style={dragActiveIdx === idx ? { transform: `translateY(${dragOffsetY}px) scale(1.03)`, opacity: 0.8 } : undefined}
                     >
                       {/* Drag handle */}
                       <svg
