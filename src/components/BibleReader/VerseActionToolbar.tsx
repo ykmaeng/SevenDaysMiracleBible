@@ -41,17 +41,18 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
     requestAnimationFrame(() => setVisible(true));
   }, []);
 
-  // Close sub-panels on Android back button
+  // Close sub-panels or toolbar itself on Android back button
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (detail.handled) return;
       if (showLabelPicker) { setShowLabelPicker(false); detail.handled = true; }
       else if (showColors) { setShowColors(false); detail.handled = true; }
+      else { onClose(); detail.handled = true; }
     };
     window.addEventListener("dismiss-popup", handler);
     return () => window.removeEventListener("dismiss-popup", handler);
-  }, [showLabelPicker, showColors]);
+  }, [showLabelPicker, showColors, onClose]);
 
   // Load labels when label picker opens
   useEffect(() => {

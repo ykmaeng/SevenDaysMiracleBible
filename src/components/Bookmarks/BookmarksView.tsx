@@ -236,7 +236,8 @@ export function BookmarksView({ onClose, onNavigate }: BookmarksViewProps) {
               </div>
               <div className="space-y-0">
                 {group.bookmarks.map((bm) => {
-                  const expanded = expandAll || expandedId === bm.id;
+                  const textExpanded = expandAll || expandedId === bm.id;
+                  const selected = expandedId === bm.id;
                   const label = bm.label_id ? labelMap.get(bm.label_id) : null;
                   return (
                     <div key={bm.id} className="rounded-lg overflow-hidden px-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
@@ -251,16 +252,16 @@ export function BookmarksView({ onClose, onNavigate }: BookmarksViewProps) {
                         </div>
                         <div className="flex-1 min-w-0">
                           <button
-                            onClick={() => setExpandedId(expanded ? null : bm.id)}
+                            onClick={() => setExpandedId(selected ? null : bm.id)}
                             className="w-full text-left py-2"
                           >
                             {bm.text && (
-                              <span className={`text-sm text-gray-600 dark:text-gray-300 block min-w-0 ${expanded ? "" : "truncate"}`}>
+                              <span className={`text-sm text-gray-600 dark:text-gray-300 block min-w-0 ${textExpanded ? "" : "truncate"}`}>
                                 {bm.text}
                               </span>
                             )}
                           </button>
-                          {expanded && (
+                          {selected && (
                             <div className="flex items-center gap-2 pb-2 flex-wrap">
                               {bm.translation_id && (
                                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 uppercase">

@@ -159,7 +159,8 @@ export function HighlightsView({ onClose, onNavigate }: HighlightsViewProps) {
               </div>
               <div className="space-y-0">
                 {group.items.map((h) => {
-                  const expanded = expandAll || expandedId === h.id;
+                  const textExpanded = expandAll || expandedId === h.id;
+                  const selected = expandedId === h.id;
                   return (
                     <div key={h.id} className="rounded-lg overflow-hidden px-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                       <div className="flex items-start gap-2 min-w-0">
@@ -171,16 +172,16 @@ export function HighlightsView({ onClose, onNavigate }: HighlightsViewProps) {
                         </div>
                         <div className="flex-1 min-w-0">
                           <button
-                            onClick={() => setExpandedId(expanded ? null : h.id)}
+                            onClick={() => setExpandedId(selected ? null : h.id)}
                             className="w-full text-left py-2"
                           >
                             {h.text && (
-                              <span className={`text-sm text-gray-600 dark:text-gray-300 block min-w-0 ${expanded ? "" : "truncate"}`}>
+                              <span className={`text-sm text-gray-600 dark:text-gray-300 block min-w-0 ${textExpanded ? "" : "truncate"}`}>
                                 {h.text}
                               </span>
                             )}
                           </button>
-                          {expanded && (
+                          {selected && (
                             <div className="flex items-center gap-2 pb-2 flex-wrap">
                               {h.translation_id && (
                                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 uppercase">

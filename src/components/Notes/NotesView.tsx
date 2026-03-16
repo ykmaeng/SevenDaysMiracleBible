@@ -26,7 +26,6 @@ export function NotesView({ onClose, onNavigate }: NotesViewProps) {
   }, []);
 
   const handleDelete = async (bm: Bookmark) => {
-    if (!confirm(t("features.noteDeleteConfirm"))) return;
     await updateNote(bm.book_id, bm.chapter, bm.verse, null);
     if (!bm.color && !bm.is_bookmarked) {
       await removeBookmark(bm.book_id, bm.chapter, bm.verse);
@@ -95,7 +94,8 @@ export function NotesView({ onClose, onNavigate }: NotesViewProps) {
               </div>
               <div className="space-y-0">
                 {group.items.map((n) => {
-                  const expanded = expandAll || expandedId === n.id;
+                  const textExpanded = expandAll || expandedId === n.id;
+                  const selected = expandedId === n.id;
                   return (
                     <div key={n.id} className="rounded-lg overflow-hidden px-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                       <div className="flex items-start gap-2 min-w-0">
@@ -104,42 +104,26 @@ export function NotesView({ onClose, onNavigate }: NotesViewProps) {
                         </span>
                         <div className="flex-1 min-w-0">
                           <button
-                            onClick={() => setExpandedId(expanded ? null : n.id)}
+                            onClick={() => setExpandedId(selected ? null : n.id)}
                             className="w-full text-left py-2"
                           >
-                            <span className={`text-sm text-amber-700 dark:text-amber-400 italic block min-w-0 ${expanded ? "" : "truncate"}`}>
+                            {n.text && (
+                              <span className={`text-sm text-gray-600 dark:text-gray-300 block min-w-0 ${textExpanded ? "" : "truncate"}`}>
+                                {n.text}
+                              </span>
+                            )}
+                            <span className={`text-sm text-amber-700 dark:text-amber-400 italic block min-w-0 mt-0.5 ${textExpanded ? "whitespace-pre-wrap" : "truncate"}`}>
                               {n.note}
                             </span>
                           </button>
-                          {expanded && n.text && (
-                            <div className="flex items-center gap-2 pb-2 min-w-0">
-                              <span className="text-xs text-gray-400 dark:text-gray-500 min-w-0 truncate flex-1">
-                                {n.text}
-                              </span>
-                              <div className="flex items-center gap-1 shrink-0">
-                                <button
-                                  onClick={() => handleDelete(n)}
-                                  className="p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                  title={t("download.delete")}
-                                >
-                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                                <button
-                                  onClick={() => onNavigate(n.book_id, n.chapter, n.verse)}
-                                  className="p-1.5 rounded-md text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                                  title={t("features.goToVerse")}
-                                >
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                          {expanded && !n.text && (
-                            <div className="flex items-center gap-1 pb-2 justify-end">
+                          {selected && (
+                            <div className="flex items-center gap-2 pb-2">
+                              {n.translation_id && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 uppercase">
+                                  {n.translation_id}
+                                </span>
+                              )}
+                            <div className="flex items-center gap-1 ml-auto shrink-0">
                               <button
                                 onClick={() => handleDelete(n)}
                                 className="p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -158,6 +142,7 @@ export function NotesView({ onClose, onNavigate }: NotesViewProps) {
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                                 </svg>
                               </button>
+                            </div>
                             </div>
                           )}
                         </div>
