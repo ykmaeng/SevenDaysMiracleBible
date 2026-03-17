@@ -6,7 +6,7 @@ import { getDownloadedTranslations } from "../../lib/bible";
 import { preloadFontsForLang } from "../../lib/googleFonts";
 import { DownloadManager } from "./DownloadManager";
 import { fetchAnnouncements, markAsSeen, hasNewAnnouncement, type Announcement } from "../../lib/announcements";
-import { exportBackup, importBackup } from "../../lib/backup";
+import { exportBackup, importBackup, openBackupFile } from "../../lib/backup";
 import { useToastStore } from "../../stores/toastStore";
 import type { Translation } from "../../types/bible";
 
@@ -62,7 +62,7 @@ export function LanguageSettings() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [backupOpen, setBackupOpen] = useState(false);
   const [backupBusy, setBackupBusy] = useState(false);
-  const [importMode, setImportMode] = useState<"merge" | "overwrite" | null>(null);
+  const [pendingImportJson, setPendingImportJson] = useState<string | null>(null);
   const [announcementsOpen, setAnnouncementsOpen] = useState(false);
   const showToast = useToastStore((s) => s.showToast);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -472,7 +472,7 @@ export function LanguageSettings() {
       <section>
         <button
           onClick={() => setBackupOpen(!backupOpen)}
-          className="flex items-center justify-between w-full py-3"
+          className="flex items-center justify-between w-full mb-2"
         >
           <h3 className="text-sm font-semibold text-gray-500 uppercase">
             {t("settings.backup")}
@@ -498,7 +498,8 @@ export function LanguageSettings() {
                   try {
                     await exportBackup();
                     showToast(t("settings.backupSuccess"), "success");
-                  } catch {
+                  } catch (err) {
+                    if (err instanceof Error && err.message === "cancelled") return;
                     showToast(t("settings.backupFailed"), "error");
                   } finally {
                     setBackupBusy(false);
@@ -507,7 +508,7 @@ export function LanguageSettings() {
                 disabled={backupBusy}
                 className="text-xs text-blue-600 font-medium hover:text-blue-800 disabled:opacity-50 shrink-0"
               >
-                {backupBusy ? "..." : t("settings.backupExport")}
+                {backupBusy ? "..." : t("settings.backupExportBtn")}
               </button>
             </div>
 
@@ -518,44 +519,35 @@ export function LanguageSettings() {
                   <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("settings.backupImport")}</div>
                   <div className="text-xs text-gray-400">{t("settings.backupImportDesc")}</div>
                 </div>
-                <label className="text-xs text-blue-600 font-medium hover:text-blue-800 cursor-pointer shrink-0">
-                  {t("settings.backupImport")}
-                  <input
-                    type="file"
-                    accept=".json"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      e.target.value = "";
-                      try {
-                        const text = await file.text();
-                        JSON.parse(text); // validate
-                        setImportMode("merge"); // show mode picker
-                        // Store file content temporarily
-                        (window as unknown as Record<string, string>).__backupJson = text;
-                      } catch {
-                        showToast(t("settings.backupFailed"), "error");
-                      }
-                    }}
-                  />
-                </label>
+                <button
+                  onClick={async () => {
+                    try {
+                      const json = await openBackupFile();
+                      JSON.parse(json); // validate
+                      setPendingImportJson(json);
+                    } catch {
+                      // cancelled or invalid
+                    }
+                  }}
+                  className="text-xs text-blue-600 font-medium hover:text-blue-800 shrink-0"
+                >
+                  {t("settings.backupImportBtn")}
+                </button>
               </div>
 
-              {/* Mode picker */}
-              {importMode && (
+              {/* Mode picker after file selected */}
+              {pendingImportJson && (
                 <div className="mt-2 flex gap-2">
                   <button
                     onClick={async () => {
                       setBackupBusy(true);
                       try {
-                        const json = (window as unknown as Record<string, string>).__backupJson;
-                        const result = await importBackup(json, "merge");
+                        const result = await importBackup(pendingImportJson, "merge");
                         showToast(t("settings.backupRestored", { labels: result.labels, bookmarks: result.bookmarks }), "success");
                       } catch {
                         showToast(t("settings.backupFailed"), "error");
                       } finally {
-                        setImportMode(null);
+                        setPendingImportJson(null);
                         setBackupBusy(false);
                       }
                     }}
@@ -569,13 +561,12 @@ export function LanguageSettings() {
                     onClick={async () => {
                       setBackupBusy(true);
                       try {
-                        const json = (window as unknown as Record<string, string>).__backupJson;
-                        const result = await importBackup(json, "overwrite");
+                        const result = await importBackup(pendingImportJson, "overwrite");
                         showToast(t("settings.backupRestored", { labels: result.labels, bookmarks: result.bookmarks }), "success");
                       } catch {
                         showToast(t("settings.backupFailed"), "error");
                       } finally {
-                        setImportMode(null);
+                        setPendingImportJson(null);
                         setBackupBusy(false);
                       }
                     }}
@@ -593,7 +584,7 @@ export function LanguageSettings() {
       </section>
 
       {/* Announcements */}
-      <section className="-mt-2">
+      <section>
         <button
           onClick={() => {
             setAnnouncementsOpen(!announcementsOpen);
@@ -602,7 +593,7 @@ export function LanguageSettings() {
               setNewNotice(false);
             }
           }}
-          className="flex items-center justify-between w-full py-2"
+          className="flex items-center justify-between w-full mb-2"
         >
           <h3 className="text-sm font-semibold text-gray-500 uppercase flex items-center gap-2">
             {t("settings.announcements")}
@@ -649,10 +640,10 @@ export function LanguageSettings() {
       </section>
 
       {/* About */}
-      <section className="-mt-4">
+      <section>
         <button
           onClick={() => setAboutOpen(!aboutOpen)}
-          className="flex items-center justify-between w-full py-2"
+          className="flex items-center justify-between w-full mb-2"
         >
           <h3 className="text-sm font-semibold text-gray-500 uppercase">
             {t("settings.aboutTitle")}

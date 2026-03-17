@@ -1,6 +1,10 @@
 import { query, execute } from "./db";
-import { writeFile, exists, mkdir, BaseDirectory } from "@tauri-apps/plugin-fs";
 import type { Bookmark, BookmarkLabel } from "../types/bible";
+
+interface AndroidFile {
+  saveFile: (content: string, filename: string, mimeType: string) => void;
+  openFile: (mimeType: string) => void;
+}
 
 export interface BackupData {
   version: 1;
@@ -9,9 +13,13 @@ export interface BackupData {
   bookmarks: Omit<Bookmark, "id">[];
 }
 
+function getAndroidFile(): AndroidFile | null {
+  return (window as unknown as { AndroidFile?: AndroidFile }).AndroidFile ?? null;
+}
+
 // ── Export ──
 
-export async function exportBackup(): Promise<string> {
+export async function exportBackup(): Promise<void> {
   const labels = await query<BookmarkLabel>("SELECT * FROM bookmark_labels ORDER BY id");
   const bookmarks = await query<Bookmark>("SELECT * FROM bookmarks ORDER BY book_id, chapter, verse");
 
@@ -39,35 +47,57 @@ export async function exportBackup(): Promise<string> {
   const json = JSON.stringify(data, null, 2);
   const filename = `selah-backup-${new Date().toISOString().slice(0, 10)}.json`;
 
-  // Try saving to Download directory first, fallback to AppData
-  try {
-    if (!(await exists("", { baseDir: BaseDirectory.Download }))) {
-      await mkdir("", { baseDir: BaseDirectory.Download, recursive: true });
-    }
-    await writeFile(filename, new TextEncoder().encode(json), { baseDir: BaseDirectory.Download });
-    return filename;
-  } catch {
-    // Fallback to AppData/backups
-    const dir = "backups";
-    if (!(await exists(dir, { baseDir: BaseDirectory.AppData }))) {
-      await mkdir(dir, { baseDir: BaseDirectory.AppData, recursive: true });
-    }
-    const path = `${dir}/${filename}`;
-    await writeFile(path, new TextEncoder().encode(json), { baseDir: BaseDirectory.AppData });
-    return filename;
+  const android = getAndroidFile();
+  if (android) {
+    return new Promise<void>((resolve, reject) => {
+      (window as unknown as Record<string, unknown>).__fileSaveCallback = (result: string) => {
+        delete (window as unknown as Record<string, unknown>).__fileSaveCallback;
+        if (result === "ok") resolve();
+        else if (result === "error") reject(new Error("save failed"));
+        else reject(new Error("cancelled"));
+      };
+      android.saveFile(json, filename, "application/json");
+    });
   }
-}
 
-// Share backup via sharesheet (text-based, includes filename for context)
-export async function shareBackup(): Promise<void> {
-  const filename = await exportBackup();
-  try {
-    const { shareText } = await import("@buildyourwebapp/tauri-plugin-sharesheet");
-    await shareText(`Selah Bible Backup: ${filename}`);
-  } catch { /* ignore */ }
+  // Desktop fallback: download via blob
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ── Import ──
+
+export async function openBackupFile(): Promise<string> {
+  const android = getAndroidFile();
+  if (android) {
+    return new Promise<string>((resolve, reject) => {
+      (window as unknown as Record<string, unknown>).__fileOpenCallback = (content: string | null) => {
+        delete (window as unknown as Record<string, unknown>).__fileOpenCallback;
+        if (content) resolve(content);
+        else reject(new Error("cancelled"));
+      };
+      android.openFile("application/json");
+    });
+  }
+
+  // Desktop fallback: file input
+  return new Promise<string>((resolve, reject) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) { reject(new Error("cancelled")); return; }
+      resolve(await file.text());
+    };
+    input.click();
+  });
+}
 
 export async function importBackup(json: string, mode: "merge" | "overwrite"): Promise<{ labels: number; bookmarks: number }> {
   const data = JSON.parse(json) as BackupData & { bookmarks: (Omit<Bookmark, "id"> & { _label_name?: string | null })[] };
@@ -75,6 +105,9 @@ export async function importBackup(json: string, mode: "merge" | "overwrite"): P
   if (!data.version || !data.bookmarks) {
     throw new Error("Invalid backup file");
   }
+
+  await execute("BEGIN");
+  try {
 
   if (mode === "overwrite") {
     await execute("DELETE FROM bookmarks");
@@ -123,5 +156,11 @@ export async function importBackup(json: string, mode: "merge" | "overwrite"): P
     bmCount++;
   }
 
+  await execute("COMMIT");
   return { labels: labelCount, bookmarks: bmCount };
+
+  } catch (e) {
+    await execute("ROLLBACK");
+    throw e;
+  }
 }
