@@ -76,14 +76,21 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
 
   const firstVerse = verses[0];
   const lastVerse = verses[verses.length - 1];
+  const translationId = firstVerse.translation_id?.toUpperCase() ?? "";
   const verseRef = verses.length === 1
     ? `${bookName} ${firstVerse.chapter}:${firstVerse.verse}`
     : `${bookName} ${firstVerse.chapter}:${firstVerse.verse}-${lastVerse.verse}`;
 
   const fullText = verses.map((v) => v.text).join(" ");
 
+  const formatShareText = () => {
+    const verseLines = verses.map((v) => `${v.verse}. ${v.text}`).join("\n");
+    const header = `${bookName} ${firstVerse.chapter} [${translationId}]`;
+    return `${header}\n${verseLines}`;
+  };
+
   const handleCopy = useCallback(async () => {
-    const text = `${verseRef} - ${fullText}`;
+    const text = formatShareText();
     try {
       await navigator.clipboard.writeText(text);
       showToast(t("verseActions.copied"), "success");
@@ -100,7 +107,7 @@ export function VerseActionToolbar({ verses, bookName, onClose }: VerseActionToo
   }, [verseRef, fullText, showToast, t, onClose]);
 
   const handleShare = useCallback(async () => {
-    const text = `${verseRef} - ${fullText}`;
+    const text = formatShareText();
     try {
       const { shareText } = await import("@buildyourwebapp/tauri-plugin-sharesheet");
       await shareText(text);

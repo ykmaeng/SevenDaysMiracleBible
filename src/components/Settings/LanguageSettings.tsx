@@ -6,6 +6,8 @@ import { getDownloadedTranslations } from "../../lib/bible";
 import { preloadFontsForLang } from "../../lib/googleFonts";
 import { DownloadManager } from "./DownloadManager";
 import { fetchAnnouncements, markAsSeen, hasNewAnnouncement, type Announcement } from "../../lib/announcements";
+import { exportBackup, importBackup } from "../../lib/backup";
+import { useToastStore } from "../../stores/toastStore";
 import type { Translation } from "../../types/bible";
 
 const LANGUAGES = [
@@ -58,7 +60,11 @@ export function LanguageSettings() {
   const [parallelOpen, setParallelOpen] = useState(false);
   const [downloadsOpen, setDownloadsOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [backupOpen, setBackupOpen] = useState(false);
+  const [backupBusy, setBackupBusy] = useState(false);
+  const [importMode, setImportMode] = useState<"merge" | "overwrite" | null>(null);
   const [announcementsOpen, setAnnouncementsOpen] = useState(false);
+  const showToast = useToastStore((s) => s.showToast);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [newNotice, setNewNotice] = useState(false);
   const [expandedAnnouncementId, setExpandedAnnouncementId] = useState<string | null>(null);
@@ -460,6 +466,130 @@ export function LanguageSettings() {
           </svg>
         </button>
         {downloadsOpen && <DownloadManager />}
+      </section>
+
+      {/* Backup & Restore */}
+      <section>
+        <button
+          onClick={() => setBackupOpen(!backupOpen)}
+          className="flex items-center justify-between w-full py-3"
+        >
+          <h3 className="text-sm font-semibold text-gray-500 uppercase">
+            {t("settings.backup")}
+          </h3>
+          <svg
+            className={`w-4 h-4 text-gray-400 transition-transform ${backupOpen ? "rotate-180" : ""}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {backupOpen && (
+          <div className="pb-3 space-y-3">
+            {/* Export */}
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("settings.backupExport")}</div>
+                <div className="text-xs text-gray-400">{t("settings.backupExportDesc")}</div>
+              </div>
+              <button
+                onClick={async () => {
+                  setBackupBusy(true);
+                  try {
+                    await exportBackup();
+                    showToast(t("settings.backupSuccess"), "success");
+                  } catch {
+                    showToast(t("settings.backupFailed"), "error");
+                  } finally {
+                    setBackupBusy(false);
+                  }
+                }}
+                disabled={backupBusy}
+                className="text-xs text-blue-600 font-medium hover:text-blue-800 disabled:opacity-50 shrink-0"
+              >
+                {backupBusy ? "..." : t("settings.backupExport")}
+              </button>
+            </div>
+
+            {/* Import */}
+            <div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("settings.backupImport")}</div>
+                  <div className="text-xs text-gray-400">{t("settings.backupImportDesc")}</div>
+                </div>
+                <label className="text-xs text-blue-600 font-medium hover:text-blue-800 cursor-pointer shrink-0">
+                  {t("settings.backupImport")}
+                  <input
+                    type="file"
+                    accept=".json"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      e.target.value = "";
+                      try {
+                        const text = await file.text();
+                        JSON.parse(text); // validate
+                        setImportMode("merge"); // show mode picker
+                        // Store file content temporarily
+                        (window as unknown as Record<string, string>).__backupJson = text;
+                      } catch {
+                        showToast(t("settings.backupFailed"), "error");
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
+              {/* Mode picker */}
+              {importMode && (
+                <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={async () => {
+                      setBackupBusy(true);
+                      try {
+                        const json = (window as unknown as Record<string, string>).__backupJson;
+                        const result = await importBackup(json, "merge");
+                        showToast(t("settings.backupRestored", { labels: result.labels, bookmarks: result.bookmarks }), "success");
+                      } catch {
+                        showToast(t("settings.backupFailed"), "error");
+                      } finally {
+                        setImportMode(null);
+                        setBackupBusy(false);
+                      }
+                    }}
+                    disabled={backupBusy}
+                    className="flex-1 py-2 rounded-lg text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 disabled:opacity-50"
+                  >
+                    <div>{t("settings.backupMerge")}</div>
+                    <div className="text-[10px] opacity-60 mt-0.5">{t("settings.backupMergeDesc")}</div>
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setBackupBusy(true);
+                      try {
+                        const json = (window as unknown as Record<string, string>).__backupJson;
+                        const result = await importBackup(json, "overwrite");
+                        showToast(t("settings.backupRestored", { labels: result.labels, bookmarks: result.bookmarks }), "success");
+                      } catch {
+                        showToast(t("settings.backupFailed"), "error");
+                      } finally {
+                        setImportMode(null);
+                        setBackupBusy(false);
+                      }
+                    }}
+                    disabled={backupBusy}
+                    className="flex-1 py-2 rounded-lg text-xs font-medium bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 disabled:opacity-50"
+                  >
+                    <div>{t("settings.backupOverwrite")}</div>
+                    <div className="text-[10px] opacity-60 mt-0.5">{t("settings.backupOverwriteDesc")}</div>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Announcements */}

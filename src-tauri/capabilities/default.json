@@ -29,6 +29,7 @@
       "allow": [
         { "url": "https://**" }
       ]
-    }
+    },
+    "sharesheet:default"
   ]
 }
