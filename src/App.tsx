@@ -15,11 +15,12 @@ import { useSettingsStore } from "./stores/settingsStore";
 import { useFeatureStore, FEATURE_REGISTRY } from "./stores/featureStore";
 import { useTabStore } from "./stores/tabStore";
 import { loadGoogleFont } from "./lib/googleFonts";
+import { fetchAnnouncements, hasNewAnnouncement } from "./lib/announcements";
 
 type View = "reader" | "settings" | "features" | "bookmarks" | "highlights" | "notes" | "search";
 
 function App() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [view, setView] = useState<View>("reader");
   const onboardingComplete = useSettingsStore((s) => s.onboardingComplete);
   const [showSplash, setShowSplash] = useState(() => onboardingComplete);
@@ -32,6 +33,19 @@ function App() {
   const navigateTo = useTabStore((s) => s.navigateTo);
   const updateTab = useTabStore((s) => s.updateTab);
   const activeTabId = useTabStore((s) => s.activeTabId);
+
+  const [hasNewNotice, setHasNewNotice] = useState(false);
+
+  useEffect(() => {
+    fetchAnnouncements(i18n.language).then((data) => {
+      setHasNewNotice(hasNewAnnouncement(data));
+    });
+  }, []);
+
+  // Clear badge when entering settings
+  useEffect(() => {
+    if (view === "settings") setHasNewNotice(false);
+  }, [view]);
 
   const featureOrder = useFeatureStore((s) => s.featureOrder);
   const tabBarFeatures = (() => {
@@ -259,14 +273,19 @@ function App() {
 
           <button
             onClick={() => setView("settings")}
-            className={`flex flex-col items-center gap-0.5 px-3 py-1 shrink-0 ${
+            className={`relative flex flex-col items-center gap-0.5 px-3 py-1 shrink-0 ${
               view === "settings" ? "text-blue-600" : "text-gray-400"
             }`}
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
+            <div className="relative">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.11 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              {hasNewNotice && (
+                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
+              )}
+            </div>
             <span className="text-[10px]">{t("settings.title")}</span>
           </button>
       </nav>

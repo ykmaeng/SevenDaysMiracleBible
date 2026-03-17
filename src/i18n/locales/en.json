@@ -67,6 +67,8 @@
     "defaultTranslation": "Default Translation",
     "parallelTranslations": "Parallel Translations",
     "fontSystem": "System Font",
+    "announcements": "Announcements",
+    "noAnnouncements": "No announcements",
     "aboutTitle": "Selah Bible",
     "aboutDescription": "Selah Bible is built to make Scripture freely accessible to everyone. Whether you're opening the Bible for the first time or seeking deeper study, we aim to bring the richness of God's Word to all.",
     "aboutAI": "AI Translation (SAV)",

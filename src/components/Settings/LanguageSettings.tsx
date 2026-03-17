@@ -5,6 +5,7 @@ import { useSettingsStore } from "../../stores/settingsStore";
 import { getDownloadedTranslations } from "../../lib/bible";
 import { preloadFontsForLang } from "../../lib/googleFonts";
 import { DownloadManager } from "./DownloadManager";
+import { fetchAnnouncements, markAsSeen, hasNewAnnouncement, type Announcement } from "../../lib/announcements";
 import type { Translation } from "../../types/bible";
 
 const LANGUAGES = [
@@ -57,6 +58,10 @@ export function LanguageSettings() {
   const [parallelOpen, setParallelOpen] = useState(false);
   const [downloadsOpen, setDownloadsOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [announcementsOpen, setAnnouncementsOpen] = useState(false);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [newNotice, setNewNotice] = useState(false);
+  const [expandedAnnouncementId, setExpandedAnnouncementId] = useState<string | null>(null);
   const dragIdx = useRef<number | null>(null);
   const dragItemId = useRef<string | null>(null);
   const dragStartY = useRef(0);
@@ -100,6 +105,13 @@ export function LanguageSettings() {
     window.addEventListener("translations-changed", load);
     return () => window.removeEventListener("translations-changed", load);
   }, []);
+
+  useEffect(() => {
+    fetchAnnouncements(i18n.language).then((data) => {
+      setAnnouncements(data);
+      setNewNotice(hasNewAnnouncement(data));
+    });
+  }, [i18n.language]);
 
   // Preload Google Fonts when font section opens
   useEffect(() => {
@@ -450,11 +462,67 @@ export function LanguageSettings() {
         {downloadsOpen && <DownloadManager />}
       </section>
 
+      {/* Announcements */}
+      <section className="-mt-2">
+        <button
+          onClick={() => {
+            setAnnouncementsOpen(!announcementsOpen);
+            if (newNotice && announcements.length > 0) {
+              markAsSeen(announcements[0].id);
+              setNewNotice(false);
+            }
+          }}
+          className="flex items-center justify-between w-full py-2"
+        >
+          <h3 className="text-sm font-semibold text-gray-500 uppercase flex items-center gap-2">
+            {t("settings.announcements")}
+            {newNotice && <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />}
+          </h3>
+          <svg
+            className={`w-4 h-4 text-gray-400 transition-transform ${announcementsOpen ? "rotate-180" : ""}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {announcementsOpen && (
+          <div className="pb-3">
+            {announcements.length === 0 ? (
+              <p className="text-sm text-gray-400 py-2">{t("settings.noAnnouncements")}</p>
+            ) : (
+              <div className="space-y-1">
+                {announcements.map((a) => {
+                  const expanded = expandedAnnouncementId === a.id;
+                  return (
+                    <div key={a.id} className="rounded-lg overflow-hidden">
+                      <button
+                        onClick={() => setExpandedAnnouncementId(expanded ? null : a.id)}
+                        className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{a.title}</span>
+                          <span className="text-[11px] text-gray-400 shrink-0 ml-2">{a.date}</span>
+                        </div>
+                      </button>
+                      {expanded && (
+                        <div className="px-3 pb-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
+                          {a.content}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
       {/* About */}
-      <section>
+      <section className="-mt-4">
         <button
           onClick={() => setAboutOpen(!aboutOpen)}
-          className="flex items-center justify-between w-full py-3"
+          className="flex items-center justify-between w-full py-2"
         >
           <h3 className="text-sm font-semibold text-gray-500 uppercase">
             {t("settings.aboutTitle")}

@@ -67,6 +67,8 @@
     "defaultTranslation": "기본 번역본",
     "parallelTranslations": "동시번역 번역본",
     "fontSystem": "시스템 폰트",
+    "announcements": "공지사항",
+    "noAnnouncements": "공지사항이 없습니다",
     "aboutTitle": "셀라 바이블",
     "aboutDescription": "셀라 바이블은 누구나 성경을 쉽고 자유롭게 접할 수 있도록 만들어진 앱입니다. 처음 성경을 읽는 분부터 깊이 있는 연구를 원하는 분까지, 모든 이에게 말씀의 풍요로움을 전하고자 합니다.",
     "aboutAI": "AI 번역 (SAV)",
