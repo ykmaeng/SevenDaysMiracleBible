@@ -56,6 +56,7 @@ export function LanguageSettings() {
   const [fontOpen, setFontOpen] = useState(false);
   const [parallelOpen, setParallelOpen] = useState(false);
   const [downloadsOpen, setDownloadsOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const dragIdx = useRef<number | null>(null);
   const dragItemId = useRef<string | null>(null);
   const dragStartY = useRef(0);
@@ -450,26 +451,39 @@ export function LanguageSettings() {
       </section>
 
       {/* About */}
-      <section className="mt-8 mb-4 text-center px-2">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-          <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{t("settings.aboutTitle")}</span>
-          <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-        </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-          {t("settings.aboutDescription")}
-        </p>
-        <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t("settings.aboutAI")}</div>
-        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-          {t("settings.aboutAIDescription")}
-        </p>
-        <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t("settings.aboutMission")}</div>
-        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-          {t("settings.aboutMissionDescription")}
-        </p>
-        <p className="text-[11px] text-gray-400 dark:text-gray-600">
-          Selah Bible v0.1
-        </p>
+      <section>
+        <button
+          onClick={() => setAboutOpen(!aboutOpen)}
+          className="flex items-center justify-between w-full py-3"
+        >
+          <h3 className="text-sm font-semibold text-gray-500 uppercase">
+            {t("settings.aboutTitle")}
+          </h3>
+          <svg
+            className={`w-4 h-4 text-gray-400 transition-transform ${aboutOpen ? "rotate-180" : ""}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {aboutOpen && (
+          <div className="text-center pb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+              {t("settings.aboutDescription")}
+            </p>
+            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t("settings.aboutAI")}</div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+              {t("settings.aboutAIDescription")}
+            </p>
+            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t("settings.aboutMission")}</div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+              {t("settings.aboutMissionDescription")}
+            </p>
+            <p className="text-[11px] text-gray-400 dark:text-gray-600">
+              Selah Bible v0.1
+            </p>
+          </div>
+        )}
       </section>
     </div>
   );

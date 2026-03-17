@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#3d2418"/>
+      <stop offset="100%" stop-color="#1a0e08"/>
+    </linearGradient>
+    <linearGradient id="pageLeft" x1="0.6" y1="0" x2="0.1" y2="1">
+      <stop offset="0%" stop-color="#f5f0e5"/>
+      <stop offset="100%" stop-color="#e0d5c2"/>
+    </linearGradient>
+    <linearGradient id="pageRight" x1="0.4" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#f2ede2"/>
+      <stop offset="100%" stop-color="#dbd0bc"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8b2020"/>
+      <stop offset="100%" stop-color="#6b1515"/>
+    </linearGradient>
+    <filter id="shadow" x="-8%" y="-8%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+    <filter id="ribbonShadow" x="-20%" y="-5%" width="140%" height="115%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="100" ry="100" fill="url(#bg)"/>
+
+  <g transform="translate(256, 270)" filter="url(#shadow)">
+    <!-- Cover (brown, behind everything) — more curved -->
+    <path d="M0,-138 C-70,-158 -180,-145 -230,-110 L-230,105 C-180,88 -70,74 0,88 C70,74 180,88 230,105 L230,-110 C180,-145 70,-158 0,-138 Z" fill="#5c3f2a" stroke="#4a3220" stroke-width="1.5"/>
+
+    <!-- Page stack layers — more curved -->
+    <path d="M0,-130 C-65,-149 -172,-137 -222,-104 L-222,101 C-172,85 -65,72 0,85 C65,72 172,85 222,101 L222,-104 C172,-137 65,-149 0,-130 Z" fill="#d4c8b4" transform="translate(0,8)"/>
+    <path d="M0,-130 C-65,-149 -172,-137 -222,-104 L-222,101 C-172,85 -65,72 0,85 C65,72 172,85 222,101 L222,-104 C172,-137 65,-149 0,-130 Z" fill="#dbd0be" transform="translate(0,5)"/>
+    <path d="M0,-130 C-65,-149 -172,-137 -222,-104 L-222,101 C-172,85 -65,72 0,85 C65,72 172,85 222,101 L222,-104 C172,-137 65,-149 0,-130 Z" fill="#e2d8c6" transform="translate(0,2.5)"/>
+
+    <!-- Main page (top) — more curved -->
+    <path d="M0,-130 C-65,-149 -172,-137 -222,-104 L-222,101 C-172,85 -65,72 0,85 C65,72 172,85 222,101 L222,-104 C172,-137 65,-149 0,-130 Z" fill="url(#pageLeft)"/>
+    <path d="M0,-130 C65,-149 172,-137 222,-104 L222,101 C172,85 65,72 0,85 Z" fill="url(#pageRight)"/>
+
+    <!-- Center line (very subtle) -->
+    <line x1="0" y1="-130" x2="0" y2="85" stroke="#c8b8a0" stroke-width="1" opacity="0.25"/>
+
+    <!-- Cross bookmark ribbon -->
+    <g transform="translate(8, -120) scale(0.75)" filter="url(#ribbonShadow)">
+      <path d="M-11,-20 L-11,32 L0,25 L11,32 L11,-20 Z" fill="url(#ribbon)"/>
+      <rect x="-2" y="-12" width="4" height="15" rx="0.8" fill="#d4a050" opacity="0.8"/>
+      <rect x="-7" y="-7" width="14" height="3.5" rx="0.8" fill="#d4a050" opacity="0.8"/>
+    </g>
+
+    <!-- SELAH text -->
+    <text x="0" y="-14" text-anchor="middle" font-family="Optima, 'Gill Sans', Futura, 'Century Gothic', sans-serif" font-size="72" font-weight="800" letter-spacing="4" fill="#1a0a02">SELAH</text>
+
+    <!-- BIBLE text -->
+    <text x="0" y="40" text-anchor="middle" font-family="Optima, 'Gill Sans', Futura, 'Century Gothic', sans-serif" font-size="34" font-weight="600" letter-spacing="4" fill="#1a0a02" opacity="0.75">BIBLE</text>
+  </g>
+</svg>
