@@ -34,7 +34,8 @@
     "resources": [
       "resources/bible-core.db",
       "resources/kjv.db",
-      "resources/sav-ko.db"
+      "resources/sav-ko.db",
+      "resources/sav-en.db"
     ]
   }
 }

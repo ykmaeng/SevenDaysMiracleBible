@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import android.graphics.Color
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -23,9 +24,15 @@ class MainActivity : TauriActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Draw content behind system bars to prevent white flash
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.navigationBarColor = Color.TRANSPARENT
+
         insetsController = WindowCompat.getInsetsController(window, window.decorView)
         insetsController.systemBarsBehavior =
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        // Keep navigation bar always hidden (accessible via edge swipe)
+        insetsController.hide(WindowInsetsCompat.Type.navigationBars())
 
         // Inject JS interface after WebView is ready (retry until found)
         val immersiveInterface = ImmersiveInterface()
@@ -111,13 +118,8 @@ class MainActivity : TauriActivity() {
     inner class ImmersiveInterface {
         @JavascriptInterface
         fun setImmersive(enabled: Boolean) {
-            runOnUiThread {
-                if (enabled) {
-                    insetsController.hide(WindowInsetsCompat.Type.systemBars())
-                } else {
-                    insetsController.show(WindowInsetsCompat.Type.systemBars())
-                }
-            }
+            // No-op: system bars stay permanently hidden to prevent white flicker.
+            // App UI (tab bar, bottom nav) handles immersive feel.
         }
     }
 

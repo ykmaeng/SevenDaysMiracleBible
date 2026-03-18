@@ -163,6 +163,7 @@ function App() {
       style={{
         paddingTop: immersive ? 0 : "env(safe-area-inset-top, 0px)",
         paddingBottom: immersive ? 0 : "env(safe-area-inset-bottom, 0px)",
+        transition: "padding 150ms ease-out",
       }}
     >
       {/* Tab bar */}
@@ -239,7 +240,7 @@ function App() {
       <ToastContainer />
 
       {/* Bottom navigation bar */}
-      <nav className={`overflow-x-auto no-scrollbar flex items-center justify-evenly border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 transition-all duration-150 ${immersive && view === "reader" ? "max-h-0 !overflow-hidden py-0" : "max-h-20 py-2"}`}>
+      <nav className={`overflow-x-auto no-scrollbar flex items-center justify-evenly border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 transition-all duration-150 ${immersive && view === "reader" ? "max-h-0 !overflow-hidden py-0 border-t-0" : "max-h-20 py-2 border-t"}`}>
         <button
           onClick={() => setView("reader")}
           className={`flex flex-col items-center gap-0.5 px-3 py-1 shrink-0 ${
