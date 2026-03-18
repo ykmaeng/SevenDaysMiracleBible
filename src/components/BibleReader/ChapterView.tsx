@@ -301,10 +301,10 @@ export function ChapterView({
       }
       s.accum += delta;
 
-      if (s.accum > 10) {
+      if (s.accum > 80) {
         window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: true }));
         s.accum = 0;
-      } else if (s.accum < -10 && !nearBottom) {
+      } else if (s.accum < -80 && !nearBottom) {
         window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: false }));
         s.accum = 0;
       }
