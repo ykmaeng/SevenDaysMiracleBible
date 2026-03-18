@@ -12,7 +12,7 @@ export function getCommentaryDownloadUrl(language: string): string {
   return `${DOWNLOAD_CONFIG.baseUrl}/${DOWNLOAD_CONFIG.commentaryTag}/commentary-${language}.db`;
 }
 
-export const BUNDLED_TRANSLATIONS = new Set(["kjv", "sav-ko"]);
+export const BUNDLED_TRANSLATIONS = new Set(["kjv", "sav-ko", "sav-en"]);
 
 export const PREPARING_TRANSLATIONS = new Set(["nkrv", "niv", "esv"]);
 

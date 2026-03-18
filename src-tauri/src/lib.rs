@@ -28,7 +28,7 @@ fn edge_tts_voices() -> Vec<EdgeTtsVoice> {
 }
 
 /// Bundled translation DB files to copy on first run.
-const BUNDLED_TRANSLATION_DBS: &[&str] = &["kjv.db", "sav-ko.db"];
+const BUNDLED_TRANSLATION_DBS: &[&str] = &["kjv.db", "sav-ko.db", "sav-en.db"];
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -43,6 +43,12 @@ pub fn run() {
             version: 2,
             description: "add_niv_esv",
             sql: include_str!("../migrations/002_add_niv_esv.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 3,
+            description: "add_sav_en",
+            sql: include_str!("../migrations/003_add_sav_en.sql"),
             kind: MigrationKind::Up,
         },
     ];

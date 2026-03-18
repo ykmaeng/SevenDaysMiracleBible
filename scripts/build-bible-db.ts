@@ -25,7 +25,7 @@ const OUTPUT_DIR = join(__dirname, "data", "output");
 const RESOURCES_DIR = join(__dirname, "..", "src-tauri", "resources");
 
 // Bundled translations are copied to src-tauri/resources/ for app distribution
-const BUNDLED_TRANSLATIONS = new Set(["kjv", "sav-ko"]);
+const BUNDLED_TRANSLATIONS = new Set(["kjv", "sav-ko", "sav-en"]);
 
 // Parse CLI args
 const args = process.argv.slice(2);
@@ -147,6 +147,7 @@ function buildCoreDb() {
     ['korrv','개역한글','ko','개역한글판 (1961)',0,0,0,2.0],
     ['nkrv','개역개정','ko','개역개정판 (1998)',0,0,0,2.0],
     ['sav-ko','SAV 한국어','ko','Selah AI Version - 원문 기반 AI 번역',0,1,1,2.0],
+    ['sav-en','SAV English','en','Selah AI Version - Modern English Translation',0,1,1,7.0],
     ['hebrew','Westminster Leningrad Codex','he','Hebrew Old Testament (WLC)',1,0,0,2.0],
     ['greek','Open Greek New Testament','el','Greek New Testament (OpenGNT)',1,0,0,1.0],
     ['japkougo','口語訳聖書','ja','口語訳聖書 (1955)',0,0,0,1.5],
