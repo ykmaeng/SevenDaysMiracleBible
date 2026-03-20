@@ -180,11 +180,11 @@ export function ParagraphGroup({
                     : hlCls
                 }`}
               >
-                {showVerseNumbers && (
+                {showVerseNumbers ? (
                   <sup className="text-gray-400 dark:text-gray-500 font-medium select-none mx-1" style={{ fontSize: '0.65em' }}>
                     {verse.verse}
                   </sup>
-                )}
+                ) : verse.verse > 1 ? " " : null}
                 <span
                   className={`${isSelected && !isPlaying ? "verse-selected" : ""} ${isFlashing ? "animate-verse-flash" : ""}`}
                 >

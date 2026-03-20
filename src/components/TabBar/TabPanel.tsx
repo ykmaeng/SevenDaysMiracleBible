@@ -167,6 +167,22 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
     }
   }, [interlinearDl?.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Listen for "read from here" events from VerseActionToolbar
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { verseNumber } = (e as CustomEvent).detail;
+      const verses = versesRef.current;
+      if (verses.length === 0) return;
+      const idx = verses.findIndex((v) => v.verse === verseNumber);
+      if (idx < 0) return;
+      const lang = translationToLang(activeTab.translationId);
+      tts.play(verses, lang, idx);
+      window.dispatchEvent(new CustomEvent("reader-fullscreen", { detail: true }));
+    };
+    window.addEventListener("tts-play-from", handler);
+    return () => window.removeEventListener("tts-play-from", handler);
+  }, [activeTab.translationId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Stop TTS when chapter/book changes
   useEffect(() => {
     tts.stop();

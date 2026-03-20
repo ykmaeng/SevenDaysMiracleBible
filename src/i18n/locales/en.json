@@ -271,6 +271,7 @@
     "notePrompt": "Enter your note",
     "noteSaved": "Note saved",
     "selectLabel": "Select tag",
-    "noLabelShort": "None"
+    "noLabelShort": "None",
+    "readFromHere": "Read from here"
   }
 }

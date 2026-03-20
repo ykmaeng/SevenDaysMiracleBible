@@ -271,6 +271,7 @@
     "notePrompt": "메모를 입력하세요",
     "noteSaved": "메모 저장됨",
     "selectLabel": "태그 선택",
-    "noLabelShort": "없음"
+    "noLabelShort": "없음",
+    "readFromHere": "여기부터 읽기"
   }
 }
