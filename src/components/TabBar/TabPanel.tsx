@@ -99,6 +99,11 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
   const handlePrevChapter = () => {
     if (activeTab.chapter > 1) {
       navigateTo(activeTab.bookId, activeTab.chapter - 1);
+    } else if (activeTab.bookId > 1) {
+      const prevBook = books.find((b) => b.id === activeTab.bookId - 1);
+      if (prevBook) {
+        navigateTo(prevBook.id, prevBook.chapters);
+      }
     }
   };
 
@@ -107,6 +112,8 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
   const handleNextChapter = () => {
     if (activeTab.chapter < maxChapter) {
       navigateTo(activeTab.bookId, activeTab.chapter + 1);
+    } else if (activeTab.bookId < 66) {
+      navigateTo(activeTab.bookId + 1, 1);
     }
   };
 
@@ -326,6 +333,20 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
             showInterlinear={showInterlinear}
             onSwipePrev={handlePrevChapter}
             onSwipeNext={handleNextChapter}
+            prevLabel={
+              activeTab.chapter > 1
+                ? `${t(`books.${activeTab.bookId}`, { lng: translationToLang(activeTab.translationId) })} ${activeTab.chapter - 1}`
+                : activeTab.bookId > 1
+                  ? t(`books.${activeTab.bookId - 1}`, { lng: translationToLang(activeTab.translationId) })
+                  : undefined
+            }
+            nextLabel={
+              activeTab.chapter < maxChapter
+                ? `${t(`books.${activeTab.bookId}`, { lng: translationToLang(activeTab.translationId) })} ${activeTab.chapter + 1}`
+                : activeTab.bookId < 66
+                  ? t(`books.${activeTab.bookId + 1}`, { lng: translationToLang(activeTab.translationId) })
+                  : undefined
+            }
           />
         </div>
         {showCommentary && commentaryPosition === "right" && (

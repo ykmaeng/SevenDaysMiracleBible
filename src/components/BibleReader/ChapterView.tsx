@@ -33,6 +33,8 @@ interface ChapterViewProps {
   targetVerse?: number;
   onSwipePrev?: () => void;
   onSwipeNext?: () => void;
+  prevLabel?: string;
+  nextLabel?: string;
 }
 
 export function ChapterView({
@@ -49,6 +51,8 @@ export function ChapterView({
   targetVerse,
   onSwipePrev,
   onSwipeNext,
+  prevLabel,
+  nextLabel,
 }: ChapterViewProps) {
   const { t } = useTranslation();
   const [verses, setVerses] = useState<Verse[]>([]);
@@ -496,11 +500,37 @@ export function ChapterView({
     <div ref={parentRef} className="h-full overflow-auto pl-0 pr-1 py-2 relative" onClick={handleBackgroundClick} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <div
         style={{
-          height: `${virtualizer.getTotalSize()}px`,
+          height: `${virtualizer.getTotalSize() + 120}px`,
           width: "100%",
           position: "relative",
         }}
       >
+
+        {/* Chapter end navigation */}
+        {(prevLabel || nextLabel) && (
+          <div
+            style={{
+              position: "absolute",
+              top: `${virtualizer.getTotalSize()}px`,
+              left: 0,
+              width: "100%",
+              height: "120px",
+            }}
+            className="flex items-center justify-between px-6 opacity-30"
+          >
+            {prevLabel ? (
+              <button onClick={onSwipePrev} className="text-base flex items-center gap-3">
+                <span className="text-3xl leading-none -translate-y-[1px]">‹</span> {prevLabel}
+              </button>
+            ) : <span />}
+            {nextLabel ? (
+              <button onClick={onSwipeNext} className="text-base flex items-center gap-3">
+                {nextLabel} <span className="text-3xl leading-none -translate-y-[1px]">›</span>
+              </button>
+            ) : <span />}
+          </div>
+        )}
+
         {virtualizer.getVirtualItems().map((virtualItem) => {
           const group = paragraphGroups[virtualItem.index];
           return (
