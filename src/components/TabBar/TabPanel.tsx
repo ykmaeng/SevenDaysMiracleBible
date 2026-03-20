@@ -37,6 +37,15 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
   const [showChapterPicker, setShowChapterPicker] = useState(false);
   const showCommentary = useSettingsStore((s) => s.showCommentary);
   const setShowCommentary = useSettingsStore((s) => s.setShowCommentary);
+  // Defer commentary panel rendering to avoid concurrent heavy DB + Markdown work on mount
+  const [commentaryReady, setCommentaryReady] = useState(false);
+  useEffect(() => {
+    if (showCommentary) {
+      const id = requestAnimationFrame(() => setCommentaryReady(true));
+      return () => { cancelAnimationFrame(id); setCommentaryReady(false); };
+    }
+    setCommentaryReady(false);
+  }, [showCommentary]);
   const [showInterlinear, setShowInterlinear] = useState(false);
   const [interlinearDownloading, setInterlinearDownloading] = useState(false);
   const interlinearDl = useDownloadStore((s) => s.downloads[interlinearDownloadKey()]);
@@ -306,7 +315,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
         {showCommentary && commentaryPosition === "left" && (
           <>
             <div className="h-full overflow-hidden" style={{ width: `${(1 - splitRatio) * 100}%` }}>
-              <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} onClose={() => setShowCommentary(false)} />
+              {commentaryReady && <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} onClose={() => setShowCommentary(false)} />}
             </div>
             <Divider direction="vertical" dragging={draggingSplit} onPointerDown={handleDividerPointerDown} onPointerMove={handleDividerPointerMove} onPointerUp={handleDividerPointerUp} />
           </>
@@ -353,7 +362,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
           <>
             <Divider direction="vertical" dragging={draggingSplit} onPointerDown={handleDividerPointerDown} onPointerMove={handleDividerPointerMove} onPointerUp={handleDividerPointerUp} />
             <div className="h-full overflow-hidden" style={{ width: `${(1 - splitRatio) * 100}%` }}>
-              <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} onClose={() => setShowCommentary(false)} />
+              {commentaryReady && <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} onClose={() => setShowCommentary(false)} />}
             </div>
           </>
         )}
@@ -361,7 +370,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
           <>
             <Divider direction="horizontal" dragging={draggingSplit} onPointerDown={handleDividerPointerDown} onPointerMove={handleDividerPointerMove} onPointerUp={handleDividerPointerUp} />
             <div className="w-full overflow-hidden" style={{ height: `${(1 - splitRatio) * 100}%` }}>
-              <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} onClose={() => setShowCommentary(false)} />
+              {commentaryReady && <CommentaryPanel bookId={activeTab.bookId} chapter={activeTab.chapter} onClose={() => setShowCommentary(false)} />}
             </div>
           </>
         )}

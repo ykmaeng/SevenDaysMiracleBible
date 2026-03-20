@@ -50,21 +50,31 @@ export function CommentaryPanel({ bookId, chapter, onClose }: CommentaryPanelPro
   const dl = useDownloadStore((s) => s.downloads[dlKey]);
   const clearDownload = useDownloadStore((s) => s.clearDownload);
 
-  const loadCommentary = () => {
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
     let cancelled = false;
     setLoading(true);
 
-    Promise.all([
-      isCommentaryDbDownloaded(language),
-      isCommentaryDbDownloaded(language).then((exists) =>
-        exists ? getChapterCommentary(bookId, chapter, language) : null
-      ),
-    ]).then(([downloaded, data]) => {
-      if (!cancelled) {
-        setDbExists(downloaded);
-        setCommentary(data);
+    isCommentaryDbDownloaded(language).then((downloaded) => {
+      if (cancelled) return;
+      setDbExists(downloaded);
+      if (!downloaded) {
+        setCommentary(null);
         setLoading(false);
+        return;
       }
+      getChapterCommentary(bookId, chapter, language).then((data) => {
+        if (!cancelled) {
+          setCommentary(data);
+          setLoading(false);
+        }
+      }).catch(() => {
+        if (!cancelled) {
+          setCommentary(null);
+          setLoading(false);
+        }
+      });
     }).catch(() => {
       if (!cancelled) {
         setDbExists(false);
@@ -74,17 +84,15 @@ export function CommentaryPanel({ bookId, chapter, onClose }: CommentaryPanelPro
     });
 
     return () => { cancelled = true; };
-  };
-
-  useEffect(loadCommentary, [bookId, chapter, language]);
+  }, [bookId, chapter, language, reloadKey]);
 
   // Reload after download completes
   useEffect(() => {
     if (dl?.status === "done") {
-      loadCommentary();
+      setReloadKey((k) => k + 1);
       clearDownload(dlKey);
     }
-  }, [dl?.status]);
+  }, [dl?.status, dlKey, clearDownload]);
 
 
   if (loading) {

@@ -42,18 +42,31 @@ export async function execute(sql: string, bindValues?: unknown[]) {
 
 // Translation DB connections (separate .db files per translation)
 const translationDbs = new Map<string, Database>();
+const translationDbLoading = new Map<string, Promise<Database>>();
 
 export async function getTranslationDb(translationId: string): Promise<Database> {
-  let tdb = translationDbs.get(translationId);
-  if (!tdb) {
+  const cached = translationDbs.get(translationId);
+  if (cached) return cached;
+
+  const pending = translationDbLoading.get(translationId);
+  if (pending) return pending;
+
+  const promise = (async () => {
     const fileExists = await exists(`${translationId}.db`, { baseDir: BaseDirectory.AppData });
     if (!fileExists) {
       throw new Error(`Translation DB not found: ${translationId}.db`);
     }
-    tdb = await Database.load(`sqlite:${translationId}.db`);
+    const tdb = await Database.load(`sqlite:${translationId}.db`);
     translationDbs.set(translationId, tdb);
+    return tdb;
+  })();
+
+  translationDbLoading.set(translationId, promise);
+  try {
+    return await promise;
+  } finally {
+    translationDbLoading.delete(translationId);
   }
-  return tdb;
 }
 
 export function clearTranslationDbCache(translationId: string): void {
@@ -71,19 +84,32 @@ export async function queryTranslation<T>(translationId: string, sql: string, bi
 
 // Commentary DB connections (separate .db files per language)
 const commentaryDbs = new Map<string, Database>();
+const commentaryDbLoading = new Map<string, Promise<Database>>();
 
 export async function getCommentaryDb(language: string): Promise<Database> {
-  let cdb = commentaryDbs.get(language);
-  if (!cdb) {
-    // Check file exists before opening (Database.load creates empty file if missing)
+  const cached = commentaryDbs.get(language);
+  if (cached) return cached;
+
+  // Prevent concurrent Database.load() for the same language
+  const pending = commentaryDbLoading.get(language);
+  if (pending) return pending;
+
+  const promise = (async () => {
     const fileExists = await exists(`commentary-${language}.db`, { baseDir: BaseDirectory.AppData });
     if (!fileExists) {
       throw new Error(`Commentary DB not found: commentary-${language}.db`);
     }
-    cdb = await Database.load(`sqlite:commentary-${language}.db`);
+    const cdb = await Database.load(`sqlite:commentary-${language}.db`);
     commentaryDbs.set(language, cdb);
+    return cdb;
+  })();
+
+  commentaryDbLoading.set(language, promise);
+  try {
+    return await promise;
+  } finally {
+    commentaryDbLoading.delete(language);
   }
-  return cdb;
 }
 
 export function clearCommentaryDbCache(language: string): void {
