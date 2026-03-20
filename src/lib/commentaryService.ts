@@ -1,11 +1,11 @@
-import { fetch } from "@tauri-apps/plugin-http";
-import { writeFile, remove, exists, BaseDirectory } from "@tauri-apps/plugin-fs";
+import { remove, exists, BaseDirectory } from "@tauri-apps/plugin-fs";
 import i18n from "../i18n";
 import { clearCommentaryDbCache } from "./db";
 import { getCommentaryDownloadUrl, COMMENTARY_LANGUAGES } from "./downloadConfig";
 import { useDownloadStore } from "../stores/downloadStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useToastStore } from "../stores/toastStore";
+import { streamDownloadToFile } from "./downloadUtils";
 
 function toErrorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -33,24 +33,14 @@ export async function downloadCommentary(language: string): Promise<void> {
   try {
     const url = getCommentaryDownloadUrl(language);
     console.log(`[commentary] Fetching ${url}`);
-    const response = await fetch(url);
+    const bytes = await streamDownloadToFile(url, dbFileName, (pct) => {
+      store.updateProgress(key, Math.round(pct * 0.95));
+    });
 
-    if (!response.ok) {
-      throw new Error(`Download failed: ${response.status} ${response.statusText}`);
-    }
-
-    store.updateProgress(key, 50);
-
-    const buffer = await response.arrayBuffer();
-    const bytes = new Uint8Array(buffer);
     const magic = new TextDecoder().decode(bytes.slice(0, 15));
     if (magic !== "SQLite format 3") {
       throw new Error("Invalid DB file");
     }
-
-    store.setStatus(key, "importing");
-    await writeFile(dbFileName, bytes, { baseDir: BaseDirectory.AppData });
-    store.updateProgress(key, 95);
 
     store.setStatus(key, "done");
     const displayName = COMMENTARY_LANGUAGES.find((c) => c.language === language)?.name ?? language;

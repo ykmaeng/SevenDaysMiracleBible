@@ -1,10 +1,10 @@
-import { fetch } from "@tauri-apps/plugin-http";
-import { writeFile, remove, exists, BaseDirectory } from "@tauri-apps/plugin-fs";
+import { remove, exists, BaseDirectory } from "@tauri-apps/plugin-fs";
 import i18n from "../i18n";
 import { execute, clearTranslationDbCache } from "./db";
 import { getTranslationDownloadUrl, BUNDLED_TRANSLATIONS } from "./downloadConfig";
 import { useDownloadStore } from "../stores/downloadStore";
 import { useToastStore } from "../stores/toastStore";
+import { streamDownloadToFile } from "./downloadUtils";
 
 function toErrorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -21,26 +21,16 @@ export async function downloadTranslation(translationId: string): Promise<void> 
   const dbFileName = `${translationId}.db`;
 
   try {
-    // 1. Download .db file from GitHub Releases
+    // 1. Stream-download .db file from GitHub Releases
     const url = getTranslationDownloadUrl(translationId);
-    const response = await fetch(url);
+    const bytes = await streamDownloadToFile(url, dbFileName, (pct) => {
+      store.updateProgress(translationId, Math.round(pct * 0.9));
+    });
 
-    if (!response.ok) {
-      throw new Error(`Download failed: ${response.status} ${response.statusText}`);
-    }
-
-    store.updateProgress(translationId, 50);
-
-    // 2. Save .db file to app data directory
-    const buffer = await response.arrayBuffer();
-    const bytes = new Uint8Array(buffer);
     const magic = new TextDecoder().decode(bytes.slice(0, 15));
     if (magic !== "SQLite format 3") {
       throw new Error(`Invalid DB file`);
     }
-
-    await writeFile(dbFileName, bytes, { baseDir: BaseDirectory.AppData });
-    store.updateProgress(translationId, 90);
 
     // 3. Mark as downloaded in main DB
     await execute("UPDATE translations SET downloaded = 1 WHERE id = $1", [translationId]);

@@ -4,6 +4,7 @@ import { execute, query } from "./db";
 import { DOWNLOAD_CONFIG } from "./downloadConfig";
 import { useDownloadStore } from "../stores/downloadStore";
 import { useToastStore } from "../stores/toastStore";
+import { streamDownloadJson } from "./downloadUtils";
 
 export interface DictionaryEntry {
   word: string;
@@ -103,16 +104,11 @@ export async function downloadDictionary(): Promise<void> {
     await ensureDictionaryTable();
 
     const url = `${DOWNLOAD_CONFIG.baseUrl}/${DOWNLOAD_CONFIG.tag}/english-dictionary.json`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Download failed: ${response.status} ${response.statusText}`);
-    }
 
-    store.updateProgress(DICTIONARY_DOWNLOAD_ID, 30);
-
-    const entries: { word: string; phonetic?: string; meanings: DictionaryEntry["meanings"] }[] =
-      await response.json();
-    store.updateProgress(DICTIONARY_DOWNLOAD_ID, 50);
+    const entries = await streamDownloadJson<{ word: string; phonetic?: string; meanings: DictionaryEntry["meanings"] }[]>(
+      url,
+      (pct) => store.updateProgress(DICTIONARY_DOWNLOAD_ID, Math.round(pct * 0.5)),
+    );
     store.setStatus(DICTIONARY_DOWNLOAD_ID, "importing");
 
     await execute("DELETE FROM dictionary");

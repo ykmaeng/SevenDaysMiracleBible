@@ -1,10 +1,10 @@
-import { fetch } from "@tauri-apps/plugin-http";
-import { writeFile, remove, exists, BaseDirectory } from "@tauri-apps/plugin-fs";
+import { remove, exists, BaseDirectory } from "@tauri-apps/plugin-fs";
 import i18n from "../i18n";
 import { clearInterlinearDbCache } from "./db";
 import { useDownloadStore } from "../stores/downloadStore";
 import { useToastStore } from "../stores/toastStore";
 import { DOWNLOAD_CONFIG } from "./downloadConfig";
+import { streamDownloadToFile } from "./downloadUtils";
 
 const DB_FILENAME = "interlinear.db";
 const DOWNLOAD_KEY = "interlinear";
@@ -29,24 +29,14 @@ export async function downloadInterlinear(): Promise<void> {
   try {
     const url = `${DOWNLOAD_CONFIG.baseUrl}/${DOWNLOAD_CONFIG.commentaryTag}/${DB_FILENAME}`;
     console.log(`[interlinear] Fetching ${url}`);
-    const response = await fetch(url);
+    const bytes = await streamDownloadToFile(url, DB_FILENAME, (pct) => {
+      store.updateProgress(key, Math.round(pct * 0.95));
+    });
 
-    if (!response.ok) {
-      throw new Error(`Download failed: ${response.status} ${response.statusText}`);
-    }
-
-    store.updateProgress(key, 50);
-
-    const buffer = await response.arrayBuffer();
-    const bytes = new Uint8Array(buffer);
     const magic = new TextDecoder().decode(bytes.slice(0, 15));
     if (magic !== "SQLite format 3") {
       throw new Error("Invalid DB file");
     }
-
-    store.setStatus(key, "importing");
-    await writeFile(DB_FILENAME, bytes, { baseDir: BaseDirectory.AppData });
-    store.updateProgress(key, 95);
 
     store.setStatus(key, "done");
     console.log("[interlinear] download complete");
