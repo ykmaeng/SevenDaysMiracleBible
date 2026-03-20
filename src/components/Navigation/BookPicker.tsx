@@ -34,7 +34,7 @@ export function BookPicker({ onSelect, onClose }: BookPickerProps) {
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 overflow-auto">
+    <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 overflow-auto pt-[env(safe-area-inset-top)]">
       <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
         <h2 className="text-lg font-semibold">{t("reader.selectBook")}</h2>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">

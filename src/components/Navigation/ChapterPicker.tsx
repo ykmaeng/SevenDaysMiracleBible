@@ -25,7 +25,7 @@ export function ChapterPicker({ bookId, onSelect, onClose, onChangeBook }: Chapt
   const chapters = Array.from({ length: book.chapters }, (_, i) => i + 1);
 
   return (
-    <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 overflow-auto">
+    <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 overflow-auto pt-[env(safe-area-inset-top)]">
       <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {onChangeBook && (
