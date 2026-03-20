@@ -265,6 +265,7 @@ export function useTTS(): TTSState & TTSActions {
   // speakVerse — reads settings from the store for fresh values
   speakVerseRef.current = (index: number) => {
     const verses = versesRef.current;
+    const mySession = sessionIdRef.current;
     if (index >= verses.length || stoppedRef.current) {
       setIsPlaying(false);
       setIsPaused(false);
@@ -273,6 +274,8 @@ export function useTTS(): TTSState & TTSActions {
     }
 
     setCurrentVerseIndex(index);
+
+    const isStale = () => stoppedRef.current || sessionIdRef.current !== mySession;
 
     const { ttsSpeed, ttsVoiceName, ttsOnline, ttsOnlineVoice } = useSettingsStore.getState();
     const lang = langRef.current;
@@ -283,18 +286,18 @@ export function useTTS(): TTSState & TTSActions {
       // Edge TTS (online high-quality)
       speakEdge(verses[index].text, lang, ttsSpeed, ttsOnlineVoice)
         .then(() => {
-          if (!stoppedRef.current) {
+          if (!isStale()) {
             speakVerseRef.current?.(index + 1);
           }
         })
         .catch((err) => {
           // Fallback to device TTS on error
           console.warn("[TTS] Edge TTS failed, falling back to device TTS", err);
-          if (stoppedRef.current) return;
+          if (isStale()) return;
           if (isAndroid) {
             nativeSpeak(verses[index].text, lang || undefined, ttsSpeed, ttsVoiceName || undefined)
               .then(() => {
-                if (!stoppedRef.current) speakVerseRef.current?.(index + 1);
+                if (!isStale()) speakVerseRef.current?.(index + 1);
               })
               .catch(() => {
                 setIsPlaying(false);
@@ -302,14 +305,14 @@ export function useTTS(): TTSState & TTSActions {
               });
           } else {
             speakDeviceTTS(verses[index].text, lang, ttsSpeed, ttsVoiceName, () => {
-              if (!stoppedRef.current) speakVerseRef.current?.(index + 1);
+              if (!isStale()) speakVerseRef.current?.(index + 1);
             });
           }
         });
     } else if (isAndroid) {
       nativeSpeak(verses[index].text, lang || undefined, ttsSpeed, ttsVoiceName || undefined)
         .then(() => {
-          if (!stoppedRef.current) speakVerseRef.current?.(index + 1);
+          if (!isStale()) speakVerseRef.current?.(index + 1);
         })
         .catch(() => {
           setIsPlaying(false);
@@ -317,7 +320,7 @@ export function useTTS(): TTSState & TTSActions {
         });
     } else {
       speakDeviceTTS(verses[index].text, lang, ttsSpeed, ttsVoiceName, () => {
-        if (!stoppedRef.current) speakVerseRef.current?.(index + 1);
+        if (!isStale()) speakVerseRef.current?.(index + 1);
       });
     }
   };
