@@ -105,6 +105,7 @@ export function ReaderSettingsDropdown({
   return (
     <div className="relative" ref={dropdownRef}>
       <button
+        data-tip-target="reader-settings"
         onClick={() => setOpen(!open)}
         className={`p-1.5 rounded ${
           open ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"

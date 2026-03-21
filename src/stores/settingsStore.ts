@@ -24,6 +24,7 @@ interface SettingsState {
   showNotes: boolean;
   showCommentary: boolean;
   onboardingComplete: boolean;
+  tipsComplete: boolean;
 }
 
 interface SettingsActions {
@@ -47,6 +48,7 @@ interface SettingsActions {
   setShowNotes: (show: boolean) => void;
   setShowCommentary: (show: boolean) => void;
   completeOnboarding: () => void;
+  completeTips: () => void;
 }
 
 export const DEFAULT_TRANSLATION_BY_LANG: Record<string, string> = {
@@ -76,6 +78,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       showNotes: false,
       showCommentary: false,
       onboardingComplete: false,
+      tipsComplete: false,
 
       setLanguage: (lang) =>
         set((state) => {
@@ -182,6 +185,11 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       completeOnboarding: () =>
         set((state) => {
           state.onboardingComplete = true;
+        }),
+
+      completeTips: () =>
+        set((state) => {
+          state.tipsComplete = true;
         }),
     })),
     {

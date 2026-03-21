@@ -273,5 +273,15 @@
     "selectLabel": "태그 선택",
     "noLabelShort": "없음",
     "readFromHere": "여기부터 읽기"
+  },
+  "tips": {
+    "verseAction": "구절을 탭하면 복사, 공유, 북마크, 읽기 등을 할 수 있어요",
+    "swipeNav": "좌우로 스와이프하면 다음/이전 장으로 이동해요",
+    "readerSettings": "여기서 동시번역, 원문보기, 강해 등 보기 옵션을 설정할 수 있어요",
+    "featuresButton": "여기서 북마크, 하이라이트, 메모 기능을 활성화할 수 있어요",
+    "settingsButton": "글꼴, 테마, 번역본 등을 설정할 수 있어요",
+    "next": "다음",
+    "skip": "건너뛰기",
+    "start": "시작하기"
   }
 }

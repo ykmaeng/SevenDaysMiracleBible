@@ -166,6 +166,7 @@ export function ParagraphGroup({
           return (
             <span
               key={verse.verse}
+              data-verse={verse.verse}
               onClick={(e) => {
                 const target = e.target as HTMLElement;
                 if (target.closest("[data-parallel-word]") || target.closest("[data-note-input]")) return;

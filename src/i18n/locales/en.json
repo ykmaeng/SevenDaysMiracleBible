@@ -273,5 +273,15 @@
     "selectLabel": "Select tag",
     "noLabelShort": "None",
     "readFromHere": "Read from here"
+  },
+  "tips": {
+    "verseAction": "Tap a verse to copy, share, bookmark, or listen",
+    "swipeNav": "Swipe left or right to navigate between chapters",
+    "readerSettings": "Access parallel translations, original text, and commentary here",
+    "featuresButton": "Enable bookmarks, highlights, and notes here",
+    "settingsButton": "Customize font, theme, and translations",
+    "next": "Next",
+    "skip": "Skip",
+    "start": "Get Started"
   }
 }

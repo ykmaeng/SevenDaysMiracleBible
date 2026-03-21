@@ -337,6 +337,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
           </>
         )}
         <div
+          data-tip-target="verse-area"
           className="overflow-hidden"
           style={showCommentary ? (
             commentaryPosition === "bottom"

@@ -6,6 +6,7 @@ import { ToastContainer } from "./components/Toast";
 import { LanguageSettings } from "./components/Settings/LanguageSettings";
 import { LanguageOnboarding } from "./components/Onboarding/LanguageOnboarding";
 import { SplashScreen } from "./components/Splash/SplashScreen";
+import { GuidedTips } from "./components/Onboarding/GuidedTips";
 import { FeaturesView } from "./components/Features/FeaturesView";
 import { BookmarksView } from "./components/Bookmarks/BookmarksView";
 import { HighlightsView } from "./components/Highlights/HighlightsView";
@@ -158,6 +159,7 @@ function App() {
   return (
     <>
       {showSplash && <SplashScreen onDone={dismissSplash} />}
+      {!showSplash && <GuidedTips />}
     <div
       className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-gray-100"
       style={{
@@ -174,7 +176,7 @@ function App() {
       )}
 
       {/* Main content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden" data-tip-target="reader-area">
         {view === "reader" && <TabPanel immersive={immersive} />}
         {view === "settings" && (
           <div className="h-full overflow-auto">
@@ -261,6 +263,7 @@ function App() {
           />
 
           <button
+            data-tip-target="features-button"
             onClick={() => setView(view === "features" ? "reader" : "features")}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 shrink-0 ${
               view === "features" ? "text-blue-600" : "text-gray-400"
@@ -273,6 +276,7 @@ function App() {
           </button>
 
           <button
+            data-tip-target="settings-button"
             onClick={() => setView("settings")}
             className={`relative flex flex-col items-center gap-0.5 px-3 py-1 shrink-0 ${
               view === "settings" ? "text-blue-600" : "text-gray-400"
