@@ -51,6 +51,12 @@ pub fn run() {
             sql: include_str!("../migrations/003_add_sav_en.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 4,
+            description: "add_story_ko",
+            sql: include_str!("../migrations/004_add_story_ko.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     let mut builder = tauri::Builder::default()
