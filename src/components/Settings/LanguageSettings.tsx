@@ -657,19 +657,24 @@ export function LanguageSettings() {
         </button>
         {aboutOpen && (
           <div className="text-center pb-4">
+            <p className="text-lg font-serif italic text-gray-500 dark:text-gray-400 mb-1">סֶלָה</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">{t("settings.aboutSelah")}</p>
             <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
               {t("settings.aboutDescription")}
             </p>
             <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t("settings.aboutAI")}</div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-2">
               {t("settings.aboutAIDescription")}
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+              {t("settings.aboutLicense")}
             </p>
             <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t("settings.aboutMission")}</div>
             <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
               {t("settings.aboutMissionDescription")}
             </p>
             <p className="text-[11px] text-gray-400 dark:text-gray-600">
-              Selah Bible v0.1
+              Selah Bible v1.0.0-beta
             </p>
           </div>
         )}
