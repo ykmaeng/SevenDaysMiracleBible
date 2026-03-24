@@ -497,7 +497,7 @@ export function ChapterView({
   }
 
   return (
-    <div ref={parentRef} className="h-full overflow-auto pl-0 pr-1 py-2 relative" onClick={handleBackgroundClick} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+    <div ref={parentRef} className="h-full overflow-auto pl-0 pr-1 relative" style={{ paddingTop: 'var(--reader-top-inset, 0.5rem)', paddingBottom: 'var(--reader-bottom-inset, 0.5rem)' }} onClick={handleBackgroundClick} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <div
         style={{
           height: `${virtualizer.getTotalSize() + 120}px`,

@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useTabStore, type Tab } from "../../stores/tabStore";
+import { useFeatureStore } from "../../stores/featureStore";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { getBooks, getDownloadedTranslations } from "../../lib/bible";
 import { ChapterView } from "../BibleReader/ChapterView";
@@ -35,6 +36,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
 
   const [showBookPicker, setShowBookPicker] = useState(false);
   const [showChapterPicker, setShowChapterPicker] = useState(false);
+  const showTabs = useFeatureStore((s) => s.enabledFeatures).includes("tabs");
   const showCommentary = useSettingsStore((s) => s.showCommentary);
   const setShowCommentary = useSettingsStore((s) => s.setShowCommentary);
   // Defer commentary panel rendering to avoid concurrent heavy DB + Markdown work on mount
@@ -216,9 +218,18 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
   }, []);
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Navigation header */}
-      <div className={`flex items-center justify-between px-4 bg-white dark:bg-gray-800 transition-all duration-150 ease-out ${immersive ? "max-h-0 py-0 overflow-hidden opacity-0" : "max-h-14 py-2 border-b border-gray-100 dark:border-gray-700"}`}>
+    <div className="relative h-full">
+      {/* Navigation header - overlay */}
+      <div
+        className={`absolute left-0 right-0 z-10 flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 transition-all duration-150 ease-out ${
+          immersive ? "opacity-0 -translate-y-full pointer-events-none" : ""
+        }`}
+        style={{
+          top: showTabs
+            ? "calc(env(safe-area-inset-top, 0px) + 3.5rem)"
+            : "env(safe-area-inset-top, 0px)",
+        }}
+      >
         <div className="flex items-center gap-1.5">
           <div className="relative">
             <button
@@ -324,7 +335,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
       {/* Main content */}
       <div
         ref={containerRef}
-        className={`flex-1 flex overflow-hidden ${
+        className={`h-full flex overflow-hidden ${
           showCommentary && commentaryPosition === "bottom" ? "flex-col" : "flex-row"
         }`}
       >
@@ -393,8 +404,9 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
         )}
       </div>
 
-      {/* TTS Control Bar */}
+      {/* TTS Control Bar - overlay */}
       {tts.isPlaying && (
+        <div className="absolute bottom-0 left-0 right-0 z-10" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
         <TTSControlBar
           isPaused={tts.isPaused}
           currentVerseNumber={
@@ -410,6 +422,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
           onSpeedChange={handleSpeedChange}
           onVoiceChange={handleVoiceChange}
         />
+        </div>
       )}
 
       {/* Pickers */}

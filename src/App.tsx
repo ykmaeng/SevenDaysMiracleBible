@@ -161,22 +161,35 @@ function App() {
       {showSplash && <SplashScreen onDone={dismissSplash} />}
       {!showSplash && <GuidedTips />}
     <div
-      className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-gray-100"
+      className="relative h-screen bg-white dark:bg-gray-900 dark:text-gray-100"
       style={{
-        paddingTop: immersive ? 0 : "env(safe-area-inset-top, 0px)",
-        paddingBottom: immersive ? 0 : "env(safe-area-inset-bottom, 0px)",
-        transition: "padding 150ms ease-out",
-      }}
+        '--reader-top-inset': enabledFeatures.includes("tabs") && view === "reader"
+          ? 'calc(env(safe-area-inset-top, 0px) + 7rem)'
+          : 'calc(env(safe-area-inset-top, 0px) + 3.5rem)',
+        '--reader-bottom-inset': 'calc(env(safe-area-inset-bottom, 0px) + 3.5rem)',
+      } as React.CSSProperties}
     >
-      {/* Tab bar */}
+      {/* Tab bar - overlay */}
       {view === "reader" && enabledFeatures.includes("tabs") && (
-        <div className={`transition-all duration-150 ease-out overflow-hidden ${immersive ? "max-h-0" : "max-h-14"}`}>
+        <div
+          className={`absolute top-0 left-0 right-0 z-20 bg-white dark:bg-gray-900 transition-all duration-150 ease-out ${
+            immersive ? "opacity-0 -translate-y-full pointer-events-none" : ""
+          }`}
+          style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+        >
           <TabBar />
         </div>
       )}
 
       {/* Main content */}
-      <div className="flex-1 overflow-hidden" data-tip-target="reader-area">
+      <div
+        className="h-full overflow-hidden"
+        data-tip-target="reader-area"
+        style={view !== "reader" ? {
+          paddingTop: "env(safe-area-inset-top, 0px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 3.5rem)",
+        } : undefined}
+      >
         {view === "reader" && <TabPanel immersive={immersive} />}
         {view === "settings" && (
           <div className="h-full overflow-auto">
@@ -242,7 +255,12 @@ function App() {
       <ToastContainer />
 
       {/* Bottom navigation bar */}
-      <nav className={`overflow-x-auto no-scrollbar flex items-center justify-evenly border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 transition-all duration-150 ${immersive && view === "reader" ? "max-h-0 !overflow-hidden py-0 border-t-0" : "max-h-20 py-2 border-t"}`}>
+      <nav
+        className={`absolute bottom-0 left-0 right-0 z-20 overflow-x-auto no-scrollbar flex items-center justify-evenly border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-2 transition-all duration-150 ease-out ${
+          immersive && view === "reader" ? "translate-y-full opacity-0 pointer-events-none" : ""
+        }`}
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
         <button
           onClick={() => setView("reader")}
           className={`flex flex-col items-center gap-0.5 px-3 py-1 shrink-0 ${
