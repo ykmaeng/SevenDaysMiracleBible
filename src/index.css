@@ -8,6 +8,13 @@
   --verse-highlight: #fef3c7;
 }
 
+html {
+  background-color: white;
+}
+html.dark {
+  background-color: #111827;
+}
+
 html,
 body,
 #root {

@@ -164,11 +164,19 @@ function App() {
       className="relative h-screen bg-white dark:bg-gray-900 dark:text-gray-100"
       style={{
         '--reader-top-inset': enabledFeatures.includes("tabs") && view === "reader"
-          ? 'calc(env(safe-area-inset-top, 0px) + 7rem)'
-          : 'calc(env(safe-area-inset-top, 0px) + 3.5rem)',
+          ? 'calc(env(safe-area-inset-top, 0px) + 5.5rem)'
+          : 'calc(env(safe-area-inset-top, 0px) + 2.75rem)',
         '--reader-bottom-inset': 'calc(env(safe-area-inset-bottom, 0px) + 3.5rem)',
       } as React.CSSProperties}
     >
+      {/* Safe area background - prevents content showing behind status bar */}
+      <div
+        className={`absolute top-0 left-0 right-0 z-10 bg-white dark:bg-gray-900 transition-opacity duration-150 ${
+          immersive && view === "reader" ? "opacity-0" : ""
+        }`}
+        style={{ height: "env(safe-area-inset-top, 0px)" }}
+      />
+
       {/* Tab bar - overlay */}
       {view === "reader" && enabledFeatures.includes("tabs") && (
         <div

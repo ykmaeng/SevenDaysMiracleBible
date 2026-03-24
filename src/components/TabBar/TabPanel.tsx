@@ -226,7 +226,7 @@ export function TabPanel({ immersive }: { immersive?: boolean }) {
         }`}
         style={{
           top: showTabs
-            ? "calc(env(safe-area-inset-top, 0px) + 3.5rem)"
+            ? "calc(env(safe-area-inset-top, 0px) + 2.25rem)"
             : "env(safe-area-inset-top, 0px)",
         }}
       >
