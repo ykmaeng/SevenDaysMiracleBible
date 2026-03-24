@@ -404,6 +404,19 @@ export function ChapterView({
     setDictPosition({ x: info.x, y: info.y, bottom: info.bottom });
   }, []);
 
+  // Page transition animation
+  const [transition, setTransition] = useState<"none" | "fade-in">("none");
+  const prevChapterRef = useRef(`${bookId}-${chapter}`);
+  useEffect(() => {
+    const key = `${bookId}-${chapter}`;
+    if (prevChapterRef.current !== key) {
+      prevChapterRef.current = key;
+      setTransition("fade-in");
+      const timer = setTimeout(() => setTransition("none"), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [bookId, chapter]);
+
   // Swipe gesture for chapter navigation
   const touchRef = useRef<{ startX: number; startY: number; startTime: number } | null>(null);
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -471,7 +484,8 @@ export function ChapterView({
     ? verses[ttsVerseIndex].verse
     : undefined;
 
-  if (loading) {
+  // Show loading only on initial load (no verses yet), not on chapter transitions
+  if (loading && verses.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-400">
         <div className="animate-pulse">Loading...</div>
@@ -503,6 +517,7 @@ export function ChapterView({
           height: `${virtualizer.getTotalSize() + 120}px`,
           width: "100%",
           position: "relative",
+          animation: transition === "fade-in" ? "chapterFadeIn 250ms ease-out" : undefined,
         }}
       >
 

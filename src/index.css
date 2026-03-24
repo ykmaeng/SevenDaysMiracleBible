@@ -28,6 +28,12 @@ body,
   @apply text-xs font-bold text-blue-600 align-super mr-0.5 select-none;
 }
 
+/* Chapter transition */
+@keyframes chapterFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
