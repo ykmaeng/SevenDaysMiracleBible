@@ -85,9 +85,11 @@
     "announcements": "공지사항",
     "noAnnouncements": "공지사항이 없습니다",
     "aboutTitle": "셀라 바이블",
+    "aboutSelah": "\"셀라\" — 시편에 74회 등장하는 히브리어로, 잠시 멈추어 묵상하라는 뜻입니다",
     "aboutDescription": "셀라 바이블은 누구나 성경을 쉽고 자유롭게 접할 수 있도록 만들어진 앱입니다. 처음 성경을 읽는 분부터 깊이 있는 연구를 원하는 분까지, 모든 이에게 말씀의 풍요로움을 전하고자 합니다.",
-    "aboutAI": "AI 번역 (SAV)",
-    "aboutAIDescription": "SAV(Selah AI Version)는 성경 원문과 권위 있는 번역본들을 토대로 AI가 번역한 현대어 성경입니다. 누구나 쉽게 읽고 이해할 수 있는 자연스러운 문체를 지향합니다.",
+    "aboutAI": "AI 번역 안내",
+    "aboutAIDescription": "Selah AI 한국어, Selah AI English, Selah 어린이 성경 등 AI 기반 번역본은 원어 성경을 바탕으로 생성되었으나, 인간 번역자의 검토를 거치지 않았습니다. 검증된 공인 번역본(개역개정, NIV, ESV 등)을 주 번역본으로 사용하시고, AI 번역은 참고 자료로 활용해 주세요.",
+    "aboutLicense": "아직 라이선스가 확보되지 않아 공인 번역본을 앱 내에서 직접 제공하지 못하고 있습니다. 공인 번역본은 대한성서공회 앱, YouVersion 등을 통해 이용하실 수 있습니다. 향후 라이선스가 확보되는 대로 앱 내에서도 제공할 예정입니다.",
     "aboutMission": "우리의 비전",
     "aboutMissionDescription": "언어와 지식의 장벽을 넘어, 성경의 지혜가 모든 사람에게 닿을 수 있기를 소망합니다."
   },
